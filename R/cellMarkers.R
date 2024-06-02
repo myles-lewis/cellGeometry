@@ -84,6 +84,10 @@ cellMarkers <- function(scdata,
     cell_table <- NULL
   }
   
+  # determine spillover
+  gene_sig <- genemeans_filtered[geneset, ]
+  m_itself <- dotprod(gene_sig, gene_sig, equalWeight = FALSE)
+  
   out <- list(best_angle = best_angle,
               group_angle = group_angle,
               geneset = geneset,
@@ -92,7 +96,8 @@ cellMarkers <- function(scdata,
               genemeans_filtered = genemeans_filtered,
               groupmeans = groupmeans,
               groupmeans_filtered = groupmeans_filtered,
-              cell_table = cell_table)
+              cell_table = cell_table,
+              spillover = m_itself)
   class(out) <- "cellMarkers"
   out
 }

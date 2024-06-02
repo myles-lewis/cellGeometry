@@ -13,6 +13,9 @@ signature_heatmap(x, col = rev(hcl.colors(10, "Greens3")), ...)
 
 \item{...}{Optional arguments passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 }
+\value{
+A 'Heatmap' class object.
+}
 \description{
 Produces a heatmap of genes signatures for each cell subclass using
 ComplexHeatmap.
