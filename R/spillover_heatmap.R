@@ -27,9 +27,11 @@ spillover_heatmap <- function(x, ...) {
                  column_names_rot = 75, column_names_gp = gpar(fontsize = 8),
                  row_names_gp = gpar(fontsize = 8),
                  cell_fun = function(j, i, x, y, width, height, fill) {
-                   grid.text(ifelse(m_itself[i, j] > 0.5 & i!=j, sprintf("%.1f",  m_itself[i, j]), ""), x, y, gp = gpar(fontsize = 8))
+                   grid.text(ifelse(m_itself[i, j] > 0.5 & i!=j,
+                                    sprintf("%.1f",  m_itself[i, j]), ""),
+                             x, y, gp = gpar(fontsize = 8))
                  },
-                 heatmap_legend_param = list(title='spillover',
+                 heatmap_legend_param = list(title = "spillover",
                                              legend_width = unit(6, "cm"),
                                              direction = "horizontal"),
                  ...)
