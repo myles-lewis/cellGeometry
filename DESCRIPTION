@@ -1,0 +1,18 @@
+Package: cellGeometry
+Title: Geometric Single Cell Deconvolution
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Myles",family = "Lewis",
+    role = c("aut", "cre"),
+    email = "myles.lewis@qmul.ac.uk",
+    comment = c(ORCID = "0000-0001-9365-5345")))
+Description: What the package does (one paragraph).
+License: GPL (>= 3)
+Encoding: UTF-8
+biocViews:
+Imports:
+    grid,
+    ComplexHeatmap,
+    matrixStats
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
