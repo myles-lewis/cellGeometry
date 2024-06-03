@@ -113,34 +113,3 @@ scmean <- function(scdata, celltype) {
                       numeric(nrow(logcounts)))
   genemeans
 }
-
-
-# Vector based best marker selection
-gene_angle <- function(genemeans) {
-  genemeans_scaled <- scaleSphere(genemeans)
-  genemeans_angle <- acos(genemeans_scaled)
-  genemeans_max <- rowMaxs(genemeans)
-  best_angle <- lapply(colnames(genemeans_angle), function(i) {
-    df <- data.frame(angle=genemeans_angle[, i], max=genemeans_max)
-    df[with(df, order(angle, -max)), ]
-  })
-  names(best_angle) <- colnames(genemeans_angle)
-  best_angle
-}
-
-# unit hypersphere scaling applied to genes
-# genes in rows, celltypes in columns
-scaleSphere <- function(cellmat) {
-  vecLength <- sqrt(rowSums(cellmat^2))
-  cellmat / vecLength
-}
-
-
-# hypersphere scaling of genes adjusted for total read count across cell subclasses
-adjScaleGeneMatrix <- function(gene_sign, celltotals, meandepth) {
-  sig_unlog <- 2^gene_sign - 1
-  sig_scaleto_bulkdepth <- t(t(sig_unlog) / celltotals * meandepth)
-  sig_scaled <- scaleSphere(sig_scaleto_bulkdepth) * 2^10
-  log_sig <- log2(sig_scaled + 1)
-  log_sig
-}
