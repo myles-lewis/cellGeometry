@@ -30,6 +30,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
                         use_filter = TRUE,
                         convert_bulk = TRUE) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
+  .call <- match.call()
   
   test <- as.matrix(test)
   comp_amount <- rep_len(comp_amount, ncol(mk$genemeans))
@@ -89,7 +90,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
     nest_percent <- do.call(cbind, pc2)
   } else nest_percent <- NULL
   
-  out <- list(mk = mk, subclass = atest, group = gtest,
+  out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
               nest_percent = nest_percent, comp_amount = comp_amount)
   class(out) <- "deconv"
   out
