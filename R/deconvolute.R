@@ -54,11 +54,10 @@ deconvolute <- function(mk, test, comp_amount = 0,
   logtest2 <- bulk2sc(logtest2)
   atest <- deconv(logtest2, cellmat, comp_amount = comp_amount)
   if (any(atest$output < 0)) {
-    message("negative cell proportion projection detected")
     if (adjust_comp) {
+      message("optimising compensation")
       minout <- colMins(atest$output)
       w <- which(minout < 0)
-      message("optimising compensation")
       newcomps <- vapply(w, function(i) {
         f <- function(x) {
           newcomp <- comp_amount
@@ -72,7 +71,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
       comp_amount[w] <- newcomps
       atest <- deconv(logtest2, cellmat, comp_amount = comp_amount)
       atest$output[atest$output < 0] <- 0
-    }
+    } else message("negative cell proportion projection detected")
   }
   
   # percent of groups
@@ -100,11 +99,12 @@ deconv <- function(test, cellmat, equalWeight = FALSE, comp_amount = 0) {
   if (!identical(rownames(test), rownames(cellmat)))
     stop('test and cell matrices must have same genes (rownames)')
   m_itself <- dotprod(cellmat, cellmat, equalWeight)
-  # fullcomp <- solve(m_itself)
+  rawcomp <- solve(m_itself)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   output <- dotprod(test, cellmat, equalWeight) %*% mixcomp
   percent <- output / rowSums(output) * 100
-  list(output = output, percent = percent, spillover = m_itself, compensation = mixcomp)
+  list(output = output, percent = percent, spillover = m_itself,
+       compensation = mixcomp, rawcomp = rawcomp)
 }
 
 

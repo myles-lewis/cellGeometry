@@ -19,7 +19,7 @@
 stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                        ...) {
   if (is.null(scheme)) {
-    scheme <- hue_pal(h = c(0, 270), c = 120)(ncol(x))
+    scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
   if (percent) {
     rs <- rowSums(x)
