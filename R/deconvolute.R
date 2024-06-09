@@ -24,7 +24,7 @@
 #' @importFrom stats optimise
 #' @export
 #'
-deconvolute <- function(mk, test, comp_amount = 0,
+deconvolute <- function(mk, test, comp_amount = 1,
                         group_comp_amount = 0,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
@@ -45,7 +45,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
     if (convert_bulk) logtest <- bulk2sc(logtest)
     gtest <- deconv(logtest, cellmat, comp_amount = group_comp_amount)
     if (any(gtest$output < 0))
-      message("negative cell proportion projection detected: compensation might need to be reduced")
+      message("negative cell proportion projection detected")
   } else {
     gtest <- NULL
   }
