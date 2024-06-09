@@ -4,7 +4,14 @@
 \alias{stack_plot}
 \title{Stacked bar plot}
 \usage{
-stack_plot(x, percent = FALSE, order_col = 1, scheme = NULL, ...)
+stack_plot(
+  x,
+  percent = FALSE,
+  order_col = 1,
+  scheme = NULL,
+  cex.names = 0.7,
+  ...
+)
 }
 \arguments{
 \item{x}{matrix of deconvolution results with samples in rows and cell
@@ -17,6 +24,8 @@ supplied, these columns are averaged first using \code{rowMeans()}.}
 
 \item{scheme}{Vector of colours. If not supplied, the default scheme uses
 \code{scales::hue_pal()}.}
+
+\item{cex.names}{Character expansion controlling bar names font size.}
 
 \item{...}{Optional arguments passed to \code{\link[graphics:barplot]{graphics::barplot()}}.}
 }

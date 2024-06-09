@@ -10,6 +10,7 @@
 #'   supplied, these columns are averaged first using `rowMeans()`.
 #' @param scheme Vector of colours. If not supplied, the default scheme uses
 #'   `scales::hue_pal()`.
+#' @param cex.names Character expansion controlling bar names font size.
 #' @param ... Optional arguments passed to [graphics::barplot()].
 #' @returns No return value. Plots a stacked barchart using base graphics.
 #' @importFrom scales hue_pal
@@ -17,7 +18,7 @@
 #' @export
 
 stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
-                       ...) {
+                       cex.names = 0.7, ...) {
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
@@ -32,11 +33,17 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   } else {
     ord <- order(rowSums(x))
   }
-  op <- par(mar = c(8, 4, 1.5, 1.5))
+  strw <- max(strwidth(rownames(x), units = "inches", cex = cex.names), na.rm = TRUE)
+  mar1 <- strw / par("csi") +1.5
+  op <- par(mar = c(mar1, 4, 1.5, 1.5))
   on.exit(par(op))
   barplot(t(x[ord,]), las = 2, col = scheme,
-          cex.names = 0.7,
-          tcl = -0.3, mgp = c(2.2, 0.5, 0))
+          cex.names = cex.names,
+          tcl = -0.3, mgp = c(2.2, 0.5, 0), ...)
+  # extend axis line
+  yrange <- par("usr")[3:4]
+  pos <- par("usr")[1]
+  axis(2, at = c(0, yrange[2]), pos = pos, labels = FALSE, lwd.ticks = 0)
 }
 
 
