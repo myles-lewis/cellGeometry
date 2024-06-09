@@ -33,8 +33,6 @@ deconvolute <- function(mk, test, comp_amount = 1,
   .call <- match.call()
   
   test <- as.matrix(test)
-  comp_amount <- rep_len(comp_amount, ncol(mk$genemeans))
-  names(comp_amount) <- colnames(mk$genemeans)
   
   # group first
   if (!is.null(mk$group_geneset)) {
@@ -43,9 +41,7 @@ deconvolute <- function(mk, test, comp_amount = 1,
     # cellmat <- sc2bulk(cellmat)
     logtest <- log2(test[mk$group_geneset, , drop = FALSE] +1)
     if (convert_bulk) logtest <- bulk2sc(logtest)
-    gtest <- deconv(logtest, cellmat, comp_amount = group_comp_amount)
-    if (any(gtest$output < 0))
-      message("negative cell proportion projection detected")
+    gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, adjust_comp)
   } else {
     gtest <- NULL
   }
@@ -56,29 +52,9 @@ deconvolute <- function(mk, test, comp_amount = 1,
   # cellmat <- sc2bulk(cellmat)
   logtest2 <- log2(test[mk$geneset, , drop = FALSE] +1)
   if (convert_bulk) logtest2 <- bulk2sc(logtest2)
-  atest <- deconv(logtest2, cellmat, comp_amount = comp_amount)
-  if (any(atest$output < 0)) {
-    if (adjust_comp) {
-      message("optimising compensation")
-      minout <- colMins(atest$output)
-      w <- which(minout < 0)
-      newcomps <- vapply(w, function(i) {
-        f <- function(x) {
-          newcomp <- comp_amount
-          newcomp[i] <- x
-          test <- deconv(logtest2, cellmat, comp_amount = newcomp)
-          min(test$output[, i], na.rm = TRUE)^2
-        }
-        xmin <- optimise(f, c(0, comp_amount[i]))
-        xmin$minimum
-      }, numeric(1))
-      comp_amount[w] <- newcomps
-      atest <- deconv(logtest2, cellmat, comp_amount = comp_amount)
-      atest$output[atest$output < 0] <- 0
-    } else message("negative cell proportion projection detected")
-  }
+  atest <- deconv_adjust(logtest2, cellmat, comp_amount, adjust_comp)
   
-  # percent of groups
+  # subclass percent as nested percent of groups
   if (!is.null(gtest)) {
     pc2 <- lapply(levels(mk$cell_table), function(i) {
       pc1 <- gtest$percent[, i]
@@ -96,8 +72,36 @@ deconvolute <- function(mk, test, comp_amount = 1,
   out
 }
 
+deconv_adjust <- function(test, cellmat, comp_amount = 0,
+                          adjust_comp = TRUE) {
+  comp_amount <- rep_len(comp_amount, ncol(cellmat))
+  names(comp_amount) <- colnames(cellmat)
+  
+  atest <- deconv(test, cellmat, comp_amount)
+  if (any(atest$output < 0)) {
+    if (adjust_comp) {
+      message("optimising compensation")
+      minout <- colMins(atest$output)
+      w <- which(minout < 0)
+      newcomps <- vapply(w, function(i) {
+        f <- function(x) {
+          newcomp <- comp_amount
+          newcomp[i] <- x
+          ntest <- deconv(test, cellmat, comp_amount = newcomp)
+          min(ntest$output[, i], na.rm = TRUE)^2
+        }
+        xmin <- optimise(f, c(0, comp_amount[i]))
+        xmin$minimum
+      }, numeric(1))
+      comp_amount[w] <- newcomps
+      atest <- deconv(test, cellmat, comp_amount = comp_amount)
+      atest$output[atest$output < 0] <- 0
+    } else message("negative cell proportion projection detected")
+  }
+  atest
+}
 
-deconv <- function(test, cellmat, equalWeight = FALSE, comp_amount = 0) {
+deconv <- function(test, cellmat, comp_amount = 0, equalWeight = FALSE) {
   if (!(length(comp_amount) %in% c(1, ncol(cellmat))))
     stop('comp_amount must be either single number or vector of length matching cellmat cols')
   if (!identical(rownames(test), rownames(cellmat)))
@@ -108,7 +112,7 @@ deconv <- function(test, cellmat, equalWeight = FALSE, comp_amount = 0) {
   output <- dotprod(test, cellmat, equalWeight) %*% mixcomp
   percent <- output / rowSums(output) * 100
   list(output = output, percent = percent, spillover = m_itself,
-       compensation = mixcomp, rawcomp = rawcomp)
+       compensation = mixcomp, rawcomp = rawcomp, comp_amount = comp_amount)
 }
 
 
