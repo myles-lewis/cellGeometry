@@ -14,7 +14,7 @@
 #' @param ... Optional arguments passed to [graphics::barplot()].
 #' @returns No return value. Plots a stacked barchart using base graphics.
 #' @importFrom scales hue_pal
-#' @importFrom graphics barplot par
+#' @importFrom graphics axis barplot par strwidth
 #' @export
 
 stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
