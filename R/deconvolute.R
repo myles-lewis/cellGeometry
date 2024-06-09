@@ -119,10 +119,8 @@ deconv <- function(test, cellmat, comp_amount = 0, equalWeight = FALSE) {
 approxfun.matrix <- function(x, FUN) {
   if (is.data.frame(x)) x <- as.matrix(x)
   if (is.matrix(x)) {
-    out <- vapply(seq_len(ncol(x)), function(i) {
-      FUN(x[, i])
-    }, numeric(nrow(x)))
-    dimnames(out) <- dimnames(x)
+    out <- FUN(as.vector(x))
+    out <- matrix(out, nrow = nrow(x), dimnames = dimnames(x))
     return(out)
   }
   FUN(x)
