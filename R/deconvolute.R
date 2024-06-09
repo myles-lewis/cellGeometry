@@ -15,6 +15,8 @@
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
 #' @param use_filter logical, whether to use denoised signature matrix
+#' @param convert_bulk logical, whether to convert bulk RNA-Seq to scRNA-Seq
+#'   scaling.
 #' @returns a list object containing the cell proportions of each cell subclass
 #'   in each sample in element `subclass`, and the cell proportions of each cell
 #'   group in element `group`.
@@ -25,7 +27,8 @@
 deconvolute <- function(mk, test, comp_amount = 0,
                         group_comp_amount = 0,
                         adjust_comp = TRUE,
-                        use_filter = TRUE) {
+                        use_filter = TRUE,
+                        convert_bulk = TRUE) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   
   test <- as.matrix(test)
@@ -38,7 +41,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
     } else mk$groupmeans[mk$group_geneset, ]
     # cellmat <- sc2bulk(cellmat)
     logtest <- log2(test[mk$group_geneset, , drop = FALSE] +1)
-    logtest <- bulk2sc(logtest)
+    if (convert_bulk) logtest <- bulk2sc(logtest)
     gtest <- deconv(logtest, cellmat, comp_amount = group_comp_amount)
     if (any(gtest$output < 0))
       message("negative cell proportion projection detected: compensation might need to be reduced")
@@ -51,7 +54,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
   } else mk$genemeans[mk$geneset, ]
   # cellmat <- sc2bulk(cellmat)
   logtest2 <- log2(test[mk$geneset, , drop = FALSE] +1)
-  #logtest2 <- bulk2sc(logtest2)
+  if (convert_bulk) logtest2 <- bulk2sc(logtest2)
   atest <- deconv(logtest2, cellmat, comp_amount = comp_amount)
   if (any(atest$output < 0)) {
     if (adjust_comp) {

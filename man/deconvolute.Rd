@@ -10,7 +10,8 @@ deconvolute(
   comp_amount = 0,
   group_comp_amount = 0,
   adjust_comp = TRUE,
-  use_filter = TRUE
+  use_filter = TRUE,
+  convert_bulk = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ length as the number of cell groups to deconvolute.}
 negative cell proportion projections.}
 
 \item{use_filter}{logical, whether to use denoised signature matrix}
+
+\item{convert_bulk}{logical, whether to convert bulk RNA-Seq to scRNA-Seq
+scaling.}
 }
 \value{
 a list object containing the cell proportions of each cell subclass
