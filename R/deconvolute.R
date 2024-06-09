@@ -37,7 +37,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
     cellmat <- if (use_filter) {mk$groupmeans_filtered[mk$group_geneset, ]
     } else mk$groupmeans[mk$group_geneset, ]
     # cellmat <- sc2bulk(cellmat)
-    logtest <- log2(test[mk$group_geneset, ] +1)
+    logtest <- log2(test[mk$group_geneset, , drop = FALSE] +1)
     logtest <- bulk2sc(logtest)
     gtest <- deconv(logtest, cellmat, comp_amount = group_comp_amount)
     if (any(gtest$output < 0))
@@ -50,8 +50,8 @@ deconvolute <- function(mk, test, comp_amount = 0,
   cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
   } else mk$genemeans[mk$geneset, ]
   # cellmat <- sc2bulk(cellmat)
-  logtest2 <- log2(test[mk$geneset, ] +1)
-  logtest2 <- bulk2sc(logtest2)
+  logtest2 <- log2(test[mk$geneset, , drop = FALSE] +1)
+  #logtest2 <- bulk2sc(logtest2)
   atest <- deconv(logtest2, cellmat, comp_amount = comp_amount)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
@@ -79,7 +79,7 @@ deconvolute <- function(mk, test, comp_amount = 0,
     pc2 <- lapply(levels(mk$cell_table), function(i) {
       pc1 <- gtest$percent[, i]
       ind <- mk$cell_table == i
-      subclass_i <- atest$output[, ind]
+      subclass_i <- atest$output[, ind, drop = FALSE]
       rs <- rowSums(subclass_i)
       subclass_i / rs * pc1
     })
