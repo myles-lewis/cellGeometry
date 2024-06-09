@@ -19,8 +19,9 @@ subclasses or groups in columns.}
 
 \item{percent}{Logical whether to scale the matrix rows as percentage.}
 
-\item{order_col}{Numeric value for which column to sort. If a vector is
-supplied, these columns are averaged first using \code{rowMeans()}.}
+\item{order_col}{Numeric value for which column to sort. If a vector of
+column indices is supplied, these columns are averaged first using
+\code{rowMeans()}.}
 
 \item{scheme}{Vector of colours. If not supplied, the default scheme uses
 \code{scales::hue_pal()}.}

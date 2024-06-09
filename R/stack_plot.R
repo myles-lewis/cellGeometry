@@ -6,8 +6,9 @@
 #' @param x matrix of deconvolution results with samples in rows and cell
 #'   subclasses or groups in columns.
 #' @param percent Logical whether to scale the matrix rows as percentage.
-#' @param order_col Numeric value for which column to sort. If a vector is
-#'   supplied, these columns are averaged first using `rowMeans()`.
+#' @param order_col Numeric value for which column to sort. If a vector of
+#'   column indices is supplied, these columns are averaged first using
+#'   `rowMeans()`.
 #' @param scheme Vector of colours. If not supplied, the default scheme uses
 #'   `scales::hue_pal()`.
 #' @param cex.names Character expansion controlling bar names font size.

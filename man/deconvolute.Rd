@@ -7,7 +7,7 @@
 deconvolute(
   mk,
   test,
-  comp_amount = 0,
+  comp_amount = 1,
   group_comp_amount = 0,
   adjust_comp = TRUE,
   use_filter = TRUE,
