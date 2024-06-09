@@ -39,6 +39,7 @@ cellMarkers <- function(scdata,
                         expfilter = 1,
                         noisefilter = 1.5,
                         noisefraction = 0.25) {
+  .call <- match.call()
   scdata <- as.matrix(scdata)
   if (!is.factor(subclass)) subclass <- factor(subclass)
   
@@ -88,7 +89,8 @@ cellMarkers <- function(scdata,
   gene_sig <- genemeans_filtered[geneset, ]
   m_itself <- dotprod(gene_sig, gene_sig, equalWeight = FALSE)
   
-  out <- list(best_angle = best_angle,
+  out <- list(call = .call,
+              best_angle = best_angle,
               group_angle = group_angle,
               geneset = geneset,
               group_geneset = group_geneset,
