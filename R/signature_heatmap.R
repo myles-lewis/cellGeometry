@@ -11,6 +11,9 @@
 #' @param type Either "subclass" or "group" specifying whether to show the cell
 #'   subclass or cell group signature from a 'cellMarkers' or 'deconv' object.
 #' @param use_filter Logical whether to show denoised gene signature.
+#' @param rank Either "max" or "angle" controlling whether genes (rows) are
+#'   ordered in the heatmap by max expression (the default) or lowest angle
+#'   (a measure of specificity of the gene as a cell marker).
 #' @param col Vector of colours passed to [ComplexHeatmap::Heatmap()].
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns A 'Heatmap' class object.
@@ -20,10 +23,13 @@
 #' @export
 
 signature_heatmap <- function(x,
-                              type = "subclass",
+                              type = c("subclass", "group"),
                               use_filter = NULL,
+                              rank = c("max", "angle"),
                               col = rev(hcl.colors(10, "Greens3")),
                               ...) {
+  rank <- match.arg(rank)
+  type <- match.arg(type)
   cell_table <- NULL
   if (inherits(x, "deconv")) {
     x <- x$mk
@@ -44,8 +50,12 @@ signature_heatmap <- function(x,
     gene_signature <- x
   }
   whmax <- max.col(gene_signature)
-  rmax <- rowMaxs(gene_signature)
-  ord <- order(whmax, -rmax)
+  if (rank == "max") {
+    rmax <- rowMaxs(gene_signature)
+    ord <- order(whmax, -rmax)
+  } else {
+    ord <- seq_len(nrow(gene_signature))
+  }
   rs <- cell_table[whmax]
   Heatmap(gene_signature,
           cluster_rows = FALSE,
