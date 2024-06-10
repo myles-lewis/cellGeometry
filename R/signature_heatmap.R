@@ -64,7 +64,7 @@ signature_heatmap <- function(x,
           cluster_column_slices = FALSE,
           column_title_gp = gpar(fontsize = 6),
           row_names_gp = gpar(fontsize = 6),
-          column_names_gp = gpar(fontsize = 6),
+          column_names_rot = 75, column_names_gp = gpar(fontsize = 6),
           row_title_gp = gpar(fontsize = 6),
           col = col,
           heatmap_legend_param = list(title='mean'), ...)

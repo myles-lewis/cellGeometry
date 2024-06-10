@@ -12,6 +12,7 @@
 #' @export
 
 spillover_heatmap <- function(x, ...) {
+  if (inherits(x, "deconv")) x <- x$mk
   if (inherits(x, 'cellMarkers')) {
     cell_table <- x$cell_table
     m_itself <- x$spillover

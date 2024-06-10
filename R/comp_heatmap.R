@@ -13,7 +13,7 @@
 #'
 comp_heatmap <- function(x, cell_table = NULL, ...) {
   if (inherits(x, "deconv")) {
-    if (is.null(cell_table)) cell_table <- x$cell_table
+    if (is.null(cell_table)) cell_table <- x$mk$cell_table
     comp <- x$subclass$compensation
   } else {
     comp <- x
