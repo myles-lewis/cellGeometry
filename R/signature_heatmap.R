@@ -34,6 +34,7 @@ signature_heatmap <- function(x,
     if (type == "group") {
       gene_signature <- if (use_filter) {x$genemeans_filtered[x$group_geneset, ]
       } else x$genemeans[x$group_geneset, ]
+      cell_table <- x$cell_table
     } else {
       gene_signature <- if (use_filter) {x$genemeans_filtered[x$geneset, ]
       } else x$genemeans[x$geneset, ]
