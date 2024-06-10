@@ -36,9 +36,9 @@ negative cell proportion projections.}
 scaling.}
 }
 \value{
-a list object containing the cell proportions of each cell subclass
-in each sample in element \code{subclass}, and the cell proportions of each cell
-group in element \code{group}.
+a list object of class 'deconv' containing the cell proportions of
+each cell subclass in each sample in element \code{subclass}, and the cell
+proportions of each cell group in element \code{group}.
 }
 \description{
 Deconvolution of bulk RNA-Seq using vector projection method with optional

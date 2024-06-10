@@ -17,9 +17,9 @@
 #' @param use_filter logical, whether to use denoised signature matrix
 #' @param convert_bulk logical, whether to convert bulk RNA-Seq to scRNA-Seq
 #'   scaling.
-#' @returns a list object containing the cell proportions of each cell subclass
-#'   in each sample in element `subclass`, and the cell proportions of each cell
-#'   group in element `group`.
+#' @returns a list object of class 'deconv' containing the cell proportions of
+#'   each cell subclass in each sample in element `subclass`, and the cell
+#'   proportions of each cell group in element `group`.
 #' @importFrom matrixStats colMins
 #' @importFrom stats optimise
 #' @export
