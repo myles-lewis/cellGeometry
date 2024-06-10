@@ -40,7 +40,7 @@ cellMarkers <- function(scdata,
                         noisefilter = 1.5,
                         noisefraction = 0.25) {
   .call <- match.call()
-  scdata <- as.matrix(scdata)
+  if (!inherits(scdata, c("dgCMatrix", "matrix"))) scdata <- as.matrix(scdata)
   if (!is.factor(subclass)) subclass <- factor(subclass)
   
   if (!is.null(bulkdata)) {
@@ -106,12 +106,15 @@ cellMarkers <- function(scdata,
 
 
 scmean <- function(scdata, celltype) {
-  scdata <- as.matrix(scdata)
+  cat("Calculating mean gene expression\n")
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
-  celltype <- celltype[ok]
-  logcounts <- as.matrix(log2(scdata[, ok] +1))
-  genemeans <- vapply(levels(celltype), function(i) rowMeans(logcounts[, celltype==i]),
-                      numeric(nrow(logcounts)))
+  genemeans <- vapply(levels(celltype), function(i) {
+    cat(".")
+    x <- as.matrix(scdata[, which(celltype == i & ok)])
+    x <- log2(x +1)
+    rowMeans(x)
+  }, numeric(nrow(scdata)))
+  cat("\n")
   genemeans
 }
