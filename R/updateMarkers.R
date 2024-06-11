@@ -41,9 +41,11 @@ updateMarkers <- function(object = NULL,
   if (is.null(object) && is.null(genemeans))
     stop("Either a cellMarkers object or genemeans must be supplied")
   
-  if (verbose) message("Subclass analysis")
   if (is.null(genemeans)) genemeans <- object$genemeans
+  if (any(duplicated(rownames(genemeans))))
+    stop("Duplicated rownames in genemeans")
   
+  if (verbose) message("Subclass analysis")
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
@@ -54,6 +56,8 @@ updateMarkers <- function(object = NULL,
   if (is.null(groupmeans)) groupmeans <- object$groupmeans
   
   if (!is.null(groupmeans)) {
+    if (any(duplicated(rownames(groupmeans))))
+      stop("Duplicated rownames in groupmeans")
     if (verbose) message("Basic cell group analysis")
     
     highexp <- rowMaxs(groupmeans) > expfilter
