@@ -14,6 +14,8 @@
 #' @param rank Either "max" or "angle" controlling whether genes (rows) are
 #'   ordered in the heatmap by max expression (the default) or lowest angle
 #'   (a measure of specificity of the gene as a cell marker).
+#' @param scale Logical whether to scale genes to equalise the maximum mean
+#'   expression between genes.
 #' @param col Vector of colours passed to [ComplexHeatmap::Heatmap()].
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns A 'Heatmap' class object.
@@ -26,6 +28,7 @@ signature_heatmap <- function(x,
                               type = c("subclass", "group"),
                               use_filter = NULL,
                               rank = c("max", "angle"),
+                              scale = FALSE,
                               col = rev(hcl.colors(10, "Greens3")),
                               ...) {
   rank <- match.arg(rank)
@@ -50,13 +53,15 @@ signature_heatmap <- function(x,
     gene_signature <- x
   }
   whmax <- max.col(gene_signature)
+  rmax <- rowMaxs(gene_signature)
   if (rank == "max") {
-    rmax <- rowMaxs(gene_signature)
     ord <- order(whmax, -rmax)
   } else {
     ord <- seq_len(nrow(gene_signature))
   }
   rs <- cell_table[whmax]
+  if (scale) gene_signature <- gene_signature / rmax
+  
   Heatmap(gene_signature,
           cluster_rows = FALSE,
           row_order = ord, row_split = rs,
