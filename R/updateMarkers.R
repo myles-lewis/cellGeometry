@@ -1,0 +1,88 @@
+
+#' Update cellMarkers object
+#'
+#' Updates a cellMarkers gene signature object without having to rerun
+#' calculation of gene means which can be slow.
+#'
+#' @param object A cellMarkers class object. Either `object` or `genemeans` must
+#'   be specified.
+#' @param genemeans A matrix of mean gene expression with genes in rows and cell
+#'   subclasses in columns.
+#' @param groupmeans Optional matrix of mean gene expression for overarching
+#'   main cell groups (genes in rows, cell groups in columns).
+#' @param nsubclass Number of genes to select for each single cell subclass.
+#' @param ngroup Number of genes to select for each cell group.
+#' @param expfilter Genes whose maximum mean expression on log2 scale per cell
+#'   type are below this value are removed.
+#' @param noisefilter Numeric value below which mean log2 gene expression is
+#'   reduced to 0.
+#' @param noisefraction Numeric value. Maximum mean log2 gene expression across
+#'   cell types is calculated and values in celltypes below this fraction are
+#'   set to 0.
+#' @param verbose Logical whether to show messages.
+#' @returns Returns list object containing `best_angle`, a list of genes ranked
+#' by lowest angle and highest maximum expression in a cell type; `genemeans`,
+#' matrix of mean log2+1 gene expression with genes in rows and cell types in
+#' columns; `genemeans_filters`, matrix of gene expression following noise
+#' reduction.
+#' @export
+
+updateMarkers <- function(object = NULL,
+                          genemeans = NULL,
+                          groupmeans = NULL,
+                          nsubclass = 5,
+                          ngroup = 5,
+                          expfilter = 1,
+                          noisefilter = 1.5,
+                          noisefraction = 0.25,
+                          verbose = TRUE) {
+  .call <- match.call()
+  
+  if (is.null(object) && is.null(genemeans))
+    stop("Either a cellMarkers object or genemeans must be supplied")
+  
+  if (verbose) message("Subclass analysis")
+  if (is.null(genemeans)) genemeans <- object$genemeans
+  
+  highexp <- rowMaxs(genemeans) > expfilter
+  genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
+                                    noisefraction)
+  best_angle <- gene_angle(genemeans_filtered)
+  geneset <- lapply(best_angle, function(i) rownames(i)[1:nsubclass])
+  geneset <- unique(unlist(geneset))
+  
+  if (is.null(groupmeans)) groupmeans <- object$groupmeans
+  
+  if (!is.null(groupmeans)) {
+    if (verbose) message("Basic cell group analysis")
+    
+    highexp <- rowMaxs(groupmeans) > expfilter
+    groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
+                                       noisefraction)
+    group_angle <- gene_angle(groupmeans_filtered)
+    group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
+    group_geneset <- unique(unlist(group_geneset))
+    cell_table <- object$cell_table
+  } else {
+    group_geneset <- group_angle <- groupmeans <- groupmeans_filtered <- NULL
+    cell_table <- NULL
+  }
+  
+  # determine spillover
+  gene_sig <- genemeans_filtered[geneset, ]
+  m_itself <- dotprod(gene_sig, gene_sig, equalWeight = FALSE)
+  
+  out <- list(call = .call,
+              best_angle = best_angle,
+              group_angle = group_angle,
+              geneset = geneset,
+              group_geneset = group_geneset,
+              genemeans = genemeans,
+              genemeans_filtered = genemeans_filtered,
+              groupmeans = groupmeans,
+              groupmeans_filtered = groupmeans_filtered,
+              cell_table = cell_table,
+              spillover = m_itself)
+  class(out) <- "cellMarkers"
+  out
+}
