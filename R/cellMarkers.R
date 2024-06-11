@@ -122,7 +122,7 @@ scmean <- function(x, celltype, big = NULL) {
   # large matrix
   s <- sliceIndex(dimx[1])
   genemeans <- vapply(levels(celltype), function(i) {
-    cat(i, " ")
+    message(i, "  ", appendLF = FALSE)
     start <- Sys.time()
     c_index <- which(celltype == i & ok)
     out <- lapply(s, function(j) {
@@ -151,8 +151,8 @@ sliceIndex <- function(nx, sliceSize = 2000) {
 timer <- function(start, msg = NULL) {
   end <- Sys.time()
   if (is.null(msg)) {
-    cat(paste0("(", format(end - start, digits = 3), ")\n"))
+    message(paste0("(", format(end - start, digits = 3), ")"))
   } else {
-    cat(msg, format(end - start, digits = 3), "\n")
+    message(msg, format(end - start, digits = 3))
   }
 }
