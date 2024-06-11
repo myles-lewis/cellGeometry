@@ -13,7 +13,8 @@ cellMarkers(
   ngroup = 5,
   expfilter = 1,
   noisefilter = 1.5,
-  noisefraction = 0.25
+  noisefraction = 0.25,
+  big = NULL
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ reduced to 0.}
 \item{noisefraction}{Numeric value. Maximum mean log2 gene expression across
 cell types is calculated and values in celltypes below this fraction are
 set to 0.}
+
+\item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
 }
 \value{
 Returns list object containing \code{best_angle}, a list of genes ranked by lowest

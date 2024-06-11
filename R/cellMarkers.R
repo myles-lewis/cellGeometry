@@ -22,6 +22,7 @@
 #' @param noisefraction Numeric value. Maximum mean log2 gene expression across
 #'   cell types is calculated and values in celltypes below this fraction are
 #'   set to 0.
+#' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @returns 
 #' Returns list object containing `best_angle`, a list of genes ranked by lowest
 #' angle and highest maximum expression in a cell type; `genemeans`, matrix of
@@ -38,7 +39,8 @@ cellMarkers <- function(scdata,
                         ngroup = 5,
                         expfilter = 1,
                         noisefilter = 1.5,
-                        noisefraction = 0.25) {
+                        noisefraction = 0.25,
+                        big = NULL) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix"))) scdata <- as.matrix(scdata)
   if (!is.factor(subclass)) subclass <- factor(subclass)
@@ -55,7 +57,7 @@ cellMarkers <- function(scdata,
   message(nrow(scdata), " genes, ", ncol(scdata), " cells, ",
           nsub, " cell subclasses")
   message("Subclass analysis")
-  genemeans <- scmean(scdata, subclass)
+  genemeans <- scmean(scdata, subclass, big)
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
@@ -71,7 +73,7 @@ cellMarkers <- function(scdata,
     tab <- tab > 0L
     if (any(rowSums(tab) != 1)) stop("subclass is not nested in cellgroup")
     
-    groupmeans <- scmean(scdata, cellgroup)
+    groupmeans <- scmean(scdata, cellgroup, big)
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)
@@ -105,16 +107,52 @@ cellMarkers <- function(scdata,
 }
 
 
-scmean <- function(scdata, celltype) {
-  cat("Calculating mean gene expression\n")
+scmean <- function(x, celltype, big = NULL) {
+  start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
+  dimx <- dim(x)
+  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) < 2^31 || (!is.null(big) && !big)) {
+    # small matrix
+    genemeans <- vapply(levels(celltype), function(i) {
+      logmean(x[, which(celltype==i & ok)])
+    }, numeric(dimx[1]))
+    return(genemeans)
+  }
+  # large matrix
+  s <- sliceIndex(dimx[1])
   genemeans <- vapply(levels(celltype), function(i) {
-    cat(".")
-    x <- as.matrix(scdata[, which(celltype == i & ok)])
-    x <- log2(x +1)
-    rowMeans(x)
-  }, numeric(nrow(scdata)))
-  cat("\n")
+    cat(i, " ")
+    start <- Sys.time()
+    c_index <- which(celltype == i & ok)
+    out <- lapply(s, function(j) {
+      logmean(as.matrix(x[j, c_index])) |> suppressWarnings()
+    })
+    timer(start)
+    unlist(out)
+  }, numeric(dimx[1]))
+  
+  timer(start0, "Duration")
   genemeans
+}
+
+logmean <- function(x) rowMeans(log2(x +1))
+
+sliceIndex <- function(nx, sliceSize = 2000) {
+  if (is.null(sliceSize)) sliceSize <- nx
+  s <- ceiling(nx / sliceSize)
+  excess <- nx %% sliceSize
+  lapply(seq_len(s), function(i) {
+    if (i==s && excess != 0) return(seq_len(excess) + sliceSize * (i-1L))
+    seq_len(sliceSize) + sliceSize * (i-1L)
+  })
+}
+
+timer <- function(start, msg = NULL) {
+  end <- Sys.time()
+  if (is.null(msg)) {
+    cat(paste0("(", format(end - start, digits = 3), ")\n"))
+  } else {
+    cat(msg, format(end - start, digits = 3), "\n")
+  }
 }
