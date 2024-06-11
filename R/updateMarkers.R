@@ -52,7 +52,8 @@ updateMarkers <- function(object = NULL,
     stop("Duplicated rownames in genemeans")
   
   if (verbose) message("Subclass analysis")
-  highexp <- rowMaxs(genemeans) > expfilter
+  highexp <- rowMaxs(genemeans) > expfilter |
+    rownames(genemeans) %in% c(add_genes, add_groupgenes)
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
