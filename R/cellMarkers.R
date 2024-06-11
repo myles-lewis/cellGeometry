@@ -75,9 +75,6 @@ cellMarkers <- function(scdata,
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
     # test nesting
     tab <- table(subclass, cellgroup)
-    tab <- tab > 0L
-    if (any(rowSums(tab) != 1)) stop("subclass is not nested in cellgroup")
-    
     groupmeans <- scmean(scdata, cellgroup, big, verbose)
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
@@ -85,7 +82,7 @@ cellMarkers <- function(scdata,
     group_angle <- gene_angle(groupmeans_filtered)
     group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
     group_geneset <- unique(unlist(group_geneset))
-    cell_table <- apply(tab, 1, function(i) names(which(i)))
+    cell_table <- apply(tab, 1, function(i) names(which.max(i)))
     cell_table <- factor(cell_table, levels = unique(cell_table))
   } else {
     group_geneset <- group_angle <- groupmeans <- groupmeans_filtered <- NULL
