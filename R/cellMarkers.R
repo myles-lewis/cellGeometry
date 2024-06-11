@@ -52,17 +52,17 @@ cellMarkers <- function(scdata,
   if (!is.null(bulkdata)) {
     ok <- rownames(scdata) %in% rownames(bulkdata)
     if (any(!ok) & (is.null(big) || !big)) {
-      message("Removing ", sum(!ok), " genes not found in bulkdata")
+      if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
       scdata <- scdata[ok, ]
       dimx <- dim(scdata)
     }
   }
   u <- unique(subclass)
   nsub <- length(u[!is.na(u)])
-  message(dimx[1], " genes, ", dimx[2], " cells, ",
-          nsub, " cell subclasses")
-  message("Subclass analysis")
-  genemeans <- scmean(scdata, subclass, big)
+  if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
+                       nsub, " cell subclasses")
+  if (verbose) message("Subclass analysis")
+  genemeans <- scmean(scdata, subclass, big, verbose)
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
@@ -71,14 +71,14 @@ cellMarkers <- function(scdata,
   geneset <- unique(unlist(geneset))
   
   if (!is.null(cellgroup)) {
-    message("Basic cell group analysis")
+    if (verbose) message("Basic cell group analysis")
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
     # test nesting
     tab <- table(subclass, cellgroup)
     tab <- tab > 0L
     if (any(rowSums(tab) != 1)) stop("subclass is not nested in cellgroup")
     
-    groupmeans <- scmean(scdata, cellgroup, big)
+    groupmeans <- scmean(scdata, cellgroup, big, verbose)
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)
@@ -112,7 +112,7 @@ cellMarkers <- function(scdata,
 }
 
 
-scmean <- function(x, celltype, big = NULL) {
+scmean <- function(x, celltype, big = NULL, verbose = TRUE) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
@@ -128,17 +128,17 @@ scmean <- function(x, celltype, big = NULL) {
   # large matrix
   s <- sliceIndex(dimx[1])
   genemeans <- vapply(levels(celltype), function(i) {
-    cat(i, " ")
+    if (verbose) cat(i, " ")
     start <- Sys.time()
     c_index <- which(celltype == i & ok)
     out <- lapply(s, function(j) {
       logmean(as.matrix(x[j, c_index])) |> suppressWarnings()
     })
-    timer(start)
+    if (verbose) timer(start)
     unlist(out)
   }, numeric(dimx[1]))
   
-  timer(start0, "Duration")
+  if (verbose) timer(start0, "Duration")
   genemeans
 }
 

@@ -14,7 +14,8 @@ cellMarkers(
   expfilter = 1,
   noisefilter = 1.5,
   noisefraction = 0.25,
-  big = NULL
+  big = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ cell types is calculated and values in celltypes below this fraction are
 set to 0.}
 
 \item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
+
+\item{verbose}{Logical whether to show messages.}
 }
 \value{
 Returns list object containing \code{best_angle}, a list of genes ranked by lowest
