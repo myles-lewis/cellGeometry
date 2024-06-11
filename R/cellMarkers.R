@@ -23,6 +23,7 @@
 #'   cell types is calculated and values in celltypes below this fraction are
 #'   set to 0.
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.
+#' @param verbose Logical whether to show messages.
 #' @returns 
 #' Returns list object containing `best_angle`, a list of genes ranked by lowest
 #' angle and highest maximum expression in a cell type; `genemeans`, matrix of
@@ -40,21 +41,25 @@ cellMarkers <- function(scdata,
                         expfilter = 1,
                         noisefilter = 1.5,
                         noisefraction = 0.25,
-                        big = NULL) {
+                        big = NULL,
+                        verbose = TRUE) {
   .call <- match.call()
-  if (!inherits(scdata, c("dgCMatrix", "matrix"))) scdata <- as.matrix(scdata)
+  if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat"))) scdata <- as.matrix(scdata)
+  dimx <- dim(scdata)
+  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (!is.factor(subclass)) subclass <- factor(subclass)
   
   if (!is.null(bulkdata)) {
     ok <- rownames(scdata) %in% rownames(bulkdata)
-    if (any(!ok)) {
+    if (any(!ok) & (is.null(big) || !big)) {
       message("Removing ", sum(!ok), " genes not found in bulkdata")
       scdata <- scdata[ok, ]
+      dimx <- dim(scdata)
     }
   }
   u <- unique(subclass)
   nsub <- length(u[!is.na(u)])
-  message(nrow(scdata), " genes, ", ncol(scdata), " cells, ",
+  message(dimx[1], " genes, ", dimx[2], " cells, ",
           nsub, " cell subclasses")
   message("Subclass analysis")
   genemeans <- scmean(scdata, subclass, big)
@@ -112,7 +117,8 @@ scmean <- function(x, celltype, big = NULL) {
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
   dimx <- dim(x)
-  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) < 2^31 || (!is.null(big) && !big)) {
+  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
+  if (is.null(big) || !big) {
     # small matrix
     genemeans <- vapply(levels(celltype), function(i) {
       logmean(x[, which(celltype==i & ok)])
@@ -122,7 +128,7 @@ scmean <- function(x, celltype, big = NULL) {
   # large matrix
   s <- sliceIndex(dimx[1])
   genemeans <- vapply(levels(celltype), function(i) {
-    message(i, "  ", appendLF = FALSE)
+    cat(i, " ")
     start <- Sys.time()
     c_index <- which(celltype == i & ok)
     out <- lapply(s, function(j) {
@@ -151,8 +157,8 @@ sliceIndex <- function(nx, sliceSize = 2000) {
 timer <- function(start, msg = NULL) {
   end <- Sys.time()
   if (is.null(msg)) {
-    message(paste0("(", format(end - start, digits = 3), ")"))
+    cat(paste0("(", format(end - start, digits = 3), ")\n"))
   } else {
-    message(msg, format(end - start, digits = 3))
+    cat(msg, format(end - start, digits = 3), "\n")
   }
 }
