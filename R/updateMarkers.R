@@ -10,6 +10,10 @@
 #'   subclasses in columns.
 #' @param groupmeans Optional matrix of mean gene expression for overarching
 #'   main cell groups (genes in rows, cell groups in columns).
+#' @param add_genes Character vector of gene markers to add manually to the cell
+#'   subclass gene signature.
+#' @param add_groupgenes Character vector of gene markers to add manually to the
+#'   cell group gene signature.
 #' @param nsubclass Number of genes to select for each single cell subclass.
 #' @param ngroup Number of genes to select for each cell group.
 #' @param expfilter Genes whose maximum mean expression on log2 scale per cell
@@ -30,6 +34,8 @@
 updateMarkers <- function(object = NULL,
                           genemeans = NULL,
                           groupmeans = NULL,
+                          add_genes = NULL,
+                          add_groupgenes = NULL,
                           nsubclass = 5,
                           ngroup = 5,
                           expfilter = 1,
@@ -51,7 +57,7 @@ updateMarkers <- function(object = NULL,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
   geneset <- lapply(best_angle, function(i) rownames(i)[1:nsubclass])
-  geneset <- unique(unlist(geneset))
+  geneset <- unique(c(unlist(geneset), add_genes))
   
   if (is.null(groupmeans)) groupmeans <- object$groupmeans
   
@@ -65,7 +71,7 @@ updateMarkers <- function(object = NULL,
                                        noisefraction)
     group_angle <- gene_angle(groupmeans_filtered)
     group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
-    group_geneset <- unique(unlist(group_geneset))
+    group_geneset <- unique(c(unlist(group_geneset), add_groupgenes))
     cell_table <- object$cell_table
   } else {
     group_geneset <- group_angle <- groupmeans <- groupmeans_filtered <- NULL

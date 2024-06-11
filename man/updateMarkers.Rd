@@ -8,6 +8,8 @@ updateMarkers(
   object = NULL,
   genemeans = NULL,
   groupmeans = NULL,
+  add_genes = NULL,
+  add_groupgenes = NULL,
   nsubclass = 5,
   ngroup = 5,
   expfilter = 1,
@@ -25,6 +27,12 @@ subclasses in columns.}
 
 \item{groupmeans}{Optional matrix of mean gene expression for overarching
 main cell groups (genes in rows, cell groups in columns).}
+
+\item{add_genes}{Character vector of gene markers to add manually to the cell
+subclass gene signature.}
+
+\item{add_groupgenes}{Character vector of gene markers to add manually to the
+cell group gene signature.}
 
 \item{nsubclass}{Number of genes to select for each single cell subclass.}
 
