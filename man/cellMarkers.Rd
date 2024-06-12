@@ -14,6 +14,7 @@ cellMarkers(
   expfilter = 1,
   noisefilter = 1.5,
   noisefraction = 0.25,
+  min_cells = 10,
   big = NULL,
   verbose = TRUE
 )
@@ -45,6 +46,9 @@ reduced to 0.}
 \item{noisefraction}{Numeric value. Maximum mean log2 gene expression across
 cell types is calculated and values in celltypes below this fraction are
 set to 0.}
+
+\item{min_cells}{Numeric value specifying minimum number of cells in a
+subclass category. Subclass categories with fewer cells will be ignored.}
 
 \item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
 

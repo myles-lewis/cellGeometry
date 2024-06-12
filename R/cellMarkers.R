@@ -22,6 +22,8 @@
 #' @param noisefraction Numeric value. Maximum mean log2 gene expression across
 #'   cell types is calculated and values in celltypes below this fraction are
 #'   set to 0.
+#' @param min_cells Numeric value specifying minimum number of cells in a
+#'   subclass category. Subclass categories with fewer cells will be ignored.
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @param verbose Logical whether to show messages.
 #' @returns 
@@ -41,6 +43,7 @@ cellMarkers <- function(scdata,
                         expfilter = 1,
                         noisefilter = 1.5,
                         noisefraction = 0.25,
+                        min_cells = 10,
                         big = NULL,
                         verbose = TRUE) {
   .call <- match.call()
@@ -48,6 +51,14 @@ cellMarkers <- function(scdata,
   dimx <- dim(scdata)
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (!is.factor(subclass)) subclass <- factor(subclass)
+  if (min_cells > 0) {
+    tab <- table(subclass)
+    if (any(tab) < min_cells) {
+      rem <- names(which(tab < min_cells))
+      subclass[subclass %in% rem] <- NA
+      subclass <- factor(subclass)
+    }
+  }
   
   if (!is.null(bulkdata)) {
     ok <- rownames(scdata) %in% rownames(bulkdata)
