@@ -23,6 +23,8 @@ gene2symbol <- function(x, ensdb) {
     rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered), ensdb)
     rownames(x$groupmeans) <- convertsymbol(rownames(x$groupmeans), ensdb)
     rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered), ensdb)
+    x$geneset <- convertsymbol(x$geneset, ensdb)
+    x$group_geneset<- convertsymbol(x$group_geneset, ensdb)
     return(x)
   }
   convertsymbol(x, ensdb)
