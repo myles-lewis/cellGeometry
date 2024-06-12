@@ -9,7 +9,7 @@ signature_heatmap(
   type = c("subclass", "group"),
   use_filter = NULL,
   rank = c("max", "angle"),
-  scale = FALSE,
+  scale = c("none", "max", "sphere"),
   col = rev(hcl.colors(10, "Greens3")),
   ...
 )
@@ -29,8 +29,9 @@ subclass or cell group signature from a 'cellMarkers' or 'deconv' object.}
 ordered in the heatmap by max expression (the default) or lowest angle
 (a measure of specificity of the gene as a cell marker).}
 
-\item{scale}{Logical whether to scale genes to equalise the maximum mean
-expression between genes.}
+\item{scale}{Character value controlling scaling of genes: "none" for no scaling, "max" to equalise the maximum mean
+expression between genes, "sphere" to scale genes to the unit hypersphere
+where cell subclasses or groups are dimensions.}
 
 \item{col}{Vector of colours passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 
