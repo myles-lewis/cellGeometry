@@ -19,14 +19,13 @@
 
 gene2symbol <- function(x, ensdb) {
   if (inherits(x, "cellMarker")) {
-    rownames(x$genemeans) <- convertsymbol(rownames(x$genemeans))
-    rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered))
-    rownames(x$groupmeans) <- convertsymbol(rownames(x$groupmeans))
-    rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered))
+    rownames(x$genemeans) <- convertsymbol(rownames(x$genemeans), ensdb)
+    rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered), ensdb)
+    rownames(x$groupmeans) <- convertsymbol(rownames(x$groupmeans), ensdb)
+    rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered), ensdb)
     return(x)
-  } else {
-    convertsymbol(x)
   }
+  convertsymbol(x, ensdb)
 }
 
 

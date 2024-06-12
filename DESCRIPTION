@@ -6,7 +6,7 @@ Authors@R:
     role = c("aut", "cre"),
     email = "myles.lewis@qmul.ac.uk",
     comment = c(ORCID = "0000-0001-9365-5345")))
-Description: Deconvolution of bulk RNA-Sequencing data into proportions of cells based on a reference single-cell RNA-Sequencing dataset using high-dimensional geometric methodology. Optimal gene markers are identified based on the minimal angle between the gene and the relevant cell type as a dimension calculated by arc cosine of mean log transformed gene expression scaled to a unit hypersphere with cell types as dimensions. Deconvolution is performed by dot product vector projection in space with a compensation matrix.
+Description: Deconvolution of bulk RNA-Sequencing data into proportions of cells based on a reference single-cell RNA-Sequencing dataset using high-dimensional geometric methodology. 
 License: GPL (>= 3)
 Encoding: UTF-8
 biocViews:

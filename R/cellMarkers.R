@@ -114,7 +114,7 @@ scmean <- function(x, celltype, big = NULL, verbose = TRUE) {
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
   dimx <- dim(x)
-  if (dimx[1] != length(celltype)) stop("Incompatible dimensions")
+  if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (is.null(big) || !big) {
     # small matrix
