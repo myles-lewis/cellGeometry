@@ -28,8 +28,10 @@ gene2symbol <- function(x, ensdb, dups = c("omit", "pass")) {
     old_rn <- rownames(x$genemeans)
     rn <- rownames(x$genemeans) <- convertsymbol(old_rn, ensdb, dups)
     rownames(x$groupmeans) <- rn
-    rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered), ensdb, dups)
-    rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered), ensdb, dups)
+    rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered),
+                                                    ensdb, dups)
+    rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered),
+                                                     ensdb, dups)
     names(rn) <- old_rn
     x$geneset <- rn[x$geneset]
     x$group_geneset<- rn[x$group_geneset]
