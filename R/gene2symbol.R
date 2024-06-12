@@ -18,7 +18,7 @@
 #' @export
 
 gene2symbol <- function(x, ensdb) {
-  if (inherits(x, "cellMarker")) {
+  if (inherits(x, "cellMarkers")) {
     rownames(x$genemeans) <- convertsymbol(rownames(x$genemeans), ensdb)
     rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered), ensdb)
     rownames(x$groupmeans) <- convertsymbol(rownames(x$groupmeans), ensdb)
