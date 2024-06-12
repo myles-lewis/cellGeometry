@@ -11,20 +11,28 @@
 #'   class object.
 #' @param ensdb An ensembl database object loaded via the `AnnotationHub`
 #'   bioconductor package.
+#' @param dups Character vector specifying action for duplicated gene symbols.
+#'   "omit" means that duplicated gene symbols are not replaced, but left as
+#'   ensembl gene ids. "pass" means that all gene ids are replaced where
+#'   possible even if that leads to duplicates. Duplicates can cause problems
+#'   with rownames and [updateMarkers()] in particular.
 #' @returns If `x` is a vector, a vector of symbols is returned. If no symbol is
 #'   no available the ensembl id is left untouched. If `x` is a 'cellMarkers'
 #'   class object, a 'cellMarkers' object is returned with rownames in the
 #'   results elements converted to gene symbols.
 #' @export
 
-gene2symbol <- function(x, ensdb) {
+gene2symbol <- function(x, ensdb, dups = c("omit", "pass")) {
+  dups <- match.arg(dups)
   if (inherits(x, "cellMarkers")) {
-    rownames(x$genemeans) <- convertsymbol(rownames(x$genemeans), ensdb)
-    rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered), ensdb)
-    rownames(x$groupmeans) <- convertsymbol(rownames(x$groupmeans), ensdb)
-    rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered), ensdb)
-    x$geneset <- convertsymbol(x$geneset, ensdb)
-    x$group_geneset<- convertsymbol(x$group_geneset, ensdb)
+    old_rn <- rownames(x$genemeans)
+    rn <- rownames(x$genemeans) <- convertsymbol(old_rn, ensdb, dups)
+    rownames(x$groupmeans) <- rn
+    rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered), ensdb, dups)
+    rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered), ensdb, dups)
+    names(rn) <- old_rn
+    x$geneset <- rn[x$geneset]
+    x$group_geneset<- rn[x$group_geneset]
     return(x)
   }
   convertsymbol(x, ensdb)
@@ -33,11 +41,16 @@ gene2symbol <- function(x, ensdb) {
 
 #' @importFrom ensembldb select
 #' 
-convertsymbol <- function(x, ensdb) {
+convertsymbol <- function(x, ensdb, dups = "omit") {
   geneid <- ensembldb::select(ensdb, keys = x, keytype = "GENEID",
                               columns = c("GENEID", "SYMBOL"))
-  ok <- geneid$SYMBOL != "" & !is.na(geneid$SYMBOL)
-  x[ok] <- geneid$SYMBOL[ok]
-  attr(x, "ok") <- ok
+  ok <- which(geneid$SYMBOL != "" & !is.na(geneid$SYMBOL))
+  newx <- geneid$SYMBOL[ok]
+  if (dups == "omit") {
+    dups <- duplicated(newx)
+    x[ok[!dups]] <- newx[!dups]
+  } else {
+    x[ok] <- newx
+  }
   x
 }
