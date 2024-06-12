@@ -19,6 +19,6 @@ expression per celltype/tissue.
 \description{
 Core function which takes a matrix of mean gene expression (assumed to be
 log2 transformed to be more Gaussian). Mean gene expression per gene is
-scaled to a unit hypersphere assuming a vector with dimensions representing
-each cell subtype/tissue.
+scaled to a unit hypersphere assuming each gene represents a vector in space
+with dimensions representing each cell subclass/group.
 }
