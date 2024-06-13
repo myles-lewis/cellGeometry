@@ -20,11 +20,12 @@
 #'   type are below this value are removed and not considered for the signature.
 #' @param noisefilter Sets an upper bound for `noisefraction` cut-off below
 #'   which gene expression is set to 0. Essentially gene expression above this
-#'   level must be retained in the signature.
+#'   level must be retained in the signature. Setting this higher can allow more
+#'   suppression via noisefraction and can favour more highly expressed genes.
 #' @param noisefraction Numeric value. Maximum mean log2 gene expression across
 #'   cell types is calculated and values in celltypes below this fraction are
 #'   set to 0. Set in conjunction with `noisefilter.` Note: if this is set too
-#'   high, it can have a deleterious effect on deconvolution.
+#'   high (too close to 1), it can have a deleterious effect on deconvolution.
 #' @param verbose Logical whether to show messages.
 #' @returns Returns list object containing `best_angle`, a list of genes ranked
 #' by lowest angle and highest maximum expression in a cell type; `genemeans`,
@@ -41,7 +42,7 @@ updateMarkers <- function(object = NULL,
                           nsubclass = 5,
                           ngroup = 5,
                           expfilter = 1,
-                          noisefilter = 1,
+                          noisefilter = 1.5,
                           noisefraction = 0.25,
                           verbose = TRUE) {
   .call <- match.call()

@@ -13,7 +13,7 @@ updateMarkers(
   nsubclass = 5,
   ngroup = 5,
   expfilter = 1,
-  noisefilter = 1,
+  noisefilter = 1.5,
   noisefraction = 0.25,
   verbose = TRUE
 )
@@ -43,12 +43,13 @@ type are below this value are removed and not considered for the signature.}
 
 \item{noisefilter}{Sets an upper bound for \code{noisefraction} cut-off below
 which gene expression is set to 0. Essentially gene expression above this
-level must be retained in the signature.}
+level must be retained in the signature. Setting this higher can allow more
+suppression via noisefraction and can favour more highly expressed genes.}
 
 \item{noisefraction}{Numeric value. Maximum mean log2 gene expression across
 cell types is calculated and values in celltypes below this fraction are
 set to 0. Set in conjunction with \code{noisefilter.} Note: if this is set too
-high, it can have a deleterious effect on deconvolution.}
+high (too close to 1), it can have a deleterious effect on deconvolution.}
 
 \item{verbose}{Logical whether to show messages.}
 }
