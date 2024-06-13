@@ -4,7 +4,7 @@
 \alias{gene2symbol}
 \title{Converts ensembl gene ids to symbols}
 \usage{
-gene2symbol(x, ensdb)
+gene2symbol(x, ensdb, dups = c("omit", "pass"))
 }
 \arguments{
 \item{x}{Either a vector of ensembl gene ids to convert or a 'cellMarkers'
@@ -12,12 +12,19 @@ class object.}
 
 \item{ensdb}{An ensembl database object loaded via the \code{AnnotationHub}
 bioconductor package.}
+
+\item{dups}{Character vector specifying action for duplicated gene symbols.
+"omit" means that duplicated gene symbols are not replaced, but left as
+ensembl gene ids. "pass" means that all gene ids are replaced where
+possible even if that leads to duplicates. Duplicates can cause problems
+with rownames and \code{\link[=updateMarkers]{updateMarkers()}} in particular.}
 }
 \value{
 If \code{x} is a vector, a vector of symbols is returned. If no symbol is
 no available the ensembl id is left untouched. If \code{x} is a 'cellMarkers'
 class object, a 'cellMarkers' object is returned with rownames in the
-results elements converted to gene symbols.
+results elements and genesets converted to gene symbols, and an extra
+element 'symbol' containing a named vector of converted genes.
 }
 \description{
 Uses a loaded ensembl database to convert ensembl gene ids to symbol. If a

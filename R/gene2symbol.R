@@ -19,7 +19,8 @@
 #' @returns If `x` is a vector, a vector of symbols is returned. If no symbol is
 #'   no available the ensembl id is left untouched. If `x` is a 'cellMarkers'
 #'   class object, a 'cellMarkers' object is returned with rownames in the
-#'   results elements converted to gene symbols.
+#'   results elements and genesets converted to gene symbols, and an extra
+#'   element 'symbol' containing a named vector of converted genes.
 #' @export
 
 gene2symbol <- function(x, ensdb, dups = c("omit", "pass")) {
@@ -35,6 +36,7 @@ gene2symbol <- function(x, ensdb, dups = c("omit", "pass")) {
     names(rn) <- old_rn
     x$geneset <- rn[x$geneset]
     x$group_geneset<- rn[x$group_geneset]
+    x$symbol <- rn
     return(x)
   }
   convertsymbol(x, ensdb)
