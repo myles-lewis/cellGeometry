@@ -92,8 +92,17 @@ cellMarkers <- function(scdata,
   geneset <- unique(unlist(geneset))
   
   if (!is.null(cellgroup)) {
-    if (verbose) message("Basic cell group analysis")
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
+    if (min_cells > 0) {
+      tab <- table(cellgroup)
+      if (any(tab) < min_cells) {
+        rem <- names(which(tab < min_cells))
+        cellgroup[cellgroup %in% rem] <- NA
+        cellgroup <- factor(cellgroup)
+      }
+    }
+    if (verbose) message("Basic cell group analysis")
+    
     # test nesting
     tab <- table(subclass, cellgroup)
     groupmeans <- scmean(scdata, cellgroup, big, verbose, sliceSize, cores)
