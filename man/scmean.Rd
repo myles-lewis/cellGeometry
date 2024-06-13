@@ -4,7 +4,7 @@
 \alias{scmean}
 \title{Single-cell mean log gene expression across cell types}
 \usage{
-scmean(x, celltype, big = NULL, verbose = TRUE, sliceSize = 2000L, cores = 1L)
+scmean(x, celltype, big = NULL, verbose = TRUE, sliceSize = 5000L, cores = 1L)
 }
 \arguments{
 \item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
@@ -42,4 +42,8 @@ We find a significant speed up with \code{cores = 2}, which is almost twice as
 fast as single core, but not much to be gained beyond this possibly due to
 limits on memory traffic. The main speed up is in assigning the decompression
 of a block from the sparse matrix to more than 1 core.
+
+It is recommended that the number of elements manipulated in each slice (i.e.
+\code{sliceSize} x number of cells in a given subclass/group) is kept below the
+long vector limit of 2^31 (around 2.1e9).
 }

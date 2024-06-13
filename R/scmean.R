@@ -26,15 +26,21 @@
 #' limits on memory traffic. The main speed up is in assigning the decompression
 #' of a block from the sparse matrix to more than 1 core.
 #' 
+#' It is recommended that the number of elements manipulated in each slice (i.e.
+#' `sliceSize` x number of cells in a given subclass/group) is kept below the
+#' long vector limit of 2^31 (around 2.1e9).
+#' 
 #' @returns a matrix of mean log2 gene expression across cell types with genes
 #'   in rows and cell types in columns.
 #' @importFrom parallel mclapply
 #' @export
 
-scmean <- function(x, celltype, big = NULL, verbose = TRUE, sliceSize = 2000L,
+scmean <- function(x, celltype, big = NULL, verbose = TRUE, sliceSize = 10000L,
                    cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
+  if (any(table(celltype) * as.numeric(sliceSize) > 2^31))
+    message("Warning: >2^31 matrix elements anticipated. `sliceSize` may be too large")
   ok <- !is.na(celltype)
   dimx <- dim(x)
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
@@ -42,7 +48,7 @@ scmean <- function(x, celltype, big = NULL, verbose = TRUE, sliceSize = 2000L,
   if (is.null(big) || !big) {
     # small matrix
     genemeans <- vapply(levels(celltype), function(i) {
-      logmean(x[, which(celltype==i & ok)])
+      logmean(as.matrix(x[, which(celltype==i & ok)])) |> suppressWarnings()
     }, numeric(dimx[1]))
     return(genemeans)
   }
@@ -66,6 +72,7 @@ scmean <- function(x, celltype, big = NULL, verbose = TRUE, sliceSize = 2000L,
 logmean <- function(x) rowMeans(log2(x +1))
 
 sliceIndex <- function(nx, sliceSize = 2000) {
+  if (is.null(sliceSize)) sliceSize <- nx
   sliceSize <- as.integer(sliceSize)
   s <- ceiling(nx / sliceSize)
   excess <- nx %% sliceSize
