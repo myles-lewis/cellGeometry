@@ -21,7 +21,8 @@
 #'   reduced to 0.
 #' @param noisefraction Numeric value. Maximum mean log2 gene expression across
 #'   cell types is calculated and values in celltypes below this fraction are
-#'   set to 0.
+#'   set to 0. Note if this is set too high, it can have a deleterious effect on
+#'   deconvolution. We recommend this is not altered.
 #' @param min_cells Numeric value specifying minimum number of cells in a
 #'   subclass category. Subclass categories with fewer cells will be ignored.
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.

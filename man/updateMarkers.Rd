@@ -42,7 +42,8 @@ cell group gene signature.}
 type are below this value are removed.}
 
 \item{noisefilter}{Numeric value below which mean log2 gene expression is
-reduced to 0.}
+reduced to 0. Note if this is set too high, it can have a deleterious
+effect on deconvolution. We recommend this is not altered.}
 
 \item{noisefraction}{Numeric value. Maximum mean log2 gene expression across
 cell types is calculated and values in celltypes below this fraction are
