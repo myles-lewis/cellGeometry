@@ -26,6 +26,11 @@
 #'   subclass category. Subclass categories with fewer cells will be ignored.
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @param verbose Logical whether to show messages.
+#' @param sliceSize Integer, number of rows of `x` to use in each slice if 
+#'   `big = TRUE`.
+#' @param cores Integer, number of cores to use for parallelisation using 
+#'   `mclapply()`. Parallelisation is not available on windows. Warning:
+#'   parallelisation has increased memory requirements. See [scmean()].
 #' @returns 
 #' Returns list object containing `best_angle`, a list of genes ranked by lowest
 #' angle and highest maximum expression in a cell type; `genemeans`, matrix of
@@ -45,7 +50,9 @@ cellMarkers <- function(scdata,
                         noisefraction = 0.25,
                         min_cells = 10,
                         big = NULL,
-                        verbose = TRUE) {
+                        verbose = TRUE,
+                        sliceSize = 2000L,
+                        cores = 1L) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat"))) scdata <- as.matrix(scdata)
   dimx <- dim(scdata)
@@ -73,7 +80,7 @@ cellMarkers <- function(scdata,
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
                        nsub, " cell subclasses")
   if (verbose) message("Subclass analysis")
-  genemeans <- scmean(scdata, subclass, big, verbose)
+  genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
@@ -86,7 +93,7 @@ cellMarkers <- function(scdata,
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
     # test nesting
     tab <- table(subclass, cellgroup)
-    groupmeans <- scmean(scdata, cellgroup, big, verbose)
+    groupmeans <- scmean(scdata, cellgroup, big, verbose, sliceSize, cores)
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)

@@ -15,11 +15,24 @@
 #' @param big Logical, whether to invoke slicing of `x` into rows. This is
 #'   invoked automatically if `x` is a large matrix with >2^31 elements.
 #' @param verbose Logical, whether to print messages.
+#' @param sliceSize Integer, number of rows of `x` to use in each slice if 
+#'   `big = TRUE`.
+#' @param cores Integer, number of cores to use for parallelisation using 
+#'   `mclapply()`. Parallelisation is not available on windows. Warning:
+#'   parallelisation has increased memory requirements.
+#' @details
+#' We find a significant speed up with `cores = 2`, which is almost twice as
+#' fast as single core, but not much to be gained beyond this possibly due to
+#' limits on memory traffic. The main speed up is in assigning the decompression
+#' of a block from the sparse matrix to more than 1 core.
+#' 
 #' @returns a matrix of mean log2 gene expression across cell types with genes
 #'   in rows and cell types in columns.
+#' @importFrom parallel mclapply
 #' @export
 
-scmean <- function(x, celltype, big = NULL, verbose = TRUE) {
+scmean <- function(x, celltype, big = NULL, verbose = TRUE, sliceSize = 2000L,
+                   cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
@@ -34,14 +47,14 @@ scmean <- function(x, celltype, big = NULL, verbose = TRUE) {
     return(genemeans)
   }
   # large matrix
-  s <- sliceIndex(dimx[1])
+  s <- sliceIndex(dimx[1], sliceSize)
   genemeans <- vapply(levels(celltype), function(i) {
-    if (verbose) cat(i, " ")
     start <- Sys.time()
     c_index <- which(celltype == i & ok)
-    out <- lapply(s, function(j) {
+    if (verbose) cat(length(c_index), i, " ")
+    out <- parallel::mclapply(s, function(j) {
       logmean(as.matrix(x[j, c_index])) |> suppressWarnings()
-    })
+    }, mc.cores = cores)
     if (verbose) timer(start)
     unlist(out)
   }, numeric(dimx[1]))
@@ -53,7 +66,7 @@ scmean <- function(x, celltype, big = NULL, verbose = TRUE) {
 logmean <- function(x) rowMeans(log2(x +1))
 
 sliceIndex <- function(nx, sliceSize = 2000) {
-  if (is.null(sliceSize)) sliceSize <- nx
+  sliceSize <- as.integer(sliceSize)
   s <- ceiling(nx / sliceSize)
   excess <- nx %% sliceSize
   lapply(seq_len(s), function(i) {

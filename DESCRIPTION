@@ -15,6 +15,7 @@ Imports:
     ensembldb,
     grid,
     matrixStats,
+    parallel,
     scales
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1

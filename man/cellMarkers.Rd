@@ -16,7 +16,9 @@ cellMarkers(
   noisefraction = 0.25,
   min_cells = 10,
   big = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  sliceSize = 2000L,
+  cores = 1L
 )
 }
 \arguments{
@@ -53,6 +55,13 @@ subclass category. Subclass categories with fewer cells will be ignored.}
 \item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
 
 \item{verbose}{Logical whether to show messages.}
+
+\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
+\code{big = TRUE}.}
+
+\item{cores}{Integer, number of cores to use for parallelisation using
+\code{mclapply()}. Parallelisation is not available on windows. Warning:
+parallelisation has increased memory requirements. See \code{\link[=scmean]{scmean()}}.}
 }
 \value{
 Returns list object containing \code{best_angle}, a list of genes ranked by lowest

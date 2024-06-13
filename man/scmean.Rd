@@ -4,7 +4,7 @@
 \alias{scmean}
 \title{Single-cell mean log gene expression across cell types}
 \usage{
-scmean(x, celltype, big = NULL, verbose = TRUE)
+scmean(x, celltype, big = NULL, verbose = TRUE, sliceSize = 2000L, cores = 1L)
 }
 \arguments{
 \item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
@@ -18,6 +18,13 @@ the matching columns in \code{x} are skipped.}
 invoked automatically if \code{x} is a large matrix with >2^31 elements.}
 
 \item{verbose}{Logical, whether to print messages.}
+
+\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
+\code{big = TRUE}.}
+
+\item{cores}{Integer, number of cores to use for parallelisation using
+\code{mclapply()}. Parallelisation is not available on windows. Warning:
+parallelisation has increased memory requirements.}
 }
 \value{
 a matrix of mean log2 gene expression across cell types with genes
@@ -29,4 +36,10 @@ such as embedded in a Seurat object, calculates log2(counts +1) and averages
 gene expression over a vector specifying cell subclasses or cell types. Very
 large matrices are handled by slicing rows into blocks to avoid excess memory
 requirements.
+}
+\details{
+We find a significant speed up with \code{cores = 2}, which is almost twice as
+fast as single core, but not much to be gained beyond this possibly due to
+limits on memory traffic. The main speed up is in assigning the decompression
+of a block from the sparse matrix to more than 1 core.
 }
