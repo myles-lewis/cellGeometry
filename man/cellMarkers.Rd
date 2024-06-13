@@ -17,7 +17,7 @@ cellMarkers(
   min_cells = 10,
   big = NULL,
   verbose = TRUE,
-  sliceSize = 2000L,
+  sliceSize = 5000L,
   cores = 1L
 )
 }

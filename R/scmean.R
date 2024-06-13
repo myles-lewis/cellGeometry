@@ -24,23 +24,24 @@
 #' We find a significant speed up with `cores = 2`, which is almost twice as
 #' fast as single core, but not much to be gained beyond this possibly due to
 #' limits on memory traffic. The main speed up is in assigning the decompression
-#' of a block from the sparse matrix to more than 1 core.
-#' 
-#' It is recommended that the number of elements manipulated in each slice (i.e.
-#' `sliceSize` x number of cells in a given subclass/group) is kept below the
-#' long vector limit of 2^31 (around 2.1e9).
+#' of a block from the sparse matrix to more than 1 core. Increasing `sliceSize`
+#' also gives a speed up, but the limit on `sliceSize` is that the number of
+#' elements manipulated in each block (i.e. `sliceSize` x number of cells in a
+#' given subclass/group) must be kept below the long vector limit of 2^31
+#' (around 2e9). Increasing `cores` and/or `sliceSize` requires substantial
+#' amounts of spare RAM.
 #' 
 #' @returns a matrix of mean log2 gene expression across cell types with genes
 #'   in rows and cell types in columns.
 #' @importFrom parallel mclapply
 #' @export
 
-scmean <- function(x, celltype, big = NULL, verbose = TRUE, sliceSize = 10000L,
+scmean <- function(x, celltype, big = NULL, verbose = TRUE, sliceSize = 5000L,
                    cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   if (any(table(celltype) * as.numeric(sliceSize) > 2^31))
-    message("Warning: >2^31 matrix elements anticipated. `sliceSize` may be too large")
+    message("Warning: >2^31 matrix elements anticipated. `sliceSize` is too large")
   ok <- !is.na(celltype)
   dimx <- dim(x)
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")

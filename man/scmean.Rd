@@ -41,9 +41,10 @@ requirements.
 We find a significant speed up with \code{cores = 2}, which is almost twice as
 fast as single core, but not much to be gained beyond this possibly due to
 limits on memory traffic. The main speed up is in assigning the decompression
-of a block from the sparse matrix to more than 1 core.
-
-It is recommended that the number of elements manipulated in each slice (i.e.
-\code{sliceSize} x number of cells in a given subclass/group) is kept below the
-long vector limit of 2^31 (around 2.1e9).
+of a block from the sparse matrix to more than 1 core. Increasing \code{sliceSize}
+also gives a speed up, but the limit on \code{sliceSize} is that the number of
+elements manipulated in each block (i.e. \code{sliceSize} x number of cells in a
+given subclass/group) must be kept below the long vector limit of 2^31
+(around 2e9). Increasing \code{cores} and/or \code{sliceSize} requires substantial
+amounts of spare RAM.
 }

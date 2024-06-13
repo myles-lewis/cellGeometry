@@ -51,7 +51,7 @@ cellMarkers <- function(scdata,
                         min_cells = 10,
                         big = NULL,
                         verbose = TRUE,
-                        sliceSize = 10000L,
+                        sliceSize = 5000L,
                         cores = 1L) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat"))) scdata <- as.matrix(scdata)
