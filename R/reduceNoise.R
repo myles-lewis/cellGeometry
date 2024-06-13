@@ -14,8 +14,8 @@
 #' @export
 #'
 reduceNoise <- function(cellmat,
-                        noisefilter = 1.5,
-                        noisefraction = 0.25) {
+                        noisefilter = 0.02,
+                        noisefraction = 0.1) {
   genemax <- rowMaxs(cellmat)
   genelim <- pmin(genemax * noisefraction, noisefilter)
   cellmat[cellmat < genelim] <- 0
