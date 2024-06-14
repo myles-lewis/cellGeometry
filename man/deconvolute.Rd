@@ -7,6 +7,7 @@
 deconvolute(
   mk,
   test,
+  log = TRUE,
   comp_amount = 1,
   group_comp_amount = 0,
   adjust_comp = TRUE,
@@ -17,7 +18,12 @@ deconvolute(
 \arguments{
 \item{mk}{object of class 'cellMarkers'}
 
-\item{test}{matrix of bulk RNA-Seq counts to be deconvoluted}
+\item{test}{matrix of bulk RNA-Seq to be deconvoluted. We recommend raw
+counts as input, but normalised data can be provided, in which case set
+\code{log = FALSE}.}
+
+\item{log}{Logical, whether to apply log2 +1 to count data in \code{test}. Set to
+\code{FALSE} if prenormalised bulk RNA-Seq data is provided.}
 
 \item{comp_amount}{either a single value from 0-1 for the amount of
 compensation or a numeric vector with the same length as the number of cell

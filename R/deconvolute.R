@@ -5,7 +5,11 @@
 #' compensation for spillover.
 #'
 #' @param mk object of class 'cellMarkers'
-#' @param test matrix of bulk RNA-Seq counts to be deconvoluted
+#' @param test matrix of bulk RNA-Seq to be deconvoluted. We recommend raw
+#'   counts as input, but normalised data can be provided, in which case set
+#'   `log = FALSE`.
+#' @param log Logical, whether to apply log2 +1 to count data in `test`. Set to
+#'   `FALSE` if prenormalised bulk RNA-Seq data is provided.
 #' @param comp_amount either a single value from 0-1 for the amount of
 #'   compensation or a numeric vector with the same length as the number of cell
 #'   subclasses to deconvolute.
@@ -24,7 +28,8 @@
 #' @importFrom stats optimise
 #' @export
 #'
-deconvolute <- function(mk, test, comp_amount = 1,
+deconvolute <- function(mk, test, log = TRUE,
+                        comp_amount = 1,
                         group_comp_amount = 0,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
@@ -39,7 +44,8 @@ deconvolute <- function(mk, test, comp_amount = 1,
     cellmat <- if (use_filter) {mk$groupmeans_filtered[mk$group_geneset, ]
     } else mk$groupmeans[mk$group_geneset, ]
     # cellmat <- sc2bulk(cellmat)
-    logtest <- log2(test[mk$group_geneset, , drop = FALSE] +1)
+    logtest <- test[mk$group_geneset, , drop = FALSE]
+    if (log) logtest <- log2(logtest +1)
     if (convert_bulk) logtest <- bulk2sc(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, adjust_comp)
   } else {
@@ -50,7 +56,8 @@ deconvolute <- function(mk, test, comp_amount = 1,
   cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
   } else mk$genemeans[mk$geneset, ]
   # cellmat <- sc2bulk(cellmat)
-  logtest2 <- log2(test[mk$geneset, , drop = FALSE] +1)
+  logtest2 <- test[mk$geneset, , drop = FALSE]
+  if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk) logtest2 <- bulk2sc(logtest2)
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, adjust_comp)
   

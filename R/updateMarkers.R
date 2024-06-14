@@ -74,7 +74,7 @@ updateMarkers <- function(object = NULL,
       
   if (verbose) message("Subclass analysis")
   highexp <- ok & rowMaxs(genemeans) > expfilter |
-    rownames(genemeans) %in% c(add_gene, add_groupgene)
+    rownames(genemeans) %in% add_gene
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
@@ -89,7 +89,8 @@ updateMarkers <- function(object = NULL,
       stop("Duplicated rownames in groupmeans")
     if (verbose) message("Basic cell group analysis")
     
-    highexp <- rowMaxs(groupmeans) > expfilter
+    highexp <- ok & rowMaxs(groupmeans) > expfilter |
+      rownames(groupmeans) %in% add_groupgene
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)
     group_angle <- gene_angle(groupmeans_filtered)
