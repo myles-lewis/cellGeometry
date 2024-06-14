@@ -18,10 +18,12 @@ gene_angle <- function(genemeans) {
   genemeans_scaled <- scaleSphere(genemeans)
   genemeans_angle <- acos(genemeans_scaled)
   genemeans_max <- rowMaxs(genemeans)
+  gene_rank <- t(apply(-genemeans, 1, rank))
   best_angle <- lapply(colnames(genemeans_angle), function(i) {
     df <- data.frame(angle = genemeans_angle[, i],
                      angle.deg = genemeans_angle[, i] * 180 / pi,
-                     max = genemeans_max)
+                     max = genemeans_max,
+                     rank = gene_rank[, i])
     df[with(df, order(angle, -max)), ]
   })
   names(best_angle) <- colnames(genemeans_angle)
