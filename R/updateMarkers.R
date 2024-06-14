@@ -10,10 +10,14 @@
 #'   subclasses in columns.
 #' @param groupmeans Optional matrix of mean gene expression for overarching
 #'   main cell groups (genes in rows, cell groups in columns).
-#' @param add_genes Character vector of gene markers to add manually to the cell
+#' @param add_gene Character vector of gene markers to add manually to the cell
 #'   subclass gene signature.
-#' @param add_groupgenes Character vector of gene markers to add manually to the
+#' @param add_groupgene Character vector of gene markers to add manually to the
 #'   cell group gene signature.
+#' @param remove_gene Character vector of gene markers to manually remove from
+#'   the cell subclass gene signature.
+#' @param remove_groupgene Character vector of gene markers to manually remove
+#'   to the cell group gene signature.
 #' @param bulkdata Optional data matrix containing bulk RNA-Seq data with genes
 #'   in rows. This matrix is only used for its rownames, to ensure that cell
 #'   markers are selected from genes in the bulk dataset.
@@ -40,8 +44,10 @@
 updateMarkers <- function(object = NULL,
                           genemeans = NULL,
                           groupmeans = NULL,
-                          add_genes = NULL,
-                          add_groupgenes = NULL,
+                          add_gene = NULL,
+                          add_groupgene = NULL,
+                          remove_gene = NULL,
+                          remove_groupgene = NULL,
                           bulkdata = NULL,
                           nsubclass = 5,
                           ngroup = 5,
@@ -68,12 +74,13 @@ updateMarkers <- function(object = NULL,
       
   if (verbose) message("Subclass analysis")
   highexp <- ok & rowMaxs(genemeans) > expfilter |
-    rownames(genemeans) %in% c(add_genes, add_groupgenes)
+    rownames(genemeans) %in% c(add_gene, add_groupgene)
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
   geneset <- lapply(best_angle, function(i) rownames(i)[1:nsubclass])
-  geneset <- unique(c(unlist(geneset), add_genes))
+  geneset <- unique(c(unlist(geneset), add_gene))
+  if (!is.null(remove_gene)) geneset <- geneset[!geneset %in% remove_gene]
   
   if (is.null(groupmeans)) groupmeans <- object$groupmeans
   
@@ -87,7 +94,10 @@ updateMarkers <- function(object = NULL,
                                        noisefraction)
     group_angle <- gene_angle(groupmeans_filtered)
     group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
-    group_geneset <- unique(c(unlist(group_geneset), add_groupgenes))
+    group_geneset <- unique(c(unlist(group_geneset), add_groupgene))
+    if (!is.null(remove_groupgene)) {
+      group_geneset <- group_geneset[!group_geneset %in% remove_groupgene]
+    }
     cell_table <- object$cell_table
   } else {
     group_geneset <- group_angle <- groupmeans <- groupmeans_filtered <- NULL

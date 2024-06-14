@@ -8,8 +8,10 @@ updateMarkers(
   object = NULL,
   genemeans = NULL,
   groupmeans = NULL,
-  add_genes = NULL,
-  add_groupgenes = NULL,
+  add_gene = NULL,
+  add_groupgene = NULL,
+  remove_gene = NULL,
+  remove_groupgene = NULL,
   bulkdata = NULL,
   nsubclass = 5,
   ngroup = 5,
@@ -29,11 +31,17 @@ subclasses in columns.}
 \item{groupmeans}{Optional matrix of mean gene expression for overarching
 main cell groups (genes in rows, cell groups in columns).}
 
-\item{add_genes}{Character vector of gene markers to add manually to the cell
+\item{add_gene}{Character vector of gene markers to add manually to the cell
 subclass gene signature.}
 
-\item{add_groupgenes}{Character vector of gene markers to add manually to the
+\item{add_groupgene}{Character vector of gene markers to add manually to the
 cell group gene signature.}
+
+\item{remove_gene}{Character vector of gene markers to manually remove from
+the cell subclass gene signature.}
+
+\item{remove_groupgene}{Character vector of gene markers to manually remove
+to the cell group gene signature.}
 
 \item{bulkdata}{Optional data matrix containing bulk RNA-Seq data with genes
 in rows. This matrix is only used for its rownames, to ensure that cell
