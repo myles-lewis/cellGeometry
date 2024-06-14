@@ -53,6 +53,7 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
 #' @rdname stack_plot
 #' @importFrom ggplot2 ggplot geom_col aes scale_fill_manual xlab ylab
 #'   theme_classic theme element_text guide_legend guides guide_axis
+#'   scale_y_continuous expansion
 #' @importFrom rlang .data
 #' @importFrom utils stack
 #' @export
@@ -80,12 +81,13 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   df$id <- factor(rep(rownames(x), ncol(x)), levels = rownames(x)[ord])
   
   ggplot(df, aes(x = .data$id, y = .data$values, fill = .data$ind)) +
-    geom_col(colour = "black") +
+    geom_col(colour = "black", linewidth = 0.3) +
     scale_fill_manual(values = scheme,
                       guide = guide_legend(title = "Cell type",
                                            ncol = legend_ncol,
                                            title.position = "top",
                                            position = legend_position)) +
+    scale_y_continuous(expand = expansion(mult = c(0.01, .1))) +
     guides(x = guide_axis(angle = 90)) +
     xlab("") + ylab(ylab) +
     theme_classic() +
