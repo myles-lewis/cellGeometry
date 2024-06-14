@@ -10,6 +10,7 @@ stack_plot(
   percent = FALSE,
   order_col = 1,
   scheme = NULL,
+  order_cells = c("none", "increase", "decrease"),
   cex.names = 0.7,
   ...
 )
@@ -19,6 +20,7 @@ stack_ggplot(
   percent = FALSE,
   order_col = 1,
   scheme = NULL,
+  order_cells = c("none", "increase", "decrease"),
   legend_ncol = 3,
   legend_position = "bottom"
 )
@@ -36,6 +38,9 @@ column indices is supplied, these columns are averaged first using
 
 \item{scheme}{Vector of colours. If not supplied, the default scheme uses
 \code{scales::hue_pal()}.}
+
+\item{order_cells}{Character value specifying with cell types are ordered by
+abundance.}
 
 \item{cex.names}{Character expansion controlling bar names font size.}
 

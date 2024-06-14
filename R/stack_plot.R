@@ -112,7 +112,7 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                                            ncol = legend_ncol,
                                            title.position = "top",
                                            position = legend_position)) +
-    scale_y_continuous(expand = expansion(mult = c(0.01, .1))) +
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.02))) +
     guides(x = guide_axis(angle = 90)) +
     xlab("") + ylab(ylab) +
     theme_classic() +
