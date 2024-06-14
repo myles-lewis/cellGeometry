@@ -11,6 +11,7 @@ signature_heatmap(
   rank = c("max", "angle"),
   scale = c("none", "max", "sphere"),
   col = rev(hcl.colors(10, "Greens3")),
+  text = FALSE,
   ...
 )
 }

@@ -18,11 +18,12 @@
 #'   expression between genes, "sphere" to scale genes to the unit hypersphere
 #'   where cell subclasses or groups are dimensions.
 #' @param col Vector of colours passed to [ComplexHeatmap::Heatmap()].
+#' @param text Logical whether to show values of the maximum cell in each row.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns A 'Heatmap' class object.
 #' @importFrom grDevices hcl.colors
 #' @importFrom grid gpar
-#' @importFrom ComplexHeatmap Heatmap
+#' @importFrom ComplexHeatmap Heatmap pindex
 #' @export
 
 signature_heatmap <- function(x,
@@ -31,6 +32,7 @@ signature_heatmap <- function(x,
                               rank = c("max", "angle"),
                               scale = c("none", "max", "sphere"),
                               col = rev(hcl.colors(10, "Greens3")),
+                              text = FALSE,
                               ...) {
   type <- match.arg(type)
   rank <- match.arg(rank)
@@ -65,6 +67,18 @@ signature_heatmap <- function(x,
   if (scale == "max") gene_signature <- gene_signature / rmax
   if (scale == "sphere") gene_signature <- scaleSphere(gene_signature)
   
+  layer_fun <- NULL
+  if (text) {
+    layer_fun <- function(j, i, x, y, width, height, fill) {
+      v <- pindex(gene_signature, i, j)
+      ind <- which(v == rowMaxs(gene_signature[i,]))
+      if (length(ind) > 0) {
+        grid.text(sprintf("%.1f", v[ind]), x[ind], y[ind],
+                  gp = gpar(fontsize = 6.5))
+      }
+    }
+  }
+  
   Heatmap(gene_signature,
           cluster_rows = FALSE,
           row_order = ord, row_split = rs,
@@ -75,5 +89,6 @@ signature_heatmap <- function(x,
           column_names_rot = 75, column_names_gp = gpar(fontsize = 6),
           row_title_gp = gpar(fontsize = 6),
           col = col,
+          layer_fun = layer_fun,
           heatmap_legend_param = list(title='mean'), ...)
 }
