@@ -13,7 +13,7 @@ updateMarkers(
   nsubclass = 5,
   ngroup = 5,
   expfilter = 1,
-  noisefilter = 1.5,
+  noisefilter = 2.5,
   noisefraction = 0.25,
   verbose = TRUE
 )
