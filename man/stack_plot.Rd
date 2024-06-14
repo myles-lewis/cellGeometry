@@ -2,6 +2,7 @@
 % Please edit documentation in R/stack_plot.R
 \name{stack_plot}
 \alias{stack_plot}
+\alias{stack_ggplot}
 \title{Stacked bar plot}
 \usage{
 stack_plot(
@@ -12,6 +13,8 @@ stack_plot(
   cex.names = 0.7,
   ...
 )
+
+stack_ggplot(x, percent = FALSE, order_col = 1, scheme = NULL)
 }
 \arguments{
 \item{x}{matrix of deconvolution results with samples in rows and cell

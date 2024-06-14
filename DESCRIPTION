@@ -13,9 +13,11 @@ biocViews:
 Imports:
     ComplexHeatmap,
     ensembldb,
+    ggplot2,
     grid,
     matrixStats,
     parallel,
+    rlang,
     scales
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
