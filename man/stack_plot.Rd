@@ -14,7 +14,14 @@ stack_plot(
   ...
 )
 
-stack_ggplot(x, percent = FALSE, order_col = 1, scheme = NULL)
+stack_ggplot(
+  x,
+  percent = FALSE,
+  order_col = 1,
+  scheme = NULL,
+  legend_ncol = 3,
+  legend_position = "bottom"
+)
 }
 \arguments{
 \item{x}{matrix of deconvolution results with samples in rows and cell
@@ -32,10 +39,14 @@ column indices is supplied, these columns are averaged first using
 \item{cex.names}{Character expansion controlling bar names font size.}
 
 \item{...}{Optional arguments passed to \code{\link[graphics:barplot]{graphics::barplot()}}.}
+
+\item{legend_ncol}{Number of columns for ggplot2 legend}
+
+\item{legend_position}{Position of ggplot2 legend}
 }
 \value{
 No return value. Plots a stacked barchart using base graphics.
 }
 \description{
-Produces stacked bar plots using base graphics.
+Produces stacked bar plots using base graphics or ggplot2.
 }

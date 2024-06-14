@@ -1,7 +1,7 @@
 
 #' Stacked bar plot
 #' 
-#' Produces stacked bar plots using base graphics.
+#' Produces stacked bar plots using base graphics or ggplot2.
 #' 
 #' @param x matrix of deconvolution results with samples in rows and cell
 #'   subclasses or groups in columns.
@@ -12,6 +12,8 @@
 #' @param scheme Vector of colours. If not supplied, the default scheme uses
 #'   `scales::hue_pal()`.
 #' @param cex.names Character expansion controlling bar names font size.
+#' @param legend_ncol Number of columns for ggplot2 legend
+#' @param legend_position Position of ggplot2 legend
 #' @param ... Optional arguments passed to [graphics::barplot()].
 #' @returns No return value. Plots a stacked barchart using base graphics.
 #' @importFrom scales hue_pal
@@ -34,7 +36,8 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   } else {
     ord <- order(rowSums(x))
   }
-  strw <- max(strwidth(rownames(x), units = "inches", cex = cex.names), na.rm = TRUE)
+  strw <- max(strwidth(rownames(x), units = "inches", cex = cex.names),
+              na.rm = TRUE)
   mar1 <- strw / par("csi") +1.5
   op <- par(mar = c(mar1, 4, 1.5, 1.5))
   on.exit(par(op))
@@ -54,7 +57,8 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
 #' @importFrom utils stack
 #' @export
 
-stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL) {
+stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
+                         legend_ncol = 3, legend_position = "bottom") {
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
@@ -78,9 +82,10 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL) {
   ggplot(df, aes(x = .data$id, y = .data$values, fill = .data$ind)) +
     geom_col(colour = "black") +
     scale_fill_manual(values = scheme,
-                      guide = guide_legend(title = "Cell type", ncol = 3,
-                                           title.position="top",
-                                           position = "bottom")) +
+                      guide = guide_legend(title = "Cell type",
+                                           ncol = legend_ncol,
+                                           title.position = "top",
+                                           position = legend_position)) +
     guides(x = guide_axis(angle = 90)) +
     xlab("") + ylab(ylab) +
     theme_classic() +
