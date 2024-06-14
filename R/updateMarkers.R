@@ -14,6 +14,9 @@
 #'   subclass gene signature.
 #' @param add_groupgenes Character vector of gene markers to add manually to the
 #'   cell group gene signature.
+#' @param bulkdata Optional data matrix containing bulk RNA-Seq data with genes
+#'   in rows. This matrix is only used for its rownames, to ensure that cell
+#'   markers are selected from genes in the bulk dataset.
 #' @param nsubclass Number of genes to select for each single cell subclass.
 #' @param ngroup Number of genes to select for each cell group.
 #' @param expfilter Genes whose maximum mean expression on log2 scale per cell
@@ -39,6 +42,7 @@ updateMarkers <- function(object = NULL,
                           groupmeans = NULL,
                           add_genes = NULL,
                           add_groupgenes = NULL,
+                          bulkdata = NULL,
                           nsubclass = 5,
                           ngroup = 5,
                           expfilter = 1,
@@ -54,8 +58,16 @@ updateMarkers <- function(object = NULL,
   if (any(duplicated(rownames(genemeans))))
     stop("Duplicated rownames in genemeans")
   
+  ok <- TRUE
+  if (!is.null(bulkdata)) {
+    ok <- rownames(genemeans) %in% rownames(bulkdata)
+    if (any(!ok)) {
+      if (verbose) message(sum(ok), " genes overlap with bulkdata")
+    }
+  }
+      
   if (verbose) message("Subclass analysis")
-  highexp <- rowMaxs(genemeans) > expfilter |
+  highexp <- ok & rowMaxs(genemeans) > expfilter |
     rownames(genemeans) %in% c(add_genes, add_groupgenes)
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)

@@ -10,6 +10,7 @@ updateMarkers(
   groupmeans = NULL,
   add_genes = NULL,
   add_groupgenes = NULL,
+  bulkdata = NULL,
   nsubclass = 5,
   ngroup = 5,
   expfilter = 1,
@@ -33,6 +34,10 @@ subclass gene signature.}
 
 \item{add_groupgenes}{Character vector of gene markers to add manually to the
 cell group gene signature.}
+
+\item{bulkdata}{Optional data matrix containing bulk RNA-Seq data with genes
+in rows. This matrix is only used for its rownames, to ensure that cell
+markers are selected from genes in the bulk dataset.}
 
 \item{nsubclass}{Number of genes to select for each single cell subclass.}
 
