@@ -25,7 +25,8 @@ stack_ggplot(
 }
 \arguments{
 \item{x}{matrix of deconvolution results with samples in rows and cell
-subclasses or groups in columns.}
+subclasses or groups in columns. If a 'deconv' class object is supplied the
+deconvolution values for the cell subclasses are extracted and plotted.}
 
 \item{percent}{Logical whether to scale the matrix rows as percentage.}
 

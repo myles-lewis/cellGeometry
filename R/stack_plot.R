@@ -4,7 +4,8 @@
 #' Produces stacked bar plots using base graphics or ggplot2.
 #' 
 #' @param x matrix of deconvolution results with samples in rows and cell
-#'   subclasses or groups in columns.
+#'   subclasses or groups in columns. If a 'deconv' class object is supplied the
+#'   deconvolution values for the cell subclasses are extracted and plotted.
 #' @param percent Logical whether to scale the matrix rows as percentage.
 #' @param order_col Numeric value for which column to sort. If a vector of
 #'   column indices is supplied, these columns are averaged first using
@@ -22,6 +23,7 @@
 
 stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                        cex.names = 0.7, ...) {
+  if (inherits(x, "deconv")) x <- x$subclass$output
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
@@ -60,6 +62,7 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
 
 stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                          legend_ncol = 3, legend_position = "bottom") {
+  if (inherits(x, "deconv")) x <- x$subclass$output
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
