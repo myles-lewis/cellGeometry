@@ -13,6 +13,8 @@
 #' @param scheme Vector of colours. If not supplied, the default scheme uses
 #'   `scales::hue_pal()`.
 #' @param cex.names Character expansion controlling bar names font size.
+#' @param order_cells Character value specifying with cell types are ordered by
+#'   abundance.
 #' @param legend_ncol Number of columns for ggplot2 legend
 #' @param legend_position Position of ggplot2 legend
 #' @param ... Optional arguments passed to [graphics::barplot()].
@@ -22,7 +24,9 @@
 #' @export
 
 stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
+                       order_cells = c("none", "increase", "decrease"),
                        cex.names = 0.7, ...) {
+  order_cells <- match.arg(order_cells)
   if (inherits(x, "deconv")) x <- x$subclass$output
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
@@ -38,12 +42,21 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   } else {
     ord <- order(rowSums(x))
   }
+  x <- x[ord, ]
+  
+  cell_ord <- order(colMeans(x))
+  if (order_cells == "increase") {
+    x <- x[, cell_ord]
+  } else if (order_cells == "decrease") {
+    x <- x[, rev(cell_ord)]
+  }
+  
   strw <- max(strwidth(rownames(x), units = "inches", cex = cex.names),
               na.rm = TRUE)
   mar1 <- strw / par("csi") +1.5
   op <- par(mar = c(mar1, 4, 1.5, 1.5))
   on.exit(par(op))
-  barplot(t(x[ord, ]), las = 2, col = scheme,
+  barplot(t(x), las = 2, col = scheme,
           cex.names = cex.names,
           tcl = -0.3, mgp = c(2.2, 0.5, 0), ...)
   # extend axis line
@@ -61,7 +74,9 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
 #' @export
 
 stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
+                         order_cells = c("none", "increase", "decrease"),
                          legend_ncol = 3, legend_position = "bottom") {
+  order_cells <- match.arg(order_cells)
   if (inherits(x, "deconv")) x <- x$subclass$output
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
@@ -82,6 +97,13 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   
   df <- stack(as.data.frame(x))
   df$id <- factor(rep(rownames(x), ncol(x)), levels = rownames(x)[ord])
+  
+  cell_ord <- order(colMeans(x))
+  if (order_cells == "increase") {
+    df$ind <- factor(df$ind, levels = colnames(x)[cell_ord])
+  } else if (order_cells == "decrease") {
+    df$ind <- factor(df$ind, levels = colnames(x)[rev(cell_ord)])
+  }
   
   ggplot(df, aes(x = .data$id, y = .data$values, fill = .data$ind)) +
     geom_col(colour = "black", linewidth = 0.3) +
