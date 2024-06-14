@@ -11,7 +11,7 @@ signature_heatmap(
   rank = c("max", "angle"),
   scale = c("none", "max", "sphere"),
   col = rev(hcl.colors(10, "Greens3")),
-  text = FALSE,
+  text = TRUE,
   ...
 )
 }
@@ -35,6 +35,8 @@ expression between genes, "sphere" to scale genes to the unit hypersphere
 where cell subclasses or groups are dimensions.}
 
 \item{col}{Vector of colours passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
+
+\item{text}{Logical whether to show values of the maximum cell in each row.}
 
 \item{...}{Optional arguments passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 }

@@ -32,7 +32,7 @@ signature_heatmap <- function(x,
                               rank = c("max", "angle"),
                               scale = c("none", "max", "sphere"),
                               col = rev(hcl.colors(10, "Greens3")),
-                              text = FALSE,
+                              text = TRUE,
                               ...) {
   type <- match.arg(type)
   rank <- match.arg(rank)
