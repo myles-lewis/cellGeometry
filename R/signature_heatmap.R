@@ -71,7 +71,7 @@ signature_heatmap <- function(x,
   if (text) {
     layer_fun <- function(j, i, x, y, width, height, fill) {
       v <- pindex(gene_signature, i, j)
-      ind <- which(v == rowMaxs(gene_signature[i,]))
+      ind <- which(v == rowMaxs(gene_signature[i, , drop = FALSE]))
       if (length(ind) > 0) {
         grid.text(sprintf("%.1f", v[ind]), x[ind], y[ind],
                   gp = gpar(fontsize = 6.5))
