@@ -42,7 +42,7 @@ updateMarkers <- function(object = NULL,
                           nsubclass = 5,
                           ngroup = 5,
                           expfilter = 1,
-                          noisefilter = 2.5,
+                          noisefilter = 2,
                           noisefraction = 0.25,
                           verbose = TRUE) {
   .call <- match.call()

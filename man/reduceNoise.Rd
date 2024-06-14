@@ -4,7 +4,7 @@
 \alias{reduceNoise}
 \title{Reduce noise in single-cell data}
 \usage{
-reduceNoise(cellmat, noisefilter = 2.5, noisefraction = 0.25)
+reduceNoise(cellmat, noisefilter = 2, noisefraction = 0.25)
 }
 \arguments{
 \item{cellmat}{Matrix of log2 mean gene expression in rows with cell types in

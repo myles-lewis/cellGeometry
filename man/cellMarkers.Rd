@@ -12,7 +12,7 @@ cellMarkers(
   nsubclass = 5,
   ngroup = 5,
   expfilter = 1,
-  noisefilter = 2.5,
+  noisefilter = 2,
   noisefraction = 0.25,
   min_cells = 10,
   big = NULL,
