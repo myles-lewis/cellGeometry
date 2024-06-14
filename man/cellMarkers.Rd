@@ -45,7 +45,7 @@ type are below this value are removed and not considered for the signature.}
 \item{noisefilter}{Sets an upper bound for \code{noisefraction} cut-off below
 which gene expression is set to 0. Essentially gene expression above this
 level must be retained in the signature. Setting this higher can allow more
-suppression via noisefraction and can favour more highly expressed genes.}
+suppression via \code{noisefraction} and can favour more highly expressed genes.}
 
 \item{noisefraction}{Numeric value. Maximum mean log2 gene expression across
 cell types is calculated and values in celltypes below this fraction are

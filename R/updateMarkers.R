@@ -21,7 +21,7 @@
 #' @param noisefilter Sets an upper bound for `noisefraction` cut-off below
 #'   which gene expression is set to 0. Essentially gene expression above this
 #'   level must be retained in the signature. Setting this higher can allow more
-#'   suppression via noisefraction and can favour more highly expressed genes.
+#'   suppression via `noisefraction` and can favour more highly expressed genes.
 #' @param noisefraction Numeric value. Maximum mean log2 gene expression across
 #'   cell types is calculated and values in celltypes below this fraction are
 #'   set to 0. Set in conjunction with `noisefilter.` Note: if this is set too
