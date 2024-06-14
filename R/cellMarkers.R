@@ -27,6 +27,8 @@
 #'   high (too close to 1), it can have a deleterious effect on deconvolution.
 #' @param min_cells Numeric value specifying minimum number of cells in a
 #'   subclass category. Subclass categories with fewer cells will be ignored.
+#' @param remove_subclass Character vector of `subclass` levels to be removed
+#'   from the analysis.
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @param verbose Logical whether to show messages.
 #' @param sliceSize Integer, number of rows of `x` to use in each slice if 
@@ -52,6 +54,7 @@ cellMarkers <- function(scdata,
                         noisefilter = 2,
                         noisefraction = 0.25,
                         min_cells = 10,
+                        remove_subclass = NULL,
                         big = NULL,
                         verbose = TRUE,
                         sliceSize = 5000L,
@@ -68,6 +71,10 @@ cellMarkers <- function(scdata,
       subclass[subclass %in% rem] <- NA
       subclass <- factor(subclass)
     }
+  }
+  if (!is.null(remove_subclass)) {
+    subclass[subclass %in% remove_subclass] <- NA
+    subclass <- factor(subclass)
   }
   
   if (!is.null(bulkdata)) {

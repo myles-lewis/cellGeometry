@@ -15,6 +15,7 @@ cellMarkers(
   noisefilter = 2,
   noisefraction = 0.25,
   min_cells = 10,
+  remove_subclass = NULL,
   big = NULL,
   verbose = TRUE,
   sliceSize = 5000L,
@@ -54,6 +55,9 @@ high (too close to 1), it can have a deleterious effect on deconvolution.}
 
 \item{min_cells}{Numeric value specifying minimum number of cells in a
 subclass category. Subclass categories with fewer cells will be ignored.}
+
+\item{remove_subclass}{Character vector of \code{subclass} levels to be removed
+from the analysis.}
 
 \item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
 
