@@ -15,7 +15,8 @@
 #' @param cex.names Character expansion controlling bar names font size.
 #' @param order_cells Character value specifying with cell types are ordered by
 #'   abundance.
-#' @param legend_ncol Number of columns for ggplot2 legend
+#' @param legend_ncol Number of columns for ggplot2 legend. If set to `NULL`
+#'   ggplot2 sets the column number automatically.
 #' @param legend_position Position of ggplot2 legend
 #' @param ... Optional arguments passed to [graphics::barplot()].
 #' @returns No return value. Plots a stacked barchart using base graphics.
@@ -75,7 +76,7 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
 
 stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                          order_cells = c("none", "increase", "decrease"),
-                         legend_ncol = 3, legend_position = "bottom") {
+                         legend_ncol = NULL, legend_position = "bottom") {
   order_cells <- match.arg(order_cells)
   if (inherits(x, "deconv")) x <- x$subclass$output
   if (is.null(scheme)) {
