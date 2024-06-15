@@ -16,7 +16,7 @@ No return value. Draws a heatmap using ComplexHeatmap.
 }
 \description{
 Produces a heatmap from a 'cellMarkers' class object showing estimated amount
-of spillover between cell subclasses. Amount of spillover of each cell
-subclass's signature genes into other cell subclasses is shown in each
-column.
+of spillover between cell subclasses. The amount that each cell subclass's
+overall vector spillovers (projects) into other cell subclasses' vectors is
+shown in each column.
 }
