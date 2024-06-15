@@ -2,7 +2,9 @@
 #' Spillover heatmap
 #' 
 #' Produces a heatmap from a 'cellMarkers' class object showing estimated amount
-#' of spillover between cell subclasses.
+#' of spillover between cell subclasses. Amount of spillover of each cell
+#' subclass's signature genes into other cell subclasses is shown in each
+#' column.
 #' 
 #' @param x Either a cellMarkers class object or a spillover matrix.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].

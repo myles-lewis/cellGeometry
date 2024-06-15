@@ -21,7 +21,7 @@ stack_ggplot(
   order_col = 1,
   scheme = NULL,
   order_cells = c("none", "increase", "decrease"),
-  legend_ncol = 3,
+  legend_ncol = NULL,
   legend_position = "bottom"
 )
 }
@@ -46,7 +46,8 @@ abundance.}
 
 \item{...}{Optional arguments passed to \code{\link[graphics:barplot]{graphics::barplot()}}.}
 
-\item{legend_ncol}{Number of columns for ggplot2 legend}
+\item{legend_ncol}{Number of columns for ggplot2 legend. If set to \code{NULL}
+ggplot2 sets the column number automatically.}
 
 \item{legend_position}{Position of ggplot2 legend}
 }
