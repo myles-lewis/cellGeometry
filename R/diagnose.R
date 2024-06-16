@@ -31,4 +31,13 @@ diagnose <- function(mk) {
     cat("\n")
   }
   
+  s1 <- mk$spillover
+  smetric <- comp_metric(s1)
+  cat("Standard mean spillover", format(smetric, digits = 3), "\n")
+  
+  m <- mk$genemeans_filtered[mk$geneset, ]
+  s2 <- dotprod(m, m, equalWeight = TRUE)
+  smetric <- comp_metric(s2)
+  cat("Equal weight mean spillover", format(smetric, digits = 3), "\n")
+  
 }

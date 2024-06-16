@@ -10,6 +10,7 @@ deconvolute(
   log = TRUE,
   comp_amount = 1,
   group_comp_amount = 0,
+  equal_weight = FALSE,
   adjust_comp = TRUE,
   use_filter = TRUE,
   convert_bulk = TRUE
@@ -32,6 +33,9 @@ subclasses to deconvolute.}
 \item{group_comp_amount}{either a single value from 0-1 for the amount of
 compensation for cell group analysis or a numeric vector with the same
 length as the number of cell groups to deconvolute.}
+
+\item{equal_weight}{logical, whether the gene signature matrix is scaled to
+equalise the effects of each gene.}
 
 \item{adjust_comp}{logical, whether to optimise \code{comp_amount} to prevent
 negative cell proportion projections.}

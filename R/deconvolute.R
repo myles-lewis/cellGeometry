@@ -16,6 +16,8 @@
 #' @param group_comp_amount either a single value from 0-1 for the amount of
 #'   compensation for cell group analysis or a numeric vector with the same
 #'   length as the number of cell groups to deconvolute.
+#' @param equal_weight logical, whether the gene signature matrix is scaled to
+#'   equalise the effects of each gene.
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
 #' @param use_filter logical, whether to use denoised signature matrix
@@ -31,6 +33,7 @@
 deconvolute <- function(mk, test, log = TRUE,
                         comp_amount = 1,
                         group_comp_amount = 0,
+                        equal_weight = FALSE,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
                         convert_bulk = TRUE) {
@@ -47,7 +50,8 @@ deconvolute <- function(mk, test, log = TRUE,
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk) logtest <- bulk2sc(logtest)
-    gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, adjust_comp)
+    gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, equal_weight,
+                           adjust_comp)
   } else {
     gtest <- NULL
   }
@@ -59,7 +63,8 @@ deconvolute <- function(mk, test, log = TRUE,
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk) logtest2 <- bulk2sc(logtest2)
-  atest <- deconv_adjust(logtest2, cellmat, comp_amount, adjust_comp)
+  atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
+                         adjust_comp)
   
   # subclass percent as nested percent of groups
   if (!is.null(gtest)) {
@@ -79,12 +84,12 @@ deconvolute <- function(mk, test, log = TRUE,
   out
 }
 
-deconv_adjust <- function(test, cellmat, comp_amount = 0,
+deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
                           adjust_comp = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   
-  atest <- deconv(test, cellmat, comp_amount)
+  atest <- deconv(test, cellmat, comp_amount, equal_weight)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       message("optimising compensation")
@@ -94,29 +99,29 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0,
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[i] <- x
-          ntest <- deconv(test, cellmat, comp_amount = newcomp)
+          ntest <- deconv(test, cellmat, comp_amount = newcomp, equal_weight)
           min(ntest$output[, i], na.rm = TRUE)^2
         }
         xmin <- optimise(f, c(0, comp_amount[i]))
         xmin$minimum
       }, numeric(1))
       comp_amount[w] <- newcomps
-      atest <- deconv(test, cellmat, comp_amount = comp_amount)
+      atest <- deconv(test, cellmat, comp_amount = comp_amount, equal_weight)
       atest$output[atest$output < 0] <- 0
     } else message("negative cell proportion projection detected")
   }
   atest
 }
 
-deconv <- function(test, cellmat, comp_amount = 0, equalWeight = FALSE) {
+deconv <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE) {
   if (!(length(comp_amount) %in% c(1, ncol(cellmat))))
     stop('comp_amount must be either single number or vector of length matching cellmat cols')
   if (!identical(rownames(test), rownames(cellmat)))
     stop('test and cell matrices must have same genes (rownames)')
-  m_itself <- dotprod(cellmat, cellmat, equalWeight)
+  m_itself <- dotprod(cellmat, cellmat, equal_weight)
   rawcomp <- solve(m_itself)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
-  output <- dotprod(test, cellmat, equalWeight) %*% mixcomp
+  output <- dotprod(test, cellmat, equal_weight) %*% mixcomp
   percent <- output / rowSums(output) * 100
   list(output = output, percent = percent, spillover = m_itself,
        compensation = mixcomp, rawcomp = rawcomp, comp_amount = comp_amount)

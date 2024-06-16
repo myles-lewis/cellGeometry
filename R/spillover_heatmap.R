@@ -4,7 +4,9 @@
 #' Produces a heatmap from a 'cellMarkers' class object showing estimated amount
 #' of spillover between cell subclasses. The amount that each cell subclass's
 #' overall vector spillovers (projects) into other cell subclasses' vectors is
-#' shown in each column.
+#' shown in each row. Thus the column gives an estimate of how much the most
+#' influential (specific) genes for a cell subclass are expressed in other
+#' cells.
 #' 
 #' @param x Either a cellMarkers class object or a spillover matrix.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
@@ -14,7 +16,7 @@
 #' @export
 
 spillover_heatmap <- function(x, ...) {
-  if (inherits(x, "deconv")) x <- x$mk
+  if (inherits(x, "deconv")) x <- x$subclass$spillover
   if (inherits(x, 'cellMarkers')) {
     cell_table <- x$cell_table
     m_itself <- x$spillover

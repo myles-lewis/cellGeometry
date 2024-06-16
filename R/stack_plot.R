@@ -32,18 +32,20 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
-  if (percent) {
-    rs <- rowSums(x)
-    x <- x / rs * 100
-    ord <- if (length(order_col) == 1) {
-      order(x[, order_col])
+  if (length(order_col) > 1 || order_col != 0) {
+    if (percent) {
+      rs <- rowSums(x)
+      x <- x / rs * 100
+      ord <- if (length(order_col) == 1) {
+        order(x[, order_col])
+      } else {
+        order(rowMeans(x[, order_col, drop = FALSE]))
+      }
     } else {
-      order(rowMeans(x[, order_col, drop = FALSE]))
+      ord <- order(rowSums(x))
     }
-  } else {
-    ord <- order(rowSums(x))
+    x <- x[ord, ]
   }
-  x <- x[ord, ]
   
   cell_ord <- order(colMeans(x))
   if (order_cells == "increase") {
@@ -82,18 +84,21 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
-  if (percent) {
-    rs <- rowSums(x)
-    x <- x / rs * 100
-    ord <- if (length(order_col) == 1) {
-      order(x[, order_col])
+  ord <- seq_len(nrow(x))
+  if (length(order_col) > 1 || order_col != 0) {
+    if (percent) {
+      rs <- rowSums(x)
+      x <- x / rs * 100
+      ord <- if (length(order_col) == 1) {
+        order(x[, order_col])
+      } else {
+        order(rowMeans(x[, order_col, drop = FALSE]))
+      }
     } else {
-      order(rowMeans(x[, order_col, drop = FALSE]))
+      ord <- order(rowSums(x))
     }
-  } else {
-    ord <- order(rowSums(x))
   }
-  
+    
   ylab <- if (percent) "Cell proportion(%)" else "Relative cell amount"
   
   df <- stack(as.data.frame(x))
