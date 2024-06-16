@@ -14,7 +14,8 @@ diagnose <- function(mk) {
   w <- which(no1 < 5)
   if (length(w) > 0) {
     cat("Weak subclass signatures:\n")
-    cat(paste(paste0(colnames(mk$genemeans)[w], " ", no1[w], "/", nsubclass),
+    cat(paste(paste0(format(colnames(mk$genemeans)[w], justify = "left"),
+                     "  ", no1[w], "/", nsubclass),
               collapse = "\n"))
     cat("\n")
   }
