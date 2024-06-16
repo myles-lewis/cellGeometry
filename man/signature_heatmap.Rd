@@ -6,7 +6,7 @@
 \usage{
 signature_heatmap(
   x,
-  type = c("subclass", "group"),
+  type = c("subclass", "group", "groupsplit"),
   use_filter = NULL,
   rank = c("max", "angle"),
   scale = c("none", "max", "sphere"),

@@ -27,7 +27,7 @@
 #' @export
 
 signature_heatmap <- function(x,
-                              type = c("subclass", "group"),
+                              type = c("subclass", "group", "groupsplit"),
                               use_filter = NULL,
                               rank = c("max", "angle"),
                               scale = c("none", "max", "sphere"),
@@ -44,10 +44,13 @@ signature_heatmap <- function(x,
   }
   if (inherits(x, "cellMarkers")) {
     if (is.null(use_filter)) use_filter <- TRUE
-    if (type == "group") {
+    if (type == "groupsplit") {
       gene_signature <- if (use_filter) {x$genemeans_filtered[x$group_geneset, ]
       } else x$genemeans[x$group_geneset, ]
       cell_table <- x$cell_table
+    } else if (type == "group") {
+      gene_signature <- if (use_filter) {x$groupmeans_filtered[x$group_geneset, ]
+      } else x$groupmeans[x$group_geneset, ]
     } else {
       gene_signature <- if (use_filter) {x$genemeans_filtered[x$geneset, ]
       } else x$genemeans[x$geneset, ]
