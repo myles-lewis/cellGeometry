@@ -100,6 +100,7 @@ cellMarkers <- function(scdata,
   
   if (!is.null(cellgroup)) {
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
+    cellgroup[is.na(subclass)] <- NA
     if (min_cells > 0) {
       tab <- table(cellgroup)
       if (any(tab) < min_cells) {
