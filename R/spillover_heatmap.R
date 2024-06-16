@@ -16,14 +16,16 @@
 #' @export
 
 spillover_heatmap <- function(x, ...) {
-  if (inherits(x, "deconv")) x <- x$subclass$spillover
+  cell_table <- NULL
+  if (inherits(x, "deconv")) {
+    cell_table <- x$mk$cell_table
+    x <- x$subclass$spillover
+  }
   if (inherits(x, 'cellMarkers')) {
     cell_table <- x$cell_table
     m_itself <- x$spillover
-  } else {
-    m_itself <- x
-    cell_table <- NULL
-  }
+  } else m_itself <- x
+  
   hm1 <- Heatmap(m_itself,
                  cluster_rows = FALSE, row_split = cell_table,
                  cluster_row_slices = FALSE, row_title = NULL,
