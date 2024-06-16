@@ -10,6 +10,8 @@
 #'   [deconvolute()].
 #' @param type Either "subclass" or "group" specifying whether to show the cell
 #'   subclass or cell group signature from a 'cellMarkers' or 'deconv' object.
+#'   "groupsplit" shows the distribution of mean gene expression for the group
+#'   signature across subclasses.
 #' @param use_filter Logical whether to show denoised gene signature.
 #' @param rank Either "max" or "angle" controlling whether genes (rows) are
 #'   ordered in the heatmap by max expression (the default) or lowest angle
