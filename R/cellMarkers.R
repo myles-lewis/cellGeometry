@@ -128,7 +128,7 @@ cellMarkers <- function(scdata,
   
   # determine spillover
   gene_sig <- genemeans_filtered[geneset, ]
-  m_itself <- dotprod(gene_sig, gene_sig, equalWeight = FALSE)
+  m_itself <- dotprod(gene_sig, gene_sig, equal_weight = FALSE)
   
   out <- list(call = .call,
               best_angle = best_angle,
