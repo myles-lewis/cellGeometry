@@ -34,7 +34,7 @@ diagnose <- function(mk) {
     w <- w[order(spmax[1, ], decreasing = TRUE)]
     spmax <- spmax[, order(spmax[1, ], decreasing = TRUE)]
     
-    cat("Weak subclass signatures with fewer than", nsubclass,
+    cat("Subclass signatures with fewer than", nsubclass,
         "first rank markers:\n")
     cat(paste(paste0(format(colnames(mk$genemeans)[w], justify = "left"),
                      "  ", no1[w], "/", nsubclass),
