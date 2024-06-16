@@ -1,7 +1,17 @@
 
+#' Diagnostics for cellMarker signatures
+#' 
+#' Identifies cell subclasses or groups with weak signatures.
+#' 
+#' @param mk A 'cellMarkers' class object.
+#' @returns No return value. Displays information about the cellMarkers
+#'   signature showing cells subclasses with weak signatures and diagnostic
+#'   information including which cell subclasses each problematic signature
+#'   spills into.
 #' @export
 
 diagnose <- function(mk) {
+  if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   nsubclass <- mk$call$nsubclass
   if (is.null(nsubclass)) nsubclass <- 5
   ngroup <- mk$call$ngroup
