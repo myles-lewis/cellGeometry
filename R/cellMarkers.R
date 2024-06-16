@@ -100,7 +100,7 @@ cellMarkers <- function(scdata,
   
   if (!is.null(cellgroup)) {
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
-    cellgroup[is.na(subclass)] <- NA
+    # cellgroup[is.na(subclass)] <- NA
     if (min_cells > 0) {
       tab <- table(cellgroup)
       if (any(tab) < min_cells) {
@@ -117,6 +117,13 @@ cellMarkers <- function(scdata,
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)
+    # add extra rows
+    rn <- rownames(groupmeans_filtered)
+    miss <- rn[!rn %in% rownames(genemeans_filtered)]
+    if (length(miss) > 0) {
+      extra <- reduceNoise(genemeans[miss, ], noisefilter, noisefraction)
+      genemeans_filtered <- rbind(genemeans_filtered, extra)
+    }
     group_angle <- gene_angle(groupmeans_filtered)
     group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
     group_geneset <- unique(unlist(group_geneset))
