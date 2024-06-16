@@ -23,8 +23,8 @@ diagnose <- function(mk) {
   }, numeric(1))
   w <- which(no1 < 5)
   
+  s1 <- mk$spillover
   if (length(w) > 0) {
-    s1 <- mk$spillover
     spmax <- vapply(w, function(i) {
       col_i <- s1[, i]
       col_i[i] <- 0
@@ -60,7 +60,6 @@ diagnose <- function(mk) {
               collapse = "\n"))
     cat("\n")
   }
-  
   
   smetric <- comp_metric(s1)
   cat("Standard mean spillover", format(smetric, digits = 3), "\n")
