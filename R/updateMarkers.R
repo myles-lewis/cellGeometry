@@ -93,6 +93,13 @@ updateMarkers <- function(object = NULL,
       rownames(groupmeans) %in% add_groupgene
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)
+    # add extra rows
+    rn <- rownames(groupmeans_filtered)
+    miss <- rn[!rn %in% rownames(genemeans_filtered)]
+    if (length(miss) > 0) {
+      extra <- reduceNoise(genemeans[miss, ], noisefilter, noisefraction)
+      genemeans_filtered <- rbind(genemeans_filtered, extra)
+    }
     group_angle <- gene_angle(groupmeans_filtered)
     group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
     group_geneset <- unique(c(unlist(group_geneset), add_groupgene))
