@@ -32,9 +32,13 @@ deconvolution values for the cell subclasses are extracted and plotted.}
 
 \item{percent}{Logical whether to scale the matrix rows as percentage.}
 
-\item{order_col}{Numeric value for which column to sort. If a vector of
+\item{order_col}{Numeric value for which column (cell subclass) to use to
+sort the bars - this only applies if \code{percent = TRUE}. If a vector of
 column indices is supplied, these columns are averaged first using
-\code{rowMeans()}.}
+\code{rowMeans()}. If \code{percent = FALSE}, then the default is to sort bars from
+low to high based on the row sums (i.e. total subclass cell amounts in each
+sample). Setting \code{order_col = 0} disables sorting of bars; in this case
+bars are shown in the original order of the rows of \code{x}.}
 
 \item{scheme}{Vector of colours. If not supplied, the default scheme uses
 \code{scales::hue_pal()}.}
