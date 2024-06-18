@@ -21,10 +21,15 @@
 #'   where cell subclasses or groups are dimensions.
 #' @param col Vector of colours passed to [ComplexHeatmap::Heatmap()].
 #' @param text Logical whether to show values of the maximum cell in each row.
+#' @param fontsize Numeric value for font size for cell values when
+#'   `text = TRUE`.
+#' @param outlines Logical whether to outline boxes with maximum values in each
+#'   row. This supercedes `text`.
+#' @param outline_col Colour for the outline boxes when `outlines = TRUE`.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns A 'Heatmap' class object.
 #' @importFrom grDevices hcl.colors
-#' @importFrom grid gpar
+#' @importFrom grid gpar grid.rect
 #' @importFrom ComplexHeatmap Heatmap pindex
 #' @export
 
@@ -35,6 +40,9 @@ signature_heatmap <- function(x,
                               scale = c("none", "max", "sphere"),
                               col = rev(hcl.colors(10, "Greens3")),
                               text = TRUE,
+                              fontsize = 6.5,
+                              outlines = FALSE,
+                              outline_col = "black",
                               ...) {
   type <- match.arg(type)
   rank <- match.arg(rank)
@@ -79,7 +87,32 @@ signature_heatmap <- function(x,
       ind <- which(v == rowMaxs(gene_signature[i, , drop = FALSE]))
       if (length(ind) > 0) {
         grid.text(sprintf("%.1f", v[ind]), x[ind], y[ind],
-                  gp = gpar(fontsize = 6.5))
+                  gp = gpar(fontsize = fontsize))
+      }
+    }
+  }
+  
+  if (outlines) {
+    if (rank == "max") {
+      layer_fun <- function(j, i, x, y, width, height, fill) {
+        for (jj in unique(j)) {
+          ind1 <- j == jj
+          ind <- which(whmax[i[ind1]] == jj)
+          if (length(ind) > 0) {
+            dy <- y[min(ind)] - y[max(ind)] + height
+            yy <- (y[min(ind)] + y[max(ind)]) / 2
+            grid.rect(x[min(which(ind1))], yy, width, dy,
+                      gp = gpar(col = outline_col, lwd = 0.5, fill = NA))
+          }
+        }
+      }
+    } else {
+      layer_fun <- function(j, i, x, y, width, height, fill) {
+        ind <- which(whmax[i] == j)
+        if (length(ind) > 0) {
+          grid.rect(x[ind], y[ind], width, height,
+                    gp = gpar(col = outline_col, lwd = 0.5, fill = NA))
+        }
       }
     }
   }
@@ -95,5 +128,5 @@ signature_heatmap <- function(x,
           row_title_gp = gpar(fontsize = 6),
           col = col,
           layer_fun = layer_fun,
-          heatmap_legend_param = list(title='mean'), ...)
+          heatmap_legend_param = list(title = 'mean\nexpr'), ...)
 }

@@ -12,6 +12,9 @@ signature_heatmap(
   scale = c("none", "max", "sphere"),
   col = rev(hcl.colors(10, "Greens3")),
   text = TRUE,
+  fontsize = 6.5,
+  outlines = FALSE,
+  outline_col = "black",
   ...
 )
 }
@@ -39,6 +42,14 @@ where cell subclasses or groups are dimensions.}
 \item{col}{Vector of colours passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 
 \item{text}{Logical whether to show values of the maximum cell in each row.}
+
+\item{fontsize}{Numeric value for font size for cell values when
+\code{text = TRUE}.}
+
+\item{outlines}{Logical whether to outline boxes with maximum values in each
+row. This supercedes \code{text}.}
+
+\item{outline_col}{Colour for the outline boxes when \code{outlines = TRUE}.}
 
 \item{...}{Optional arguments passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 }
