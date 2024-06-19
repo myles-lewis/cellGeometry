@@ -20,7 +20,7 @@ specificity_plot(
 
 \item{subclass}{character value specifying the subclass to be plotted}
 
-\item{use_filter}{logical, whether to use gene mean expressions to which
+\item{use_filter}{logical, whether to use gene mean expression to which
 noise reduction filtering has been applied.}
 
 \item{nrank}{number of ranks of subclasses to display.}

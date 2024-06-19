@@ -22,7 +22,7 @@
 #' 
 #' @param mk a 'cellMarkers' class object.
 #' @param subclass character value specifying the subclass to be plotted
-#' @param use_filter logical, whether to use gene mean expressions to which
+#' @param use_filter logical, whether to use gene mean expression to which
 #'   noise reduction filtering has been applied.
 #' @param nrank number of ranks of subclasses to display.
 #' @param label_pos character value, either "left" or "right" specifying which
