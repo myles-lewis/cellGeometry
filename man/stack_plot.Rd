@@ -56,7 +56,8 @@ ggplot2 sets the column number automatically.}
 \item{legend_position}{Position of ggplot2 legend}
 }
 \value{
-No return value. Plots a stacked barchart using base graphics.
+The base graphics function has no return value. It plots a stacked
+barchart using base graphics. The ggplot2 version returns a ggplot2 object.
 }
 \description{
 Produces stacked bar plots using base graphics or ggplot2.
