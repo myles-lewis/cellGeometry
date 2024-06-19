@@ -36,9 +36,26 @@ the left as a proportion. Only invoked when \code{label_pos = "left"}.}
 \item{scheme}{Vector of colours for points.}
 }
 \value{
-a ggplot2 scatter plot object.
+ggplot2 scatter plot object.
 }
 \description{
 Scatter plot showing specificity of genes as markers for a particular cell
-subclass.
+subclass. Optimal gene markers for that cell subclass are those genes which
+are closest to or lie on the y axis, while also being of highest mean
+expression.
+}
+\details{
+The coordinates are drawn as x = vector length * sin(angle) and y = vector
+length * cos(angle), where vector length is the Euclidean length of that gene
+in space where each cell subclass is a dimension. Angle is the angle between
+the projected vector in space against perfection for that cell
+subclass, i.e. the vector lying perfectly along the subclass dimension with
+no deviation along other subclass dimensions, i.e. a gene which is expressed
+solely in that subclass and has 0 expression in all other subclasses. y is
+equal to the mean expression of each gene in the subclass of interest. x
+represents the Euclidean distance of mean expression in all other subclasses.
+
+Colour is used to overlay the ranking of each gene across the subclasses,
+showing for each gene where the subclass of interest is ranked compared to
+the other subclasses. Best markers have the subclass of interest ranked 1st.
 }
