@@ -47,7 +47,9 @@ to the cell group gene signature.}
 in rows. This matrix is only used for its rownames, to ensure that cell
 markers are selected from genes in the bulk dataset.}
 
-\item{nsubclass}{Number of genes to select for each single cell subclass.}
+\item{nsubclass}{Number of genes to select for each single cell subclass.
+Either a single number or a vector with the number of genes for each
+subclass.}
 
 \item{ngroup}{Number of genes to select for each cell group.}
 

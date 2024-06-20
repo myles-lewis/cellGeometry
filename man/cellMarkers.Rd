@@ -36,7 +36,9 @@ markers are selected from genes in the bulk dataset.}
 columns in \code{scdata}. \code{subclass} is assumed to contain subclasses which are
 subsets within \code{cellgroup} overarching classes.}
 
-\item{nsubclass}{Number of genes to select for each single cell subclass.}
+\item{nsubclass}{Number of genes to select for each single cell subclass.
+Either a single number or a vector with the number of genes for each
+subclass.}
 
 \item{ngroup}{Number of genes to select for each cell group.}
 

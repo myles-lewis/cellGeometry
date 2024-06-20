@@ -14,6 +14,8 @@
 #'   columns in `scdata`. `subclass` is assumed to contain subclasses which are
 #'   subsets within `cellgroup` overarching classes.
 #' @param nsubclass Number of genes to select for each single cell subclass.
+#'   Either a single number or a vector with the number of genes for each
+#'   subclass.
 #' @param ngroup Number of genes to select for each cell group. 
 #' @param expfilter Genes whose maximum mean expression on log2 scale per cell
 #'   type are below this value are removed and not considered for the signature.
@@ -90,12 +92,19 @@ cellMarkers <- function(scdata,
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
                        nsub, " cell subclasses")
   if (verbose) message("Subclass analysis")
+  if (length(nsubclass) == 1) {
+    nsubclass <- rep(nsubclass, ncol(genemeans))
+    names(nsubclass) <- colnames(genemeans)
+  }
+  if (length(nsubclass) != ncol(genemeans)) stop("incompatible nsubclass length")
   genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
-  geneset <- lapply(best_angle, function(i) rownames(i)[1:nsubclass])
+  geneset <- lapply(seq_along(best_angle), function(i) {
+    rownames(best_angle[[i]])[seq_len(nsubclass[i])]
+  })
   geneset <- unique(unlist(geneset))
   
   if (!is.null(cellgroup)) {
@@ -148,7 +157,8 @@ cellMarkers <- function(scdata,
               groupmeans = groupmeans,
               groupmeans_filtered = groupmeans_filtered,
               cell_table = cell_table,
-              spillover = m_itself)
+              spillover = m_itself,
+              nsubclass = nsubclass)
   class(out) <- "cellMarkers"
   out
 }

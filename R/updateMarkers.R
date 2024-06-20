@@ -22,6 +22,8 @@
 #'   in rows. This matrix is only used for its rownames, to ensure that cell
 #'   markers are selected from genes in the bulk dataset.
 #' @param nsubclass Number of genes to select for each single cell subclass.
+#'   Either a single number or a vector with the number of genes for each
+#'   subclass.
 #' @param ngroup Number of genes to select for each cell group.
 #' @param expfilter Genes whose maximum mean expression on log2 scale per cell
 #'   type are below this value are removed and not considered for the signature.
@@ -73,12 +75,19 @@ updateMarkers <- function(object = NULL,
   }
       
   if (verbose) message("Subclass analysis")
+  if (length(nsubclass) == 1) {
+    nsubclass <- rep(nsubclass, ncol(genemeans))
+    names(nsubclass) <- colnames(genemeans)
+  }
+  if (length(nsubclass) != ncol(genemeans)) stop("incompatible nsubclass length")
   highexp <- ok & rowMaxs(genemeans) > expfilter |
     rownames(genemeans) %in% add_gene
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
-  geneset <- lapply(best_angle, function(i) rownames(i)[1:nsubclass])
+  geneset <- lapply(seq_along(best_angle), function(i) {
+    rownames(best_angle[[i]])[seq_len(nsubclass[i])]
+  })
   geneset <- unique(c(unlist(geneset), add_gene))
   if (!is.null(remove_gene)) geneset <- geneset[!geneset %in% remove_gene]
   
@@ -126,7 +135,8 @@ updateMarkers <- function(object = NULL,
               groupmeans = groupmeans,
               groupmeans_filtered = groupmeans_filtered,
               cell_table = cell_table,
-              spillover = m_itself)
+              spillover = m_itself,
+              nsubclass = nsubclass)
   if (!is.null(object$symbol)) out$symbol <- object$symbol
   class(out) <- "cellMarkers"
   out
