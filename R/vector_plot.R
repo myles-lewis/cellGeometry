@@ -1,5 +1,5 @@
 
-#' Specificity plot
+#' Vector plot
 #' 
 #' Scatter plot showing specificity of genes as markers for a particular cell
 #' subclass. Optimal gene markers for that cell subclass are those genes which
@@ -15,6 +15,9 @@
 #' solely in that subclass and has 0 expression in all other subclasses. y is
 #' equal to the mean expression of each gene in the subclass of interest. x
 #' represents the Euclidean distance of mean expression in all other subclasses.
+#' Thus, the plot represents a rotation of all genes as vectors around the axis
+#' of the subclass of interest onto the same plane so that the angle with the
+#' subclass of interest is visualised between genes.
 #' 
 #' Colour is used to overlay the ranking of each gene across the subclasses,
 #' showing for each gene where the subclass of interest is ranked compared to
@@ -39,7 +42,7 @@
 #' @importFrom grDevices adjustcolor
 #' @export
 
-specificity_plot <- function(mk, subclass,
+vector_plot <- function(mk, subclass,
                              use_filter = FALSE,
                              nrank = 8,
                              label_pos = "right",
