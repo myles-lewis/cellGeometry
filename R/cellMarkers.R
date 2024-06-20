@@ -157,7 +157,8 @@ cellMarkers <- function(scdata,
               groupmeans_filtered = groupmeans_filtered,
               cell_table = cell_table,
               spillover = m_itself,
-              nsubclass = nsubclass)
+              nsubclass = nsubclass,
+              expfilter = expfilter)
   class(out) <- "cellMarkers"
   out
 }

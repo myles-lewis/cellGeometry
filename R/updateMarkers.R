@@ -136,7 +136,8 @@ updateMarkers <- function(object = NULL,
               groupmeans_filtered = groupmeans_filtered,
               cell_table = cell_table,
               spillover = m_itself,
-              nsubclass = nsubclass)
+              nsubclass = nsubclass,
+              expfilter = expfilter)
   if (!is.null(object$symbol)) out$symbol <- object$symbol
   class(out) <- "cellMarkers"
   out
