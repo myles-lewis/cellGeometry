@@ -35,7 +35,7 @@
 #'   noise reduction filtering has been applied.
 #' @param nrank number of ranks of subclasses to display.
 #' @param label_pos character value, either "left" or "right" specifying which
-#'   side to add labels.
+#'   side to add labels. Only for `type = 1` plots.
 #' @param nsubclass numeric value, number of top markers to label. By default
 #'   this is obtained from `mk` for that subclass.
 #' @param expfilter numeric value for the expression filter level below which
@@ -45,6 +45,10 @@
 #' @param axis_extend numeric value, specifying how far to extend the x axis to
 #'   the left as a proportion. Only invoked when `label_pos = "left"`.
 #' @param scheme Vector of colours for points.
+#' @param nudge_x,nudge_y Label adjustments passed to `geom_label_repel()` or
+#'   `geom_text_repel()`.
+#' @param ... Optional arguments passed to `geom_label_repel()` or
+#'   `geom_text_repel()`.
 #' @returns ggplot2 scatter plot object.
 #' @importFrom ggplot2 geom_point geom_vline scale_color_manual xlim ylim
 #' @importFrom ggrepel geom_label_repel geom_text_repel
@@ -60,7 +64,9 @@ specificity_plot <- function(mk, subclass,
                              expfilter = NULL,
                              add_labels = NULL,
                              axis_extend = 0.4,
-                             scheme = NULL) {
+                             scheme = NULL,
+                             nudge_x = NULL, nudge_y = NULL,
+                             ...) {
   if (!inherits(mk, "cellMarkers")) stop("not a 'cellMarkers' class object")
   if (is.numeric(subclass)) subclass <- colnames(mk$genemeans)[subclass]
   if (!subclass %in% colnames(mk$genemeans))
@@ -92,7 +98,7 @@ specificity_plot <- function(mk, subclass,
   if (is.null(nsubclass)) nsubclass <- 5
   labs <- rownames(mk$best_angle[[subclass]][1L:nsubclass, ])
   labs <- unique(c(labs, add_labels))
-  df$label <- NA
+  df$label <- ""
   df$label[match(labs, rownames(df))] <- labs
   df <- df[rev(order(df$rank)), ]
   
@@ -106,7 +112,13 @@ specificity_plot <- function(mk, subclass,
     # use actual angle; radius is vecLength
     xlim <- xr <- range(df$x, na.rm = TRUE)
     yr <- range(df$y, na.rm = TRUE)
-    if (label_pos == "left") xlim[1] <- xlim[1] - diff(xr) * axis_extend
+    if (label_pos == "left") {
+      xlim[1] <- xlim[1] - diff(xr) * axis_extend
+      if (is.null(nudge_x)) nudge_x <- -diff(xr) * 0.2
+    } else {
+      if (is.null(nudge_x)) nudge_x <- diff(xr) * 0.5
+    }
+    if (is.null(nudge_y)) nudge_y <- 0
     
     ggplot(df, aes(x = .data$x, y = .data$y, color = .data$rank,
                    label = .data$label)) +
@@ -114,11 +126,13 @@ specificity_plot <- function(mk, subclass,
       geom_point() +
       scale_color_manual(values = scheme) +
       (if (label_pos == "left") {
-        geom_label_repel(size = 3, color = "black", nudge_x = -diff(xr) * 0.2,
-                         hjust = 1, label.size = NA, direction = "y", na.rm = TRUE)
+        geom_label_repel(size = 3, color = "black",
+                         nudge_x = nudge_x, nudge_y = nudge_y,
+                         hjust = 1, label.size = NA, direction = "y", ...)
       } else {
-        geom_text_repel(size = 3, color = "black", nudge_x = diff(xr) * 0.5,
-                        hjust = 0, direction = "y", na.rm = TRUE)
+        geom_text_repel(size = 3, color = "black",
+                        nudge_x = nudge_x, nudge_y = nudge_y,
+                        hjust = 0, direction = "y", na.rm = TRUE, ...)
       }) +
       xlim(xlim) + ylim(yr) +
       xlab("Vector length * sin(angle)") +
@@ -129,13 +143,15 @@ specificity_plot <- function(mk, subclass,
     # angle on x, mean exp on y
     xr <- range(df$angle.deg, na.rm = TRUE)
     yr <- range(df$mean, na.rm = TRUE)
+    if (is.null(nudge_x)) nudge_x <- 0
+    if (is.null(nudge_y)) nudge_y <- 0.1
+    
     ggplot(df, aes(x = .data$angle.deg, y = .data$mean, color = .data$rank,
                    label = .data$label)) +
       geom_point() +
       scale_color_manual(values = scheme) +
       geom_text_repel(size = 3, color = "black",
-                      nudge_y = 0.1,
-                      na.rm = TRUE) +
+                      nudge_x = nudge_x, nudge_y = nudge_y, ...) +
       xlab("Vector angle") +
       ylab(paste(subclass, "mean expression")) +
       theme_classic() +

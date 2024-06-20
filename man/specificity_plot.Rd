@@ -15,7 +15,10 @@ specificity_plot(
   expfilter = NULL,
   add_labels = NULL,
   axis_extend = 0.4,
-  scheme = NULL
+  scheme = NULL,
+  nudge_x = NULL,
+  nudge_y = NULL,
+  ...
 )
 }
 \arguments{
@@ -33,7 +36,7 @@ noise reduction filtering has been applied.}
 \item{nrank}{number of ranks of subclasses to display.}
 
 \item{label_pos}{character value, either "left" or "right" specifying which
-side to add labels.}
+side to add labels. Only for \code{type = 1} plots.}
 
 \item{nsubclass}{numeric value, number of top markers to label. By default
 this is obtained from \code{mk} for that subclass.}
@@ -48,6 +51,12 @@ genes are excluded from being markers. Defaults to the level used when
 the left as a proportion. Only invoked when \code{label_pos = "left"}.}
 
 \item{scheme}{Vector of colours for points.}
+
+\item{nudge_x, nudge_y}{Label adjustments passed to \code{geom_label_repel()} or
+\code{geom_text_repel()}.}
+
+\item{...}{Optional arguments passed to \code{geom_label_repel()} or
+\code{geom_text_repel()}.}
 }
 \value{
 ggplot2 scatter plot object.
