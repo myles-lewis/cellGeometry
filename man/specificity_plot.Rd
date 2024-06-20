@@ -23,7 +23,9 @@ specificity_plot(
 
 \item{subclass}{character value specifying the subclass to be plotted}
 
-\item{type}{}
+\item{type}{Numeric value, either 1 for a plot projecting the vector angle
+into the same plain, or 2 a plot of angle on x axis and mean expression on
+y axis. See Details below.}
 
 \item{use_filter}{logical, whether to use gene mean expression to which
 noise reduction filtering has been applied.}

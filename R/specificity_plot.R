@@ -28,7 +28,9 @@
 #' 
 #' @param mk a 'cellMarkers' class object.
 #' @param subclass character value specifying the subclass to be plotted
-#' @param type 
+#' @param type Numeric value, either 1 for a plot projecting the vector angle
+#'   into the same plain, or 2 a plot of angle on x axis and mean expression on
+#'   y axis. See Details below.
 #' @param use_filter logical, whether to use gene mean expression to which
 #'   noise reduction filtering has been applied.
 #' @param nrank number of ranks of subclasses to display.
