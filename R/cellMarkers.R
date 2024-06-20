@@ -87,16 +87,15 @@ cellMarkers <- function(scdata,
       dimx <- dim(scdata)
     }
   }
-  u <- unique(subclass)
-  nsub <- length(u[!is.na(u)])
+  nsub <- nlevels(subclass)
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
                        nsub, " cell subclasses")
   if (verbose) message("Subclass analysis")
   if (length(nsubclass) == 1) {
-    nsubclass <- rep(nsubclass, ncol(genemeans))
-    names(nsubclass) <- colnames(genemeans)
+    nsubclass <- rep(nsubclass, nsub)
+    names(nsubclass) <- levels(subclass)
   }
-  if (length(nsubclass) != ncol(genemeans)) stop("incompatible nsubclass length")
+  if (length(nsubclass) != nsub) stop("incompatible nsubclass length")
   genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
