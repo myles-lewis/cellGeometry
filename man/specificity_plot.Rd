@@ -11,6 +11,7 @@ specificity_plot(
   nrank = 8,
   label_pos = "right",
   nsubclass = 5,
+  add_labels = NULL,
   axis_extend = 0.4,
   scheme = NULL
 )
@@ -29,6 +30,8 @@ noise reduction filtering has been applied.}
 side to add labels.}
 
 \item{nsubclass}{number of top markers to label}
+
+\item{add_labels}{character vector of additional genes to label}
 
 \item{axis_extend}{numeric value, specifying how far to extend the x axis to
 the left as a proportion. Only invoked when \code{label_pos = "left"}.}
