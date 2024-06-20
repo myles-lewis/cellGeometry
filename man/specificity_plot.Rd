@@ -10,7 +10,7 @@ specificity_plot(
   use_filter = FALSE,
   nrank = 8,
   label_pos = "right",
-  nsubclass = 5,
+  nsubclass = NULL,
   add_labels = NULL,
   axis_extend = 0.4,
   scheme = NULL
@@ -29,7 +29,8 @@ noise reduction filtering has been applied.}
 \item{label_pos}{character value, either "left" or "right" specifying which
 side to add labels.}
 
-\item{nsubclass}{number of top markers to label}
+\item{nsubclass}{numeric value, number of top markers to label. By default
+this is obtained from \code{mk} for that subclass.}
 
 \item{add_labels}{character vector of additional genes to label}
 

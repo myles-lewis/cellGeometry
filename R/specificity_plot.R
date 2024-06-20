@@ -27,7 +27,8 @@
 #' @param nrank number of ranks of subclasses to display.
 #' @param label_pos character value, either "left" or "right" specifying which
 #'   side to add labels.
-#' @param nsubclass number of top markers to label
+#' @param nsubclass numeric value, number of top markers to label. By default
+#'   this is obtained from `mk` for that subclass.
 #' @param add_labels character vector of additional genes to label
 #' @param axis_extend numeric value, specifying how far to extend the x axis to
 #'   the left as a proportion. Only invoked when `label_pos = "left"`.
@@ -42,7 +43,7 @@ specificity_plot <- function(mk, subclass,
                              use_filter = FALSE,
                              nrank = 8,
                              label_pos = "right",
-                             nsubclass = 5,
+                             nsubclass = NULL,
                              add_labels = NULL,
                              axis_extend = 0.4,
                              scheme = NULL) {
@@ -67,7 +68,9 @@ specificity_plot <- function(mk, subclass,
   df$x <- vecLength * sin(df$angle)
   df$y <- vecLength * cos(df$angle)
   df <- df[vecLength != 0, ]
-  labs <- rownames(mk$best_angle[[subclass]][1:nsubclass, ])
+  if (is.null(nsubclass)) nsubclass <- mk$nsubclass[subclass]
+  if (is.null(nsubclass)) nsubclass <- 5
+  labs <- rownames(mk$best_angle[[subclass]][1L:nsubclass, ])
   labs <- unique(c(labs, add_labels))
   df$label <- NA
   df$label[match(labs, rownames(df))] <- labs
