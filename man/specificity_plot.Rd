@@ -78,7 +78,7 @@ the left as a proportion. Only invoked when \code{label_pos = "left"}.}
 \code{specificity_plotly()}.}
 }
 \value{
-ggplot2 scatter plot object.
+ggplot2 or plotly scatter plot object.
 }
 \description{
 Scatter plot showing specificity of genes as markers for a particular cell
@@ -96,13 +96,15 @@ dimension with no deviation along other subclass dimensions, i.e. a gene
 which is expressed solely in that subclass and has 0 expression in all other
 subclasses. y is equal to the mean expression of each gene in the subclass of
 interest. x represents the Euclidean distance of mean expression in all other
-subclasses, i.e. non-specific gene expression in other subclasses. Thus, the
-plot represents a rotation of all genes as vectors around the axis of the
-subclass of interest onto the same plane so that the angle with the subclass
-of interest is visualised between genes.
+subclasses, i.e. overall non-specific gene expression in other subclasses.
+Thus, the plot represents a rotation of all genes as vectors around the axis
+of the subclass of interest onto the same plane so that the angle with the
+subclass of interest is visualised between genes.
 
 For \code{type = 2}, coordinates are drawn as x = angle of vector in degrees, y =
-mean gene expression of each gene in the subclass of interest.
+mean gene expression of each gene in the subclass of interest. This version
+is easier to use to identify additional gene markers. The plotly version
+allows users to hover over points and identify which gene they belong to.
 
 Colour is used to overlay the ranking of each gene across the subclasses,
 showing for each gene where the subclass of interest is ranked compared to
