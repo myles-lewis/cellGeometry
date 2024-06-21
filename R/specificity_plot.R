@@ -254,6 +254,7 @@ specificity_plotly <- function(mk, subclass = NULL,
     # use actual angle; radius is vecLength
     plot_ly(df, x = ~x, y = ~y, color = ~rank, colors = scheme,
             mode = "markers", type = "scattergl", hoverinfo = "text",
+            marker = list(size = 6.5, line = list(width = 0.2, color = "white")),
             text = ~text, ...) |>
       layout(legend = list(traceorder = "reversed"),
              xaxis = list(title = "Non-specific gene expression"),
@@ -263,6 +264,7 @@ specificity_plotly <- function(mk, subclass = NULL,
     plot_ly(df, x = ~angle.deg, y = ~mean, color = ~rank,
             colors = scheme,
             mode = "markers", type = "scattergl", hoverinfo = "text",
+            marker = list(size = 6.5, line = list(width = 0.2, color = "white")),
             text = ~text, ...) |>
     layout(legend = list(traceorder = "reversed"),
            xaxis = list(title = "Angle"),
