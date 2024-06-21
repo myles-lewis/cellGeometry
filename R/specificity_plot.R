@@ -15,9 +15,10 @@
 #' which is expressed solely in that subclass and has 0 expression in all other
 #' subclasses. y is equal to the mean expression of each gene in the subclass of
 #' interest. x represents the Euclidean distance of mean expression in all other
-#' subclasses. Thus, the plot represents a rotation of all genes as vectors
-#' around the axis of the subclass of interest onto the same plane so that the
-#' angle with the subclass of interest is visualised between genes.
+#' subclasses, i.e. non-specific gene expression in other subclasses. Thus, the
+#' plot represents a rotation of all genes as vectors around the axis of the
+#' subclass of interest onto the same plane so that the angle with the subclass
+#' of interest is visualised between genes.
 #' 
 #' For `type = 2`, coordinates are drawn as x = angle of vector in degrees, y =
 #' mean gene expression of each gene in the subclass of interest.
@@ -115,11 +116,9 @@ specificity_plot <- function(mk, subclass = NULL,
   df$x <- vecLength * sin(df$angle)
   df$y <- vecLength * cos(df$angle)
   df <- df[vecLength != 0, ]
-  
   labs <- unique(c(labs, add_labels))
   df$label <- ""
   df$label[match(labs, rownames(df))] <- labs
-  
   df <- df[rev(order(df$rank)), ]
   
   if (is.null(scheme)) {
@@ -155,7 +154,7 @@ specificity_plot <- function(mk, subclass = NULL,
                         hjust = 0, direction = "y", na.rm = TRUE, ...)
       }) +
       xlim(xlim) + ylim(yr) +
-      xlab("Vector length * sin(angle)") +
+      xlab("Non-specific gene expression") +
       ylab(paste(subc, "mean expression")) +
       theme_classic() +
       theme(axis.text = element_text(colour = "black"))

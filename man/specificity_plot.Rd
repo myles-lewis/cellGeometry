@@ -81,9 +81,10 @@ dimension with no deviation along other subclass dimensions, i.e. a gene
 which is expressed solely in that subclass and has 0 expression in all other
 subclasses. y is equal to the mean expression of each gene in the subclass of
 interest. x represents the Euclidean distance of mean expression in all other
-subclasses. Thus, the plot represents a rotation of all genes as vectors
-around the axis of the subclass of interest onto the same plane so that the
-angle with the subclass of interest is visualised between genes.
+subclasses, i.e. non-specific gene expression in other subclasses. Thus, the
+plot represents a rotation of all genes as vectors around the axis of the
+subclass of interest onto the same plane so that the angle with the subclass
+of interest is visualised between genes.
 
 For \code{type = 2}, coordinates are drawn as x = angle of vector in degrees, y =
 mean gene expression of each gene in the subclass of interest.
