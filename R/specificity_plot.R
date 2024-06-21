@@ -37,25 +37,27 @@
 #' @param use_filter logical, whether to use gene mean expression to which
 #'   noise reduction filtering has been applied.
 #' @param nrank number of ranks of subclasses to display.
-#' @param label_pos character value, either "left" or "right" specifying which
-#'   side to add labels. Only for `type = 1` plots.
 #' @param nsubclass numeric value, number of top markers to label. By default
 #'   this is obtained from `mk` for that subclass.
 #' @param expfilter numeric value for the expression filter level below which
 #'   genes are excluded from being markers. Defaults to the level used when
 #'   `cellMarkers()` or `updateMarkers()` was called.
+#' @param scheme Vector of colours for points.
 #' @param add_labels character vector of additional genes to label
+#' @param label_pos character value, either "left" or "right" specifying which
+#'   side to add labels. Only for `type = 1` plots.
 #' @param axis_extend numeric value, specifying how far to extend the x axis to
 #'   the left as a proportion. Only invoked when `label_pos = "left"`.
-#' @param scheme Vector of colours for points.
 #' @param nudge_x,nudge_y Label adjustments passed to `geom_label_repel()` or
 #'   `geom_text_repel()`.
 #' @param ... Optional arguments passed to `geom_label_repel()` or
-#'   `geom_text_repel()`.
+#'   `geom_text_repel()` for `specificity_plot()` or `plot_ly()` for
+#'   `specificity_plotly()`.
 #' @returns ggplot2 scatter plot object.
 #' @importFrom ggplot2 geom_point geom_vline scale_color_manual xlim ylim
 #' @importFrom ggrepel geom_label_repel geom_text_repel
 #' @importFrom grDevices adjustcolor
+#' @importFrom plotly plot_ly layout `%>%`
 #' @export
 
 specificity_plot <- function(mk, subclass = NULL,
@@ -63,12 +65,12 @@ specificity_plot <- function(mk, subclass = NULL,
                              type = 1,
                              use_filter = FALSE,
                              nrank = 8,
-                             label_pos = "right",
                              nsubclass = NULL,
                              expfilter = NULL,
-                             add_labels = NULL,
-                             axis_extend = 0.4,
                              scheme = NULL,
+                             add_labels = NULL,
+                             label_pos = "right",
+                             axis_extend = 0.4,
                              nudge_x = NULL, nudge_y = NULL,
                              ...) {
   if (!inherits(mk, "cellMarkers")) stop("not a 'cellMarkers' class object")
@@ -175,5 +177,95 @@ specificity_plot <- function(mk, subclass = NULL,
       ylab(paste(subc, "mean expression")) +
       theme_classic() +
       theme(axis.text = element_text(colour = "black"))
+  }
+}
+
+
+#' @rdname specificity_plot
+#' @export
+specificity_plotly <- function(mk, subclass = NULL,
+                               group = NULL,
+                               type = 1,
+                               use_filter = FALSE,
+                               nrank = 8,
+                               nsubclass = NULL,
+                               expfilter = NULL,
+                               scheme = NULL,
+                               ...) {
+  if (!inherits(mk, "cellMarkers")) stop("not a 'cellMarkers' class object")
+  if (is.null(subclass) & is.null(group))
+    stop("Either subclass or group must be specified")
+  
+  if (!is.null(subclass)) {
+    if (is.numeric(subclass)) subclass <- colnames(mk$genemeans)[subclass]
+    if (!subclass %in% colnames(mk$genemeans))
+      stop("subclass ", subclass, " not found")
+    genemeans <- if (use_filter) mk$genemeans_filtered else mk$genemeans
+    if (is.null(nsubclass)) nsubclass <- mk$nsubclass[subclass]
+    if (is.null(nsubclass)) nsubclass <- 5
+    labs <- rownames(mk$best_angle[[subclass]][1L:nsubclass, ])
+    subc <- subclass
+  } else {
+    if (is.numeric(group)) group <- colnames(mk$groupmeans)[group]
+    if (!group %in% colnames(mk$groupmeans))
+      stop("group ", group, " not found")
+    genemeans <- if (use_filter) mk$groupmeans_filtered else mk$groupmeans
+    if (is.null(nsubclass)) nsubclass <- 5
+    labs <- rownames(mk$group_angle[[group]][1L:nsubclass, ])
+    subc <- group
+  }
+  
+  vecLength <- sqrt(rowSums(genemeans^2))
+  genemeans_scaled <- genemeans / vecLength
+  genemeans_angle <- acos(genemeans_scaled)
+  gene_rank <- apply(-genemeans, 1, rank)[subc, ]
+  nrank <- pmin(ncol(genemeans), nrank)
+  gene_rank[gene_rank > nrank] <- nrank
+  gene_rank <- factor(floor(gene_rank))
+  if (type == 2) {
+    if (is.null(expfilter)) expfilter <- mk$expfilter
+    gene_rank[genemeans[, subc] < expfilter] <- nrank
+    levels(gene_rank)[nrank] <- paste0(nrank, "+/low")
+  } else {
+    levels(gene_rank)[nrank] <- paste0(nrank, "+")
+  }
+  gene_rank <- factor(gene_rank, levels = rev(levels(gene_rank)))
+  
+  df <- data.frame(angle = genemeans_angle[, subc],
+                   angle.deg = genemeans_angle[, subc] * 180/pi,
+                   mean = genemeans[, subc],
+                   rank = gene_rank)
+  df$x <- vecLength * sin(df$angle)
+  df$y <- vecLength * cos(df$angle)
+  df <- df[vecLength != 0, ]
+  
+  df$text <- paste(rownames(df), "<br>Angle: ", signif(df$angle.deg, 3),
+                   "<br>Mean expr:", signif(df$mean, 3),
+                   "<br>Rank:", df$rank)
+  
+  if (is.null(scheme)) {
+    scheme <- c(hue_pal(h = c(0, 270), c = 120)(nrank -1),
+                adjustcolor("grey", 0.5))
+    scheme[1] <- "red"
+  }
+  scheme <- rev(scheme)
+  
+  if (type == 1) {
+    # use actual angle; radius is vecLength
+    plot_ly(df, x = ~x, y = ~y, color = ~rank, colors = scheme,
+            mode = "markers", type = "scattergl", hoverinfo = "text",
+            text = ~text, ...) |>
+      layout(legend = list(traceorder = "reversed"),
+             xaxis = list(title = "Non-specific gene expression"),
+             yaxis = list(title = paste(subc, "mean expression")))
+  } else {
+    # angle on x, mean exp on y
+    plot_ly(df, x = ~angle.deg, y = ~mean, color = ~rank,
+            colors = scheme,
+            mode = "markers", type = "scattergl", hoverinfo = "text",
+            text = ~text, ...) |>
+    layout(legend = list(traceorder = "reversed"),
+           xaxis = list(title = "Angle"),
+           yaxis = list(title = paste(subc, "mean expression")))
   }
 }

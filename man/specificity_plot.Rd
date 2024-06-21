@@ -2,6 +2,7 @@
 % Please edit documentation in R/specificity_plot.R
 \name{specificity_plot}
 \alias{specificity_plot}
+\alias{specificity_plotly}
 \title{Specificity plot}
 \usage{
 specificity_plot(
@@ -11,14 +12,27 @@ specificity_plot(
   type = 1,
   use_filter = FALSE,
   nrank = 8,
-  label_pos = "right",
   nsubclass = NULL,
   expfilter = NULL,
-  add_labels = NULL,
-  axis_extend = 0.4,
   scheme = NULL,
+  add_labels = NULL,
+  label_pos = "right",
+  axis_extend = 0.4,
   nudge_x = NULL,
   nudge_y = NULL,
+  ...
+)
+
+specificity_plotly(
+  mk,
+  subclass = NULL,
+  group = NULL,
+  type = 1,
+  use_filter = FALSE,
+  nrank = 8,
+  nsubclass = NULL,
+  expfilter = NULL,
+  scheme = NULL,
   ...
 )
 }
@@ -39,9 +53,6 @@ noise reduction filtering has been applied.}
 
 \item{nrank}{number of ranks of subclasses to display.}
 
-\item{label_pos}{character value, either "left" or "right" specifying which
-side to add labels. Only for \code{type = 1} plots.}
-
 \item{nsubclass}{numeric value, number of top markers to label. By default
 this is obtained from \code{mk} for that subclass.}
 
@@ -49,18 +60,22 @@ this is obtained from \code{mk} for that subclass.}
 genes are excluded from being markers. Defaults to the level used when
 \code{cellMarkers()} or \code{updateMarkers()} was called.}
 
+\item{scheme}{Vector of colours for points.}
+
 \item{add_labels}{character vector of additional genes to label}
+
+\item{label_pos}{character value, either "left" or "right" specifying which
+side to add labels. Only for \code{type = 1} plots.}
 
 \item{axis_extend}{numeric value, specifying how far to extend the x axis to
 the left as a proportion. Only invoked when \code{label_pos = "left"}.}
-
-\item{scheme}{Vector of colours for points.}
 
 \item{nudge_x, nudge_y}{Label adjustments passed to \code{geom_label_repel()} or
 \code{geom_text_repel()}.}
 
 \item{...}{Optional arguments passed to \code{geom_label_repel()} or
-\code{geom_text_repel()}.}
+\code{geom_text_repel()} for \code{specificity_plot()} or \code{plot_ly()} for
+\code{specificity_plotly()}.}
 }
 \value{
 ggplot2 scatter plot object.

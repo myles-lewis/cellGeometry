@@ -18,6 +18,7 @@ Imports:
     grid,
     matrixStats,
     parallel,
+    plotly,
     rlang,
     scales
 Roxygen: list(markdown = TRUE)
