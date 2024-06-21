@@ -27,7 +27,9 @@
 #' the other subclasses. Best markers have the subclass of interest ranked 1st.
 #' 
 #' @param mk a 'cellMarkers' class object.
-#' @param subclass character value specifying the subclass to be plotted
+#' @param subclass character value specifying the subclass to be plotted.
+#' @param group character value specifying cell group to be plotted. One of
+#'   `subclass` or `group` must be specified.
 #' @param type Numeric value, either 1 for a plot projecting the vector angle
 #'   into the same plain, or 2 a plot of angle on x axis and mean expression on
 #'   y axis. See Details below.
@@ -55,7 +57,8 @@
 #' @importFrom grDevices adjustcolor
 #' @export
 
-specificity_plot <- function(mk, subclass,
+specificity_plot <- function(mk, subclass = NULL,
+                             group = NULL,
                              type = 1,
                              use_filter = FALSE,
                              nrank = 8,
@@ -68,38 +71,55 @@ specificity_plot <- function(mk, subclass,
                              nudge_x = NULL, nudge_y = NULL,
                              ...) {
   if (!inherits(mk, "cellMarkers")) stop("not a 'cellMarkers' class object")
-  if (is.numeric(subclass)) subclass <- colnames(mk$genemeans)[subclass]
-  if (!subclass %in% colnames(mk$genemeans))
-    stop("subclass ", subclass, " not found")
+  if (is.null(subclass) & is.null(group))
+    stop("Either subclass or group must be specified")
   
-  genemeans <- if (use_filter) mk$genemeans_filtered else mk$genemeans
+  if (!is.null(subclass)) {
+    if (is.numeric(subclass)) subclass <- colnames(mk$genemeans)[subclass]
+    if (!subclass %in% colnames(mk$genemeans))
+      stop("subclass ", subclass, " not found")
+    genemeans <- if (use_filter) mk$genemeans_filtered else mk$genemeans
+    if (is.null(nsubclass)) nsubclass <- mk$nsubclass[subclass]
+    if (is.null(nsubclass)) nsubclass <- 5
+    labs <- rownames(mk$best_angle[[subclass]][1L:nsubclass, ])
+    subc <- subclass
+  } else {
+    if (is.numeric(group)) group <- colnames(mk$groupmeans)[group]
+    if (!group %in% colnames(mk$groupmeans))
+      stop("group ", group, " not found")
+    genemeans <- if (use_filter) mk$groupmeans_filtered else mk$groupmeans
+    if (is.null(nsubclass)) nsubclass <- 5
+    labs <- rownames(mk$group_angle[[group]][1L:nsubclass, ])
+    subc <- group
+  }
+  
   vecLength <- sqrt(rowSums(genemeans^2))
   genemeans_scaled <- genemeans / vecLength
   genemeans_angle <- acos(genemeans_scaled)
-  gene_rank <- apply(-genemeans, 1, rank)[subclass, ]
+  gene_rank <- apply(-genemeans, 1, rank)[subc, ]
+  nrank <- pmin(ncol(genemeans), nrank)
   gene_rank[gene_rank > nrank] <- nrank
   gene_rank <- factor(floor(gene_rank))
   if (type == 2) {
     if (is.null(expfilter)) expfilter <- mk$expfilter
-    gene_rank[genemeans[, subclass] < expfilter] <- nrank
+    gene_rank[genemeans[, subc] < expfilter] <- nrank
     levels(gene_rank)[nrank] <- paste0(nrank, "+/low")
   } else {
     levels(gene_rank)[nrank] <- paste0(nrank, "+")
   }
   
-  df <- data.frame(angle = genemeans_angle[, subclass],
-                   angle.deg = genemeans_angle[, subclass] * 180/pi,
-                   mean = genemeans[, subclass],
+  df <- data.frame(angle = genemeans_angle[, subc],
+                   angle.deg = genemeans_angle[, subc] * 180/pi,
+                   mean = genemeans[, subc],
                    rank = gene_rank)
   df$x <- vecLength * sin(df$angle)
   df$y <- vecLength * cos(df$angle)
   df <- df[vecLength != 0, ]
-  if (is.null(nsubclass)) nsubclass <- mk$nsubclass[subclass]
-  if (is.null(nsubclass)) nsubclass <- 5
-  labs <- rownames(mk$best_angle[[subclass]][1L:nsubclass, ])
+  
   labs <- unique(c(labs, add_labels))
   df$label <- ""
   df$label[match(labs, rownames(df))] <- labs
+  
   df <- df[rev(order(df$rank)), ]
   
   if (is.null(scheme)) {
@@ -136,7 +156,7 @@ specificity_plot <- function(mk, subclass,
       }) +
       xlim(xlim) + ylim(yr) +
       xlab("Vector length * sin(angle)") +
-      ylab(paste(subclass, "mean expression")) +
+      ylab(paste(subc, "mean expression")) +
       theme_classic() +
       theme(axis.text = element_text(colour = "black"))
   } else {
@@ -153,7 +173,7 @@ specificity_plot <- function(mk, subclass,
       geom_text_repel(size = 3, color = "black",
                       nudge_x = nudge_x, nudge_y = nudge_y, ...) +
       xlab("Vector angle") +
-      ylab(paste(subclass, "mean expression")) +
+      ylab(paste(subc, "mean expression")) +
       theme_classic() +
       theme(axis.text = element_text(colour = "black"))
   }

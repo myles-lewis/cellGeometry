@@ -6,7 +6,8 @@
 \usage{
 specificity_plot(
   mk,
-  subclass,
+  subclass = NULL,
+  group = NULL,
   type = 1,
   use_filter = FALSE,
   nrank = 8,
@@ -24,7 +25,10 @@ specificity_plot(
 \arguments{
 \item{mk}{a 'cellMarkers' class object.}
 
-\item{subclass}{character value specifying the subclass to be plotted}
+\item{subclass}{character value specifying the subclass to be plotted.}
+
+\item{group}{character value specifying cell group to be plotted. One of
+\code{subclass} or \code{group} must be specified.}
 
 \item{type}{Numeric value, either 1 for a plot projecting the vector angle
 into the same plain, or 2 a plot of angle on x axis and mean expression on
