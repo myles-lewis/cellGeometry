@@ -39,10 +39,31 @@
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements. See [scmean()].
 #' @returns 
-#' Returns list object containing `best_angle`, a list of genes ranked by lowest
-#' angle and highest maximum expression in a cell type; `genemeans`, matrix of
-#' mean log2+1 gene expression with genes in rows and cell types in columns;
-#' `genemeans_filters`, matrix of gene expression following noise reduction.
+#' An object with S3 class 'cellMarkers' which is a list containing:
+#'   \item{call}{the matched call}
+#'   \item{best_angle}{list containing a matrix for each cell type of genes 
+#'   whose rows are ranked by lowest angle and highest maximum expression in 
+#'   that cell type}
+#'   \item{group_angle}{list of matrices similar to `best_angle`, for each cell 
+#'   subclass}
+#'   \item{geneset}{character vector of selected gene markers for cell types}
+#'   \item{group_geneset}{character vector of selected gene markers for cell 
+#'   subclasses}
+#'   \item{genemeans}{matrix of mean log2+1 gene expression with genes in rows
+#'   and cell types in columns}
+#'   \item{genemeans_filtered}{matrix of gene expression for cell types 
+#'   following noise reduction}
+#'   \item{groupmeans}{matrix of mean log2+1 gene expression with genes in rows
+#'   and cell subclasses in columns}
+#'   \item{groupmeans_filtered}{matrix of gene expression for cell subclasses 
+#'   following noise reduction}
+#'   \item{cell_table}{factor encoded vector containing the groupings of the 
+#'   cell types within cell subclasses, determined by which subclass contains 
+#'   the maximum number of cells for each cell type}
+#'   \item{spillover}{matrix of spillover values between cell types}
+#'   \item{nsubclass}{argument `nsubclass` expanded as a vector with an entry 
+#'   per cell type}
+#'   \item{expfilter}{argument `expfilter`}
 #' @importFrom matrixStats rowMaxs
 #' @export
 #' 
