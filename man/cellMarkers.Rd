@@ -75,11 +75,16 @@ parallelisation has increased memory requirements. See \code{\link[=scmean]{scme
 \value{
 An object with S3 class 'cellMarkers' which is a list containing:
 \item{call}{the matched call}
-\item{best_angle}{list containing a matrix for each cell type of genes
-whose rows are ranked by lowest angle and highest maximum expression in
-that cell type}
-\item{group_angle}{list of matrices similar to \code{best_angle}, for each cell
-subclass}
+\item{best_angle}{named list containing a matrix for each cell type with
+genes in rows. Rows are ranked by lowest specificity angle for that cell
+type and highest maximum expression. Columns are:
+\code{angle} the specificity angle in radians,
+\code{angle.deg} the same angle in degrees,
+\code{max} the maximum mean expression across all cell types,
+\code{rank} the rank of the mean gene expression for that cell type compared to
+the other cell types}
+\item{group_angle}{named list of matrices similar to \code{best_angle}, for each
+cell subclass}
 \item{geneset}{character vector of selected gene markers for cell types}
 \item{group_geneset}{character vector of selected gene markers for cell
 subclasses}
