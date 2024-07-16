@@ -17,10 +17,10 @@
 #'   possible even if that leads to duplicates. Duplicates can cause problems
 #'   with rownames and [updateMarkers()] in particular.
 #' @returns If `x` is a vector, a vector of symbols is returned. If no symbol is
-#'   no available the ensembl id is left untouched. If `x` is a 'cellMarkers'
-#'   class object, a 'cellMarkers' object is returned with rownames in the
-#'   results elements and genesets converted to gene symbols, and an extra
-#'   element `symbol` containing a named vector of converted genes.
+#'   available for particular ensembl id, the id is left untouched. If `x` is a
+#'   'cellMarkers' class object, a 'cellMarkers' object is returned with
+#'   rownames in the results elements and genesets converted to gene symbols,
+#'   and an extra element `symbol` containing a named vector of converted genes.
 #' @export
 
 gene2symbol <- function(x, ensdb, dups = c("omit", "pass")) {
