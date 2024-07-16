@@ -20,7 +20,7 @@
 #'   no available the ensembl id is left untouched. If `x` is a 'cellMarkers'
 #'   class object, a 'cellMarkers' object is returned with rownames in the
 #'   results elements and genesets converted to gene symbols, and an extra
-#'   element 'symbol' containing a named vector of converted genes.
+#'   element `symbol` containing a named vector of converted genes.
 #' @export
 
 gene2symbol <- function(x, ensdb, dups = c("omit", "pass")) {

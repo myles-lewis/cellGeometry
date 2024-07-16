@@ -36,11 +36,9 @@
 #'   set to 0. Set in conjunction with `noisefilter.` Note: if this is set too
 #'   high (too close to 1), it can have a deleterious effect on deconvolution.
 #' @param verbose Logical whether to show messages.
-#' @returns Returns list object containing `best_angle`, a list of genes ranked
-#' by lowest angle and highest maximum expression in a cell type; `genemeans`,
-#' matrix of mean log2+1 gene expression with genes in rows and cell types in
-#' columns; `genemeans_filters`, matrix of gene expression following noise
-#' reduction.
+#' @returns A list object of S3 class 'cellMarkers'. See [cellMarkers()] for
+#'   details. If [gene2symbol()] has been called, an extra list element `symbol`
+#'   will be present.
 #' @export
 
 updateMarkers <- function(object = NULL,

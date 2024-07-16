@@ -69,11 +69,9 @@ high (too close to 1), it can have a deleterious effect on deconvolution.}
 \item{verbose}{Logical whether to show messages.}
 }
 \value{
-Returns list object containing \code{best_angle}, a list of genes ranked
-by lowest angle and highest maximum expression in a cell type; \code{genemeans},
-matrix of mean log2+1 gene expression with genes in rows and cell types in
-columns; \code{genemeans_filters}, matrix of gene expression following noise
-reduction.
+A list object of S3 class 'cellMarkers'. See \code{\link[=cellMarkers]{cellMarkers()}} for
+details. If \code{\link[=gene2symbol]{gene2symbol()}} has been called, an extra list element \code{symbol}
+will be present.
 }
 \description{
 Updates a cellMarkers gene signature object without having to rerun
