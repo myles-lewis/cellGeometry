@@ -73,7 +73,7 @@ from the analysis.}
 parallelisation has increased memory requirements. See \code{\link[=scmean]{scmean()}}.}
 }
 \value{
-An object with S3 class 'cellMarkers' which is a list containing:
+A list object with S3 class 'cellMarkers' containing:
 \item{call}{the matched call}
 \item{best_angle}{named list containing a matrix for each cell type with
 genes in rows. Rows are ranked by lowest specificity angle for that cell
