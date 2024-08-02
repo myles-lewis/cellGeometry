@@ -103,8 +103,15 @@ the maximum number of cells for each cell type}
 \item{nsubclass}{argument \code{nsubclass} expanded as a vector with an entry
 per cell type}
 \item{expfilter}{argument \code{expfilter}}
+The 'cellMarkers' object is designed to be passed to \code{\link[=deconvolute]{deconvolute()}} to
+deconvolute bulk RNA-Seq data. It can be updated rapidly with different
+settings using \code{\link[=updateMarkers]{updateMarkers()}}. Ensembl gene ids can be substituted for
+recognisable gene symbols by applying \code{\link[=gene2symbol]{gene2symbol()}}.
 }
 \description{
 Uses geometric method based on vector dot product to identify genes which are
 the best markers for individual cell types.
+}
+\seealso{
+\code{\link[=deconvolute]{deconvolute()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=gene2symbol]{gene2symbol()}}
 }

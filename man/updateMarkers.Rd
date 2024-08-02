@@ -77,3 +77,6 @@ will be present.
 Updates a cellMarkers gene signature object without having to rerun
 calculation of gene means which can be slow.
 }
+\seealso{
+\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=gene2symbol]{gene2symbol()}}
+}

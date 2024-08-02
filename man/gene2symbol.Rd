@@ -33,3 +33,6 @@ is provided, the rownames in the genemeans, genemeans_filtered, groupmeans
 and groupmeans_filtered elements are changed to symbol and the cellMarkers
 object is returned.
 }
+\seealso{
+\code{\link[=cellMarkers]{cellMarkers()}}
+}

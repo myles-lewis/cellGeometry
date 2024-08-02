@@ -1,10 +1,10 @@
 
 #' Deconvolute bulk RNA-Seq using single-cell RNA-Seq signature
 #'
-#' Deconvolution of bulk RNA-Seq using vector projection method with optional
+#' Deconvolution of bulk RNA-Seq using vector projection method with adjustable
 #' compensation for spillover.
 #'
-#' @param mk object of class 'cellMarkers'
+#' @param mk object of class 'cellMarkers'. See [cellMarkers()].
 #' @param test matrix of bulk RNA-Seq to be deconvoluted. We recommend raw
 #'   counts as input, but normalised data can be provided, in which case set
 #'   `log = FALSE`.
@@ -23,9 +23,25 @@
 #' @param use_filter logical, whether to use denoised signature matrix
 #' @param convert_bulk logical, whether to convert bulk RNA-Seq to scRNA-Seq
 #'   scaling.
-#' @returns a list object of class 'deconv' containing the cell proportions of
-#'   each cell subclass in each sample in element `subclass`, and the cell
-#'   proportions of each cell group in element `group`.
+#' @returns A list object of S3 class 'deconv' containing:
+#'   \item{call}{the matched call}
+#'   \item{mk}{the original 'cellMarkers' class object}
+#'   \item{subclass}{list containing `output`, the amount of each subclass based 
+#'   purely on project gene expression; `percent`, the proportion of each 
+#'   subclass scaled as percentage so that total amount of every subclass adds 
+#'   to 100%; `spillover`, the spillover matrix; `compensation`, the mixed final 
+#'   compensation matrix which incorporates `comp_amount`; `rawcomp`, the 
+#'   original unadjusted compensation matrix; `comp_amount`, the final values 
+#'   for the amount of compensation across each cell subclass after adjustment 
+#'   to prevent negative values.}
+#'   \item{group}{similar list object to `subclass`, but with results for the 
+#'   cell group analysis.}
+#'   \item{nest_percent}{optional alternative matrix of cell proportion results
+#'   for each subclass adjusted so that the percentages across subclasses are 
+#'   nested within cell group percentages. The total percentage still adds to 
+#'   100%.}
+#'   \item{comp_amount}{original argument `comp_amount`}
+#' @seealso [cellMarkers()] [updateMarkers()]
 #' @importFrom matrixStats colMins
 #' @importFrom stats optimise
 #' @export

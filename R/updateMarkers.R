@@ -39,6 +39,7 @@
 #' @returns A list object of S3 class 'cellMarkers'. See [cellMarkers()] for
 #'   details. If [gene2symbol()] has been called, an extra list element `symbol`
 #'   will be present.
+#' @seealso [cellMarkers()] [gene2symbol()]
 #' @export
 
 updateMarkers <- function(object = NULL,

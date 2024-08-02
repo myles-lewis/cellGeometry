@@ -69,6 +69,11 @@
 #'   \item{nsubclass}{argument `nsubclass` expanded as a vector with an entry 
 #'   per cell type}
 #'   \item{expfilter}{argument `expfilter`}
+#' The 'cellMarkers' object is designed to be passed to [deconvolute()] to
+#' deconvolute bulk RNA-Seq data. It can be updated rapidly with different
+#' settings using [updateMarkers()]. Ensembl gene ids can be substituted for
+#' recognisable gene symbols by applying [gene2symbol()].
+#' @seealso [deconvolute()] [updateMarkers()] [gene2symbol()]
 #' @importFrom matrixStats rowMaxs
 #' @export
 #' 

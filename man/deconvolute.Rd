@@ -17,7 +17,7 @@ deconvolute(
 )
 }
 \arguments{
-\item{mk}{object of class 'cellMarkers'}
+\item{mk}{object of class 'cellMarkers'. See \code{\link[=cellMarkers]{cellMarkers()}}.}
 
 \item{test}{matrix of bulk RNA-Seq to be deconvoluted. We recommend raw
 counts as input, but normalised data can be provided, in which case set
@@ -46,11 +46,29 @@ negative cell proportion projections.}
 scaling.}
 }
 \value{
-a list object of class 'deconv' containing the cell proportions of
-each cell subclass in each sample in element \code{subclass}, and the cell
-proportions of each cell group in element \code{group}.
+A list object of S3 class 'deconv' containing:
+\item{call}{the matched call}
+\item{mk}{the original 'cellMarkers' class object}
+\item{subclass}{list containing \code{output}, the amount of each subclass based
+purely on project gene expression; \code{percent}, the proportion of each
+subclass scaled as percentage so that total amount of every subclass adds
+to 100\%; \code{spillover}, the spillover matrix; \code{compensation}, the mixed final
+compensation matrix which incorporates \code{comp_amount}; \code{rawcomp}, the
+original unadjusted compensation matrix; \code{comp_amount}, the final values
+for the amount of compensation across each cell subclass after adjustment
+to prevent negative values.}
+\item{group}{similar list object to \code{subclass}, but with results for the
+cell group analysis.}
+\item{nest_percent}{optional alternative matrix of cell proportion results
+for each subclass adjusted so that the percentages across subclasses are
+nested within cell group percentages. The total percentage still adds to
+100\%.}
+\item{comp_amount}{original argument \code{comp_amount}}
 }
 \description{
-Deconvolution of bulk RNA-Seq using vector projection method with optional
+Deconvolution of bulk RNA-Seq using vector projection method with adjustable
 compensation for spillover.
+}
+\seealso{
+\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}}
 }
