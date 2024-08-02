@@ -26,20 +26,24 @@
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
 #'   \item{mk}{the original 'cellMarkers' class object}
-#'   \item{subclass}{list containing `output`, the amount of each subclass based 
-#'   purely on project gene expression; `percent`, the proportion of each 
-#'   subclass scaled as percentage so that total amount of every subclass adds 
-#'   to 100%; `spillover`, the spillover matrix; `compensation`, the mixed final 
-#'   compensation matrix which incorporates `comp_amount`; `rawcomp`, the 
-#'   original unadjusted compensation matrix; `comp_amount`, the final values 
-#'   for the amount of compensation across each cell subclass after adjustment 
-#'   to prevent negative values.}
+#'   \item{subclass}{list object containing:
+#'   \itemize{
+#'       \item `output`, the amount of each subclass based purely on project 
+#'       gene expression
+#'       \item `percent`, the proportion of each subclass scaled as a percentage
+#'       so that the total amount across all subclasses adds to 100%
+#'       \item `spillover`, the spillover matrix
+#'       \item `compensation`, the mixed final compensation matrix which
+#'       incorporates `comp_amount`
+#'       \item `rawcomp`, the original unadjusted compensation matrix
+#'       \item `comp_amount`, the final values for the amount of compensation
+#'       across each cell subclass after adjustment to prevent negative values
+#'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
 #'   cell group analysis.}
-#'   \item{nest_percent}{optional alternative matrix of cell proportion results
-#'   for each subclass adjusted so that the percentages across subclasses are 
-#'   nested within cell group percentages. The total percentage still adds to 
-#'   100%.}
+#'   \item{nest_percent}{alternative matrix of cell proportion results for each 
+#'   subclass adjusted so that the percentages across subclasses are nested
+#'   within cell group percentages. The total percentage still adds to 100%.}
 #'   \item{comp_amount}{original argument `comp_amount`}
 #' @seealso [cellMarkers()] [updateMarkers()]
 #' @importFrom matrixStats colMins

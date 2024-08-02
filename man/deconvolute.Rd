@@ -49,20 +49,24 @@ scaling.}
 A list object of S3 class 'deconv' containing:
 \item{call}{the matched call}
 \item{mk}{the original 'cellMarkers' class object}
-\item{subclass}{list containing \code{output}, the amount of each subclass based
-purely on project gene expression; \code{percent}, the proportion of each
-subclass scaled as percentage so that total amount of every subclass adds
-to 100\%; \code{spillover}, the spillover matrix; \code{compensation}, the mixed final
-compensation matrix which incorporates \code{comp_amount}; \code{rawcomp}, the
-original unadjusted compensation matrix; \code{comp_amount}, the final values
-for the amount of compensation across each cell subclass after adjustment
-to prevent negative values.}
+\item{subclass}{list object containing:
+\itemize{
+\item \code{output}, the amount of each subclass based purely on project
+gene expression
+\item \code{percent}, the proportion of each subclass scaled as a percentage
+so that the total amount across all subclasses adds to 100\%
+\item \code{spillover}, the spillover matrix
+\item \code{compensation}, the mixed final compensation matrix which
+incorporates \code{comp_amount}
+\item \code{rawcomp}, the original unadjusted compensation matrix
+\item \code{comp_amount}, the final values for the amount of compensation
+across each cell subclass after adjustment to prevent negative values
+}}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}
-\item{nest_percent}{optional alternative matrix of cell proportion results
-for each subclass adjusted so that the percentages across subclasses are
-nested within cell group percentages. The total percentage still adds to
-100\%.}
+\item{nest_percent}{alternative matrix of cell proportion results for each
+subclass adjusted so that the percentages across subclasses are nested
+within cell group percentages. The total percentage still adds to 100\%.}
 \item{comp_amount}{original argument \code{comp_amount}}
 }
 \description{
