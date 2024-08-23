@@ -32,7 +32,7 @@ diagnose <- function(mk) {
       c(max(col_i), wmax)
     }, numeric(2))
     w <- w[order(spmax[1, ], decreasing = TRUE)]
-    spmax <- spmax[, order(spmax[1, ], decreasing = TRUE)]
+    spmax <- spmax[, order(spmax[1, ], decreasing = TRUE), drop = FALSE]
     
     cat("Subclass signatures with fewer than", nsubclass,
         "first rank markers:\n")
