@@ -81,6 +81,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
   }
 }
 
+
 #' Calculate R squared on deconvoluted cell subclasses
 #' 
 #' Calculates R squared comparing subclasses in each column of `obs` with
