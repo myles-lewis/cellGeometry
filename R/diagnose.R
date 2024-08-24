@@ -17,6 +17,7 @@ diagnose <- function(mk) {
   nsubclass <- max(nsubclass)
   ngroup <- mk$opt$ngroup
   if (is.null(ngroup)) ngroup <- 5
+  ngroup <- max(ngroup)
   
   no1 <- vapply(mk$best_angle, function(i) {
     ranks <- i[seq_len(nsubclass), "rank"]
