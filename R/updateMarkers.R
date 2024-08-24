@@ -51,11 +51,11 @@ updateMarkers <- function(object = NULL,
                           remove_gene = NULL,
                           remove_groupgene = NULL,
                           bulkdata = NULL,
-                          nsubclass = 5,
-                          ngroup = 5,
-                          expfilter = object$expfilter,
-                          noisefilter = 2,
-                          noisefraction = 0.25,
+                          nsubclass = object$opt$nsubclass,
+                          ngroup = object$opt$ngroup,
+                          expfilter = object$opt$expfilter,
+                          noisefilter = object$opt$noisefilter,
+                          noisefraction = object$opt$noisefraction,
                           verbose = TRUE) {
   .call <- match.call()
   
@@ -75,18 +75,15 @@ updateMarkers <- function(object = NULL,
   }
       
   if (verbose) message("Subclass analysis")
-  if (length(nsubclass) == 1) {
-    nsubclass <- rep(nsubclass, ncol(genemeans))
-    names(nsubclass) <- colnames(genemeans)
-  }
-  if (length(nsubclass) != ncol(genemeans)) stop("incompatible nsubclass length")
+  nsub <- length(object$subclass_table)
+  nsubclass2 <- rep_len(nsubclass, nsub)
   highexp <- ok & rowMaxs(genemeans) > expfilter |
     rownames(genemeans) %in% add_gene
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
   geneset <- lapply(seq_along(best_angle), function(i) {
-    rownames(best_angle[[i]])[seq_len(nsubclass[i])]
+    rownames(best_angle[[i]])[seq_len(nsubclass2[i])]
   })
   geneset <- unique(c(unlist(geneset), add_gene))
   if (!is.null(remove_gene)) geneset <- geneset[!geneset %in% remove_gene]
@@ -110,7 +107,10 @@ updateMarkers <- function(object = NULL,
       genemeans_filtered <- rbind(genemeans_filtered, extra)
     }
     group_angle <- gene_angle(groupmeans_filtered)
-    group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
+    ngroup2 <- rep_len(ngroup, length(group_angle))
+    group_geneset <- lapply(seq_along(group_angle), function(i) {
+      rownames(group_angle[[i]])[seq_len(ngroup2[i])]
+    })
     group_geneset <- unique(c(unlist(group_geneset), add_groupgene))
     if (!is.null(remove_groupgene)) {
       group_geneset <- group_geneset[!group_geneset %in% remove_groupgene]
@@ -137,8 +137,12 @@ updateMarkers <- function(object = NULL,
               groupmeans_filtered = groupmeans_filtered,
               cell_table = cell_table,
               spillover = m_itself,
-              nsubclass = nsubclass,
-              expfilter = expfilter)
+              subclass_table = object$subclass_table,
+              opt = list(nsubclass = nsubclass,
+                         ngroup = ngroup,
+                         expfilter = expfilter,
+                         noisefilter = noisefilter,
+                         noisefraction = noisefraction))
   if (!is.null(object$symbol)) out$symbol <- object$symbol
   class(out) <- "cellMarkers"
   out

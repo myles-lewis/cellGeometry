@@ -16,7 +16,8 @@
 #' @param nsubclass Number of genes to select for each single cell subclass.
 #'   Either a single number or a vector with the number of genes for each
 #'   subclass.
-#' @param ngroup Number of genes to select for each cell group. 
+#' @param ngroup Number of genes to select for each cell group. Either a single
+#'   number or a vector with the number of genes for each group.
 #' @param expfilter Genes whose maximum mean expression on log2 scale per cell
 #'   type are below this value are removed and not considered for the signature.
 #' @param noisefilter Sets an upper bound for `noisefraction` cut-off below
@@ -122,18 +123,15 @@ cellMarkers <- function(scdata,
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
                        nsub, " cell subclasses")
   if (verbose) message("Subclass analysis")
-  if (length(nsubclass) == 1) {
-    nsubclass <- rep(nsubclass, nsub)
-    names(nsubclass) <- levels(subclass)
-  }
-  if (length(nsubclass) != nsub) stop("incompatible nsubclass length")
+  
+  nsubclass2 <- rep_len(nsubclass, nsub)
   genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
   best_angle <- gene_angle(genemeans_filtered)
   geneset <- lapply(seq_along(best_angle), function(i) {
-    rownames(best_angle[[i]])[seq_len(nsubclass[i])]
+    rownames(best_angle[[i]])[seq_len(nsubclass2[i])]
   })
   geneset <- unique(unlist(geneset))
   
@@ -164,7 +162,10 @@ cellMarkers <- function(scdata,
       genemeans_filtered <- rbind(genemeans_filtered, extra)
     }
     group_angle <- gene_angle(groupmeans_filtered)
-    group_geneset <- lapply(group_angle, function(i) rownames(i)[1:ngroup])
+    ngroup2 <- rep_len(ngroup, length(group_angle))
+    group_geneset <- lapply(seq_along(group_angle), function(i) {
+      rownames(group_angle[[i]])[seq_len(ngroup2[i])]
+    })
     group_geneset <- unique(unlist(group_geneset))
     cell_table <- apply(tab, 1, function(i) names(which.max(i)))
     cell_table <- factor(cell_table, levels = unique(cell_table))
@@ -188,8 +189,12 @@ cellMarkers <- function(scdata,
               groupmeans_filtered = groupmeans_filtered,
               cell_table = cell_table,
               spillover = m_itself,
-              nsubclass = nsubclass,
-              expfilter = expfilter)
+              subclass_table = table(subclass, dnn = NULL),
+              opt = list(nsubclass = nsubclass,
+                         ngroup = ngroup,
+                         expfilter = expfilter,
+                         noisefilter = noisefilter,
+                         noisefraction = noisefraction))
   class(out) <- "cellMarkers"
   out
 }
@@ -202,5 +207,9 @@ summary.cellMarkers <- function(object, ...) {
   cat("Cell subclass signature:", length(object$geneset), "genes\n")
   cat("Cell groups:", ncol(object$groupmeans), "\n")
   cat("Cell group signature:", length(object$group_geneset), "genes\n")
-  cat("Expression filter:", object$expfilter, "\n")
+  for (i in 1:5) {
+    cat(paste0(names(object$opt)[i], ": ", object$opt[i], "\n"))
+  }
+  cat("Subclass cell totals:\n")
+  print(object$subclass_table)
 }

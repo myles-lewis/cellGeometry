@@ -13,11 +13,11 @@ updateMarkers(
   remove_gene = NULL,
   remove_groupgene = NULL,
   bulkdata = NULL,
-  nsubclass = 5,
-  ngroup = 5,
-  expfilter = object$expfilter,
-  noisefilter = 2,
-  noisefraction = 0.25,
+  nsubclass = object$opt$nsubclass,
+  ngroup = object$opt$ngroup,
+  expfilter = object$opt$expfilter,
+  noisefilter = object$opt$noisefilter,
+  noisefraction = object$opt$noisefraction,
   verbose = TRUE
 )
 }

@@ -40,7 +40,8 @@ subsets within \code{cellgroup} overarching classes.}
 Either a single number or a vector with the number of genes for each
 subclass.}
 
-\item{ngroup}{Number of genes to select for each cell group.}
+\item{ngroup}{Number of genes to select for each cell group. Either a single
+number or a vector with the number of genes for each group.}
 
 \item{expfilter}{Genes whose maximum mean expression on log2 scale per cell
 type are below this value are removed and not considered for the signature.}
