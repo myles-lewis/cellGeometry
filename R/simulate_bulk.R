@@ -80,3 +80,27 @@ plot_set <- function(obs, pred, mfrow = NULL,
     mtext(bquote(R^2 == .(rsq)), cex = par("cex"), adj = 0.04)
   }
 }
+
+#' Calculate R squared on deconvoluted cell subclasses
+#' 
+#' Calculates R squared comparing subclasses in each column of `obs` with
+#' matching columns in deconvoluted `pred`. Samples are in rows. For use if
+#' ground truth is available, e.g. simulated pseudo-bulk RNA-Seq data.
+#' 
+#' @param obs Observed matrix of cell amounts with subclasses in columns and
+#'   samples in rows.
+#' @param pred Predicted (deconvoluted) matrix of cell amounts with rows and
+#'   columns matching `obs`.
+#' @param force_intercept Logical whether to force intercept through 0.
+#' @returns Vector of R squared values calculated using `lm()`.
+#' @export
+Rsq_set <- function(obs, pred,
+                    force_intercept = FALSE) {
+  if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
+  vapply(colnames(obs), function(i) {
+    fit <- if (force_intercept) {
+      lm(pred[, i] ~ obs[, i] + 0)
+    } else lm(pred[, i] ~ obs[, i])
+    summary(fit)$r.squared
+  }, numeric(1))
+}
