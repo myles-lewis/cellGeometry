@@ -12,16 +12,17 @@
 
 diagnose <- function(mk) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
-  nsubclass <- mk$call$nsubclass
+  nsubclass <- mk$opt$nsubclass
   if (is.null(nsubclass)) nsubclass <- 5
-  ngroup <- mk$call$ngroup
+  nsubclass <- max(nsubclass)
+  ngroup <- mk$opt$ngroup
   if (is.null(ngroup)) ngroup <- 5
   
   no1 <- vapply(mk$best_angle, function(i) {
     ranks <- i[seq_len(nsubclass), "rank"]
     sum(ranks == 1)
   }, numeric(1))
-  w <- which(no1 < 5)
+  w <- which(no1 < nsubclass)
   
   s1 <- mk$spillover
   if (length(w) > 0) {
@@ -53,7 +54,7 @@ diagnose <- function(mk) {
     ranks <- i[seq_len(ngroup), "rank"]
     sum(ranks == 1)
   }, numeric(1))
-  w <- which(no1 < 5)
+  w <- which(no1 < ngroup)
   if (length(w) > 0) {
     cat("Weak cell group signatures:\n")
     cat(paste(paste0(colnames(mk$groupmeans)[w], " ", no1[w], "/", ngroup),
