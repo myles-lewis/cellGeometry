@@ -68,13 +68,14 @@ plot_set <- function(obs, pred, mfrow = NULL,
   op <- par(bty = "l", mgp = c(2.2, 0.6, 0), tcl = -0.3,
             mar = c(3.7, 3.7, 1.5, 1.1), mfrow = mfrow)
   on.exit(par(op))
+  col <- if (force_intercept) "red" else "blue"
   for (i in subclasses) {
     plot(obs[, i], pred[, i], cex = 0.8, pch = 16,
          xlab = i, ylab = "pred", ...)
     fit <- if (force_intercept) {
       lm(pred[, i] ~ obs[, i] + 0)
     } else lm(pred[, i] ~ obs[, i])
-    abline(fit, col = "blue")
+    abline(fit, col = col)
     rsq <- summary(fit)$r.squared |> format(digits = 3)
     mtext(bquote(R^2 == .(rsq)), cex = par("cex"), adj = 0.04)
   }
