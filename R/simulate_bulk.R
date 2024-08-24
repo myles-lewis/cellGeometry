@@ -97,10 +97,12 @@ plot_set <- function(obs, pred, mfrow = NULL,
 Rsq_set <- function(obs, pred,
                     force_intercept = FALSE) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
-  vapply(colnames(obs), function(i) {
-    fit <- if (force_intercept) {
-      lm(pred[, i] ~ obs[, i] + 0)
-    } else lm(pred[, i] ~ obs[, i])
-    summary(fit)$r.squared
-  }, numeric(1))
+  if (force_intercept) {
+    out <- vapply(colnames(obs), function(i) {
+      fit <- lm(pred[, i] ~ obs[, i] + 0)
+      summary(fit)$r.squared
+    }, numeric(1))
+    return(out)
+  }
+  diag(cor(obs, pred))^2
 }
