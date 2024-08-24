@@ -38,7 +38,8 @@
 #' @param verbose Logical whether to show messages.
 #' @returns A list object of S3 class 'cellMarkers'. See [cellMarkers()] for
 #'   details. If [gene2symbol()] has been called, an extra list element `symbol`
-#'   will be present.
+#'   will be present. The list element `update` stores the call to 
+#'   `updateMarkers()`.
 #' @seealso [cellMarkers()] [gene2symbol()]
 #' @export
 
@@ -52,7 +53,7 @@ updateMarkers <- function(object = NULL,
                           bulkdata = NULL,
                           nsubclass = 5,
                           ngroup = 5,
-                          expfilter = 1,
+                          expfilter = object$expfilter,
                           noisefilter = 2,
                           noisefraction = 0.25,
                           verbose = TRUE) {
@@ -124,7 +125,8 @@ updateMarkers <- function(object = NULL,
   gene_sig <- genemeans_filtered[geneset, ]
   m_itself <- dotprod(gene_sig, gene_sig, equal_weight = FALSE)
   
-  out <- list(call = .call,
+  out <- list(call = object$call,
+              update = .call,
               best_angle = best_angle,
               group_angle = group_angle,
               geneset = geneset,

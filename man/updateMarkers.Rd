@@ -15,7 +15,7 @@ updateMarkers(
   bulkdata = NULL,
   nsubclass = 5,
   ngroup = 5,
-  expfilter = 1,
+  expfilter = object$expfilter,
   noisefilter = 2,
   noisefraction = 0.25,
   verbose = TRUE
@@ -71,7 +71,8 @@ high (too close to 1), it can have a deleterious effect on deconvolution.}
 \value{
 A list object of S3 class 'cellMarkers'. See \code{\link[=cellMarkers]{cellMarkers()}} for
 details. If \code{\link[=gene2symbol]{gene2symbol()}} has been called, an extra list element \code{symbol}
-will be present.
+will be present. The list element \code{update} stores the call to
+\code{updateMarkers()}.
 }
 \description{
 Updates a cellMarkers gene signature object without having to rerun
