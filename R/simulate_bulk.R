@@ -94,6 +94,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
 #'   columns matching `obs`.
 #' @param force_intercept Logical whether to force intercept through 0.
 #' @returns Vector of R squared values calculated using `lm()`.
+#' @importFrom stats cor
 #' @export
 Rsq_set <- function(obs, pred,
                     force_intercept = FALSE) {
