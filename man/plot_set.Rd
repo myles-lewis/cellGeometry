@@ -4,7 +4,7 @@
 \alias{plot_set}
 \title{Scatter plots to compare deconvoluted subclasses}
 \usage{
-plot_set(obs, pred, mfrow = NULL, ...)
+plot_set(obs, pred, mfrow = NULL, force_intercept = FALSE, ...)
 }
 \arguments{
 \item{obs}{Observed matrix of cell amounts with subclasses in columns and
@@ -13,8 +13,10 @@ samples in rows.}
 \item{pred}{Predicted (deconvoluted) matrix of cell amounts with rows and
 columns matching \code{obs}.}
 
-\item{mfrow}{Optioanl vector of length 2 for organising plot layout. See
+\item{mfrow}{Optional vector of length 2 for organising plot layout. See
 \code{par()}.}
+
+\item{force_intercept}{Logical whether to force intercept through 0.}
 
 \item{...}{Optional arguments passed to \code{plot()}.}
 }

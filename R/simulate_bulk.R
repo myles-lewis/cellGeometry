@@ -51,14 +51,16 @@ simulate_bulk <- function(object, sim_counts) {
 #'   samples in rows.
 #' @param pred Predicted (deconvoluted) matrix of cell amounts with rows and
 #'   columns matching `obs`.
-#' @param mfrow Optioanl vector of length 2 for organising plot layout. See
+#' @param mfrow Optional vector of length 2 for organising plot layout. See
 #'   `par()`.
+#' @param force_intercept Logical whether to force intercept through 0.
 #' @param ... Optional arguments passed to `plot()`.
 #' @returns No return value. Produces scatter plots using base graphics.
 #' @importFrom graphics abline mtext
 #' @importFrom stats lm runif
 #' @export
-plot_set <- function(obs, pred, mfrow = NULL, ...) {
+plot_set <- function(obs, pred, mfrow = NULL,
+                     force_intercept = FALSE, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   subclasses <- colnames(obs)
   nr <- ceiling(sqrt(length(subclasses)))
@@ -69,10 +71,11 @@ plot_set <- function(obs, pred, mfrow = NULL, ...) {
   for (i in subclasses) {
     plot(obs[, i], pred[, i], cex = 0.8, pch = 16,
          xlab = i, ylab = "pred", ...)
-    fit <- lm(pred[, i] ~ obs[, i])
+    fit <- if (force_intercept) {
+      lm(pred[, i] ~ obs[, i] + 0)
+    } else lm(pred[, i] ~ obs[, i])
     abline(fit, col = "blue")
-    rsq <- summary(fit)$r.squared
-    mtext(paste("Rsq =", format(rsq, digits = 3)),
-          cex = par("cex"), adj = 0.04)
+    rsq <- summary(fit)$r.squared |> format(digits = 3)
+    mtext(bquote(R^2 == .(rsq)), cex = par("cex"), adj = 0.04)
   }
 }
