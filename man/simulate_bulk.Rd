@@ -4,12 +4,12 @@
 \alias{simulate_bulk}
 \title{Simulate pseudo-bulk RNA-Seq}
 \usage{
-simulate_bulk(object, sim_counts)
+simulate_bulk(object, samples, subclass, times = 10)
 }
 \arguments{
 \item{object}{A 'cellMarkers' class object}
 
-\item{sim_counts}{An integer matrix with samples in rows and columns for each
+\item{samples}{An integer matrix with samples in rows and columns for each
 cell subclass in \code{object}. This can be generated using \code{\link[=generate_samples]{generate_samples()}}.}
 }
 \value{

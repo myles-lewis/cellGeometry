@@ -29,15 +29,31 @@ generate_samples <- function(object, n) {
 #' and a matrix of counts for the numbers of cells of each cell subclass.
 #' 
 #' @param object A 'cellMarkers' class object
-#' @param sim_counts An integer matrix with samples in rows and columns for each
+#' @param samples An integer matrix with samples in rows and columns for each
 #'   cell subclass in `object`. This can be generated using [generate_samples()].
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]
 #' @export
-simulate_bulk <- function(object, sim_counts) {
-  genemean_counts <- 2^object$genemeans -1
-  sim_pseudo <- genemean_counts %*% t(sim_counts)
+simulate_bulk <- function(object, samples, subclass, times = 10) {
+  if (inherits(object, "cellMarkers")) {
+    genemean_counts <- 2^object$genemeans -1
+    if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
+    sim_pseudo <- genemean_counts %*% t(samples)
+    mode(sim_pseudo) <- "integer"
+    return(sim_pseudo)
+  }
+  if (!is.factor(subclass)) subclass <- factor(subclass)
+  if (!identical(levels(subclass), colnames(samples))) stop("subclasses not identical")
+  samples <- samples * times
+  cmat <- vapply(seq_len(nrow(samples)), function(j) {
+    s <- unlist(lapply(levels(subclass), function(i) {
+      w <- which(subclass == i)
+      sample(w, samples[j, i], replace = TRUE)
+    }))
+    tabulate(s, nbins = length(subclass))
+  }, numeric(length(subclass)))
+  sim_pseudo <- object %*% cmat
   mode(sim_pseudo) <- "integer"
   sim_pseudo
 }
