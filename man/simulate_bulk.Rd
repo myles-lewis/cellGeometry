@@ -10,7 +10,7 @@ simulate_bulk(object, sim_counts)
 \item{object}{A 'cellMarkers' class object}
 
 \item{sim_counts}{An integer matrix with samples in rows and columns for each
-cell subclass in \code{object}. This can be generated using \code{\link[=generate_cells]{generate_cells()}}.}
+cell subclass in \code{object}. This can be generated using \code{\link[=generate_samples]{generate_samples()}}.}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in
@@ -21,5 +21,5 @@ Simulates pseudo-bulk RNA-Seq dataset based on a 'cellMarkers' class object
 and a matrix of counts for the numbers of cells of each cell subclass.
 }
 \seealso{
-\code{\link[=generate_cells]{generate_cells()}} \code{\link[=deconvolute]{deconvolute()}}
+\code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}
 }

@@ -1,7 +1,10 @@
 
 #' Generate random cell number samples
 #' 
-#' Used for simulating pseudo-bulk RNA-Seq from a 'cellMarkers' object.
+#' Used for simulating pseudo-bulk RNA-Seq from a 'cellMarkers' object. Cell
+#' counts are randomly sampled from the uniform distribution, using the original
+#' subclass contingency table as a limit on the maximum number of cells in each
+#' subclass.
 #' 
 #' @param object A 'cellMarkers' class object
 #' @param n Integer value for the number of samples to generate
@@ -10,7 +13,7 @@
 #'   Designed to be passed to [simulate_bulk()].
 #' @seealso [simulate_bulk()]
 #' @export
-generate_cells <- function(object, n) {
+generate_samples <- function(object, n) {
   lim <- object$subclass_table
   nc <- length(lim)
   sim_counts <- matrix(runif(n * nc), ncol = nc,
@@ -27,10 +30,10 @@ generate_cells <- function(object, n) {
 #' 
 #' @param object A 'cellMarkers' class object
 #' @param sim_counts An integer matrix with samples in rows and columns for each
-#'   cell subclass in `object`. This can be generated using [generate_cells()].
+#'   cell subclass in `object`. This can be generated using [generate_samples()].
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
-#' @seealso [generate_cells()] [deconvolute()]
+#' @seealso [generate_samples()] [deconvolute()]
 #' @export
 simulate_bulk <- function(object, sim_counts) {
   genemean_counts <- 2^object$genemeans -1
