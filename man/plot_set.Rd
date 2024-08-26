@@ -4,7 +4,14 @@
 \alias{plot_set}
 \title{Scatter plots to compare deconvoluted subclasses}
 \usage{
-plot_set(obs, pred, mfrow = NULL, force_intercept = FALSE, ...)
+plot_set(
+  obs,
+  pred,
+  mfrow = NULL,
+  force_intercept = FALSE,
+  show_identity = FALSE,
+  ...
+)
 }
 \arguments{
 \item{obs}{Observed matrix of cell amounts with subclasses in columns and
@@ -17,6 +24,8 @@ columns matching \code{obs}.}
 \code{par()}.}
 
 \item{force_intercept}{Logical whether to force intercept through 0.}
+
+\item{show_identity}{Logical whether to show the identity line.}
 
 \item{...}{Optional arguments passed to \code{plot()}.}
 }

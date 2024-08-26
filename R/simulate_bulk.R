@@ -79,13 +79,15 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
 #' @param mfrow Optional vector of length 2 for organising plot layout. See
 #'   `par()`.
 #' @param force_intercept Logical whether to force intercept through 0.
+#' @param show_identity Logical whether to show the identity line.
 #' @param ... Optional arguments passed to `plot()`.
 #' @returns No return value. Produces scatter plots using base graphics.
 #' @importFrom graphics abline mtext
 #' @importFrom stats lm runif
 #' @export
 plot_set <- function(obs, pred, mfrow = NULL,
-                     force_intercept = FALSE, ...) {
+                     force_intercept = FALSE,
+                     show_identity = FALSE, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   subclasses <- colnames(obs)
   nr <- ceiling(sqrt(length(subclasses)))
@@ -101,6 +103,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
       lm(pred[, i] ~ obs[, i] + 0)
     } else lm(pred[, i] ~ obs[, i])
     abline(fit, col = col)
+    if (show_identity) abline(0, 1, col = "grey50", lty = 2)
     rsq <- summary(fit)$r.squared |> format(digits = 3)
     mtext(bquote(R^2 == .(rsq)), cex = par("cex"), adj = 0.04)
   }
