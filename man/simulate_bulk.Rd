@@ -7,10 +7,18 @@
 simulate_bulk(object, samples, subclass, times = 10)
 }
 \arguments{
-\item{object}{A 'cellMarkers' class object}
+\item{object}{Either a 'cellMarkers' class object or a single cell count
+matrix with genes in rows and cells in columns.}
 
 \item{samples}{An integer matrix with samples in rows and columns for each
 cell subclass in \code{object}. This can be generated using \code{\link[=generate_samples]{generate_samples()}}.}
+
+\item{subclass}{Vector of cell subclasses matching the columns in \code{object}.
+Only used if \code{object} is a single cell count matrix.}
+
+\item{times}{Scaling factor to increase sampling of cells. Each cell in
+\code{samples} is randomly sampled this many times. Only used if \code{object} is a
+single cell count matrix.}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in

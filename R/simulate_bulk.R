@@ -28,9 +28,15 @@ generate_samples <- function(object, n) {
 #' Simulates pseudo-bulk RNA-Seq dataset based on a 'cellMarkers' class object
 #' and a matrix of counts for the numbers of cells of each cell subclass.
 #' 
-#' @param object A 'cellMarkers' class object
+#' @param object Either a 'cellMarkers' class object or a single cell count
+#'   matrix with genes in rows and cells in columns.
 #' @param samples An integer matrix with samples in rows and columns for each
 #'   cell subclass in `object`. This can be generated using [generate_samples()].
+#' @param subclass Vector of cell subclasses matching the columns in `object`.
+#'   Only used if `object` is a single cell count matrix.
+#' @param times Scaling factor to increase sampling of cells. Each cell in
+#'   `samples` is randomly sampled this many times. Only used if `object` is a
+#'   single cell count matrix.
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]

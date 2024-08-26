@@ -67,9 +67,10 @@
 #'   cell types within cell subclasses, determined by which subclass contains 
 #'   the maximum number of cells for each cell type}
 #'   \item{spillover}{matrix of spillover values between cell types}
-#'   \item{nsubclass}{argument `nsubclass` expanded as a vector with an entry 
-#'   per cell type}
-#'   \item{expfilter}{argument `expfilter`}
+#'   \item{subclass_table}{contingency table of the number of cells in each
+#'   subclass}
+#'   \item{opt}{list storing options, namely arguments `nsubclass`, `ngroup`,
+#'   `expfilter`, `noisefilter`, `noisefraction`}
 #' The 'cellMarkers' object is designed to be passed to [deconvolute()] to
 #' deconvolute bulk RNA-Seq data. It can be updated rapidly with different
 #' settings using [updateMarkers()]. Ensembl gene ids can be substituted for
