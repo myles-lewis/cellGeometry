@@ -10,6 +10,8 @@ plot_set(
   mfrow = NULL,
   force_intercept = FALSE,
   show_identity = FALSE,
+  title = "",
+  cex.title = 1,
   ...
 )
 }
@@ -26,6 +28,10 @@ columns matching \code{obs}.}
 \item{force_intercept}{Logical whether to force intercept through 0.}
 
 \item{show_identity}{Logical whether to show the identity line.}
+
+\item{title}{Title for page of plots.}
+
+\item{cex.title}{Font size for title.}
 
 \item{...}{Optional arguments passed to \code{plot()}.}
 }

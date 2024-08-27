@@ -80,6 +80,8 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
 #'   `par()`.
 #' @param force_intercept Logical whether to force intercept through 0.
 #' @param show_identity Logical whether to show the identity line.
+#' @param title Title for page of plots.
+#' @param cex.title Font size for title.
 #' @param ... Optional arguments passed to `plot()`.
 #' @returns No return value. Produces scatter plots using base graphics.
 #' @importFrom graphics abline mtext
@@ -87,18 +89,21 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
 #' @export
 plot_set <- function(obs, pred, mfrow = NULL,
                      force_intercept = FALSE,
-                     show_identity = FALSE, ...) {
+                     show_identity = FALSE,
+                     title = "", cex.title = 1, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   subclasses <- colnames(obs)
   nr <- ceiling(sqrt(length(subclasses)))
   if (is.null(mfrow)) mfrow <- c(nr, nr)
-  op <- par(bty = "l", mgp = c(2.2, 0.6, 0), tcl = -0.3,
+  oma <- par("oma")
+  if (title != "" & oma[3] < 1.5) oma[3] <- 1.5
+  op <- par(bty = "l", mgp = c(2.2, 0.6, 0), tcl = -0.3, oma = oma,
             mar = c(3.7, 3.7, 1.5, 1.1), mfrow = mfrow)
   on.exit(par(op))
   col <- if (force_intercept) "red" else "blue"
   for (i in subclasses) {
     plot(obs[, i], pred[, i], cex = 0.8, pch = 16,
-         xlab = i, ylab = "pred", ...)
+         xlab = i, ylab = "Predicted", ...)
     fit <- if (force_intercept) {
       lm(pred[, i] ~ obs[, i] + 0)
     } else lm(pred[, i] ~ obs[, i])
@@ -107,6 +112,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
     rsq <- summary(fit)$r.squared |> format(digits = 3)
     mtext(bquote(R^2 == .(rsq)), cex = par("cex"), adj = 0.04)
   }
+  mtext(title, outer = TRUE, cex = cex.title * par("cex"), adj = 0.05, line = 0)
 }
 
 
