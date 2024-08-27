@@ -28,12 +28,13 @@ tune_deconv <- function(cm, test, samples, grid,
   dots <- list(...)
   if (param %in% names(formals(updateMarkers))) {
     # tune updateMarkers
-    message("Tuning ", param, " via updateMarkers()")
+    message("Tuning ", param, " via updateMarkers() ")
     res <- lapply(grid[[1]], function(i) {
+      # message(".", appendLF = FALSE)
       args <- list(object = cm, zz = i)
       names(args)[2] <- param
-      cm_update <- do.call("updateMarkers", args)
-      fit <- deconvolute(cm_update, test, ...)
+      cm_update <- do.call("updateMarkers", args) |> suppressMessages()
+      fit <- deconvolute(cm_update, test, ...) |> suppressMessages()
       fit_output <- fit$subclass[[output]]
       out <- Rsq_set(samples, fit_output, force_intercept)
       df <- data.frame(zz = i, subclass = names(out), Rsq = out, row.names = NULL)
@@ -44,10 +45,11 @@ tune_deconv <- function(cm, test, samples, grid,
     # tune deconvolute
     message("Tuning ", param, " via deconvolute()")
     res <- lapply(grid[[1]], function(i) {
+      # message(".", appendLF = FALSE)
       args <- list(mk = cm, test = test, zz = i)
       names(args)[3] <- param
       args <- c(args, dots)
-      fit <- do.call("deconvolute", args)
+      fit <- do.call("deconvolute", args) |> suppressMessages()
       fit_output <- fit$subclass[[output]]
       out <- Rsq_set(samples, fit_output, force_intercept)
       df <- data.frame(zz = i, subclass = names(out), Rsq = out, row.names = NULL)
@@ -55,8 +57,12 @@ tune_deconv <- function(cm, test, samples, grid,
       df
     })
   }
-
-  do.call(rbind, res)
+  
+  res <- do.call(rbind, res)
+  # m <- tapply(res$Rsq, res[, 1], mean, na.rm = TRUE)
+  # w <- which.max(m)
+  # message(" best ", param, " = ", grid[[1]][w])
+  res
 }
 
 
