@@ -22,10 +22,9 @@ tune_deconv(
 \item{samples}{matrix of cell amounts with subclasses in columns and samples
 in rows.}
 
-\item{grid}{List of length 1 containing a named vector. The name represents
-the parameter to be tuned and needs to be an argument for either
-\code{\link[=updateMarkers]{updateMarkers()}} or \code{\link[=deconvolute]{deconvolute()}}. The elements of the vector are the
-values to be tested.}
+\item{grid}{Named list of length 1 containing a vector. The name represents
+the parameter to be tuned which is an argument in either \code{\link[=updateMarkers]{updateMarkers()}}
+or \code{\link[=deconvolute]{deconvolute()}}. The elements of the vector are the values to be tuned.}
 
 \item{output}{Character value, either "output" or "percent" specifying which
 output from the subclass results element resulting from a call to
@@ -43,4 +42,7 @@ subclass and R squared.
 \description{
 Tests a tuning grid of a deconvolution parameter for either \code{\link[=updateMarkers]{updateMarkers()}}
 (e.g. \code{expfilter} or \code{nsubclass}) or \code{\link[=deconvolute]{deconvolute()}} (e.g. \code{comp_amount}).
+}
+\seealso{
+\code{\link[=plot_tune]{plot_tune()}}
 }
