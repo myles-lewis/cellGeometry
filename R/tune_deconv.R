@@ -87,3 +87,77 @@ plot_tune <- function(res, title = "") {
     theme(plot.title = element_text(size = 10),
           axis.text = element_text(colour = "black"))
 }
+
+
+#' @export
+tune_deconv2 <- function(cm, test, samples, grid,
+                         output = "output",
+                         force_intercept = FALSE, ...) {
+  params <- names(grid)
+  arg_set1 <- names(formals(updateMarkers))
+  arg_set2 <- names(formals(deconvolute))
+  if (any(!params %in% c(arg_set1, arg_set2)))
+    stop("unknown tuning parameter in `grid`")
+  w1 <- which(params %in% arg_set1)
+  w2 <- which(params %in% arg_set2)
+  grid2 <- if (length(w2) > 0) expand.grid(grid[w2]) else NULL
+  message("Tuning parameters: ", paste(params, collapse = ", "))
+  
+  if (length(w1) > 0) {
+    grid1 <- expand.grid(grid[w1])
+    res <- lapply(seq_len(nrow(grid1)), function(i) {
+      cat(".")
+      args <- list(object = cm)
+      grid1_row <- grid1[i, , drop = FALSE]
+      args <- c(args, grid1_row)
+      cm_update <- do.call("updateMarkers", args) |> suppressMessages()
+      df2 <- tune_dec(cm_update, test, samples, grid2, output,
+                      force_intercept = FALSE, ...)
+      data.frame(grid1_row, df2, row.names = NULL)
+    })
+    res <- do.call(rbind, res)
+  } else {
+    # null grid1
+    if (is.null(grid2)) stop("No parameters to tune")
+    res <- tune_dec(cm, test, samples, grid2, output, force_intercept = FALSE,
+                    ...)
+  }
+  
+  mres <- aggregate(res$Rsq, by = res[, params], FUN = mean)
+  colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
+  w <- which.max(mres$mean.Rsq)
+  best_tune <- mres[w, ]
+  cat("\nBest tune:\n")
+  print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
+        print.gap = 2L)
+  
+  res
+}
+
+
+tune_dec <- function(cm, test, samples, grid2, output, force_intercept,
+                     ...) {
+  if (is.null(grid2)) {
+    fit <- deconvolute(cm, test, ...) |> suppressMessages()
+    fit_output <- fit$subclass[[output]]
+    out <- Rsq_set(samples, fit_output, force_intercept)
+    df <- data.frame(subclass = names(out), Rsq = out, row.names = NULL)
+    return(df)
+  }
+  # loop grid2
+  res <- lapply(seq_len(nrow(grid2)), function(i) {
+    dots <- list(...)
+    grid2_row <- grid2[i, , drop = FALSE]
+    args <- list(mk = cm, test = test)
+    args <- c(args, grid2_row)
+    if (length(dots)) args[names(dots)] <- dots
+    fit <- do.call("deconvolute", args) |> suppressMessages()
+    fit_output <- fit$subclass[[output]]
+    out <- Rsq_set(samples, fit_output, force_intercept)
+    df <- data.frame(grid2_row, subclass = names(out), Rsq = out,
+                     row.names = NULL)
+  })
+  do.call(rbind, res)
+}
+
+
