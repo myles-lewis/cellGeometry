@@ -1,0 +1,73 @@
+
+#' Tune deconvolution parameters
+#' 
+#' Tests a tuning grid of a deconvolution parameter for either [updateMarkers()]
+#' (e.g. `expfilter` or `nsubclass`) or [deconvolute()] (e.g. `comp_amount`).
+#' 
+#' @param cm cellMarkers class object
+#' @param test matrix of bulk RNA-Seq to be deconvoluted. Passed to [deconvolute()].
+#' @param samples matrix of cell amounts with subclasses in columns and samples
+#'   in rows.
+#' @param grid List of length 1 containing a named vector. The name represents
+#'   the parameter to be tuned and needs to be an argument for either
+#'   [updateMarkers()] or [deconvolute()]. The elements of the vector are the
+#'   values to be tested.
+#' @param output Character value, either "output" or "percent" specifying which
+#'   output from the subclass results element resulting from a call to
+#'   [deconvolute()]. This deconvolution result is compared against the actual
+#'   sample cell numbers in `samples`, using [Rsq_set()].
+#' @param force_intercept Logical whether to force intercept through 0.
+#' @param ... Optional arguments passed to [deconvolute()].
+#' @returns Dataframe whose columns include: the parameter being tuned, cell
+#'   subclass and R squared.
+#' @export
+tune_deconv <- function(cm, test, samples, grid,
+                        output = "output",
+                        force_intercept = FALSE, ...) {
+  param <- names(grid)
+  dots <- list(...)
+  if (param %in% names(formals(updateMarkers))) {
+    # tune updateMarkers
+    message("Tuning ", param, " via updateMarkers()")
+    res <- lapply(grid[[1]], function(i) {
+      args <- list(object = cm, zz = i)
+      names(args)[2] <- param
+      cm_update <- do.call("updateMarkers", args)
+      fit <- deconvolute(cm_update, test, ...)
+      fit_output <- fit$subclass[[output]]
+      out <- Rsq_set(samples, fit_output, force_intercept)
+      df <- data.frame(zz = i, subclass = names(out), Rsq = out, row.names = NULL)
+      colnames(df)[1] <- param
+      df
+    })
+  } else {
+    # tune deconvolute
+    message("Tuning ", param, " via deconvolute()")
+    res <- lapply(grid[[1]], function(i) {
+      args <- list(mk = cm, test = test, zz = i)
+      names(args)[3] <- param
+      args <- c(args, dots)
+      fit <- do.call("deconvolute", args)
+      fit_output <- fit$subclass[[output]]
+      out <- Rsq_set(samples, fit_output, force_intercept)
+      df <- data.frame(zz = i, subclass = names(out), Rsq = out, row.names = NULL)
+      colnames(df)[1] <- param
+      df
+    })
+  }
+
+  do.call(rbind, res)
+}
+
+
+plot_tune <- function(res, title = "") {
+  ggplot(res, aes(x = .data[[1]], y = .data$Rsq, color = .data$subclass)) +
+    geom_line() +
+    geom_point() +
+    stat_summary(fun.data = mean_se, geom = "errorbar", col = "black", width = 0.02) +
+    stat_summary(fun = mean, geom = "point", col = "black") +
+    ggtitle(title) +
+    theme_bw() +
+    theme(plot.title = element_text(size = 10),
+          axis.text = element_text(colour = "black"))
+}
