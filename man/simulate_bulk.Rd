@@ -25,8 +25,20 @@ An integer count matrix with genes in rows and cell subclasses in
 columns. This can be used as \code{test} with the \code{\link[=deconvolute]{deconvolute()}} function.
 }
 \description{
-Simulates pseudo-bulk RNA-Seq dataset based on a 'cellMarkers' class object
-and a matrix of counts for the numbers of cells of each cell subclass.
+Simulates pseudo-bulk RNA-Seq dataset using two modes. The first mode uses a
+'cellMarkers' class object and a matrix of counts for the numbers of cells of
+each cell subclass. This method converts the log2 gene means back for
+each cell subclass back to count scale and then calculates pseudo-bulk count
+values based on the cell amounts specified in \code{samples}. In the 2nd mode, a
+single-cell RNA-Seq dataset is required, such as a matrix used as input to
+\code{\link[=cellMarkers]{cellMarkers()}}. Cells from the relevant subclass are sampled from the
+single-cell matrix in the appropriate amounts based on \code{samples}, except that
+sampling is scaled up by the factor \code{times}.
+}
+\details{
+The first method can give perfect deconvolution if the following settings are
+used with \code{\link[=deconvolute]{deconvolute()}}: \code{exp_signature = TRUE}, \code{convert_bulk = FALSE},
+\code{use_filter = FALSE} and \code{comp_amount = 1}.
 }
 \seealso{
 \code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}

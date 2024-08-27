@@ -25,8 +25,19 @@ generate_samples <- function(object, n) {
 
 #' Simulate pseudo-bulk RNA-Seq
 #' 
-#' Simulates pseudo-bulk RNA-Seq dataset based on a 'cellMarkers' class object
-#' and a matrix of counts for the numbers of cells of each cell subclass.
+#' Simulates pseudo-bulk RNA-Seq dataset using two modes. The first mode uses a
+#' 'cellMarkers' class object and a matrix of counts for the numbers of cells of
+#' each cell subclass. This method converts the log2 gene means back for
+#' each cell subclass back to count scale and then calculates pseudo-bulk count
+#' values based on the cell amounts specified in `samples`. In the 2nd mode, a
+#' single-cell RNA-Seq dataset is required, such as a matrix used as input to
+#' [cellMarkers()]. Cells from the relevant subclass are sampled from the
+#' single-cell matrix in the appropriate amounts based on `samples`, except that
+#' sampling is scaled up by the factor `times`.
+#'
+#' The first method can give perfect deconvolution if the following settings are
+#' used with [deconvolute()]: `exp_signature = TRUE`, `convert_bulk = FALSE`,
+#' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
 #' @param object Either a 'cellMarkers' class object or a single cell count
 #'   matrix with genes in rows and cells in columns.
