@@ -70,7 +70,8 @@ tune_deconv <- function(cm, test, samples, grid,
 #' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
 #' @export
 plot_tune <- function(res, title = "") {
-  ggplot(res, aes(x = .data[[1]], y = .data$Rsq, color = .data$subclass)) +
+  wx <- colnames(res)[1]
+  ggplot(res, aes(x = .data[[wx]], y = .data$Rsq, color = .data$subclass)) +
     geom_line() +
     geom_point() +
     stat_summary(fun.data = mean_se, geom = "errorbar", col = "black", width = 0.02) +
