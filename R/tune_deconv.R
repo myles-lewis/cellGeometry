@@ -147,6 +147,7 @@ summary.tune_deconv <- function(object, ...) {
 #' which are specified by `xvar` and `group`. Any remaining parameters not shown
 #' are fixed to their best tuned values.
 #' 
+#' @importFrom dplyr near
 #' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
 #' @export
 plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
