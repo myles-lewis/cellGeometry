@@ -39,11 +39,11 @@ tune_deconv <- function(cm, test, samples, grid,
   grid2 <- if (length(w2) > 0) expand.grid(grid[w2]) else NULL
   if (verbose) {
     message("Tuning parameters: ", paste(params, collapse = ", "))
-    pb <- txtProgressBar2()
   }
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
+    if (verbose) pb <- txtProgressBar2()
     res <- lapply(seq_len(nrow(grid1)), function(i) {
       if (verbose) setTxtProgressBar(pb, i / nrow(grid1))
       args <- list(object = cm)
@@ -55,6 +55,7 @@ tune_deconv <- function(cm, test, samples, grid,
       data.frame(grid1_row, df2, row.names = NULL)
     })
     res <- do.call(rbind, res)
+    if (verbose) close(pb)
   } else {
     # null grid1
     if (is.null(grid2)) stop("No parameters to tune")
@@ -66,7 +67,6 @@ tune_deconv <- function(cm, test, samples, grid,
   w <- which.max(mres$mean.Rsq)
   best_tune <- mres[w, ]
   if (verbose) {
-    close(pb)
     cat("\nBest tune:\n")
     print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
           print.gap = 2L)
