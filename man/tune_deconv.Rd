@@ -22,9 +22,10 @@ tune_deconv(
 \item{samples}{matrix of cell amounts with subclasses in columns and samples
 in rows.}
 
-\item{grid}{Named list of length 1 containing a vector. The name represents
-the parameter to be tuned which is an argument in either \code{\link[=updateMarkers]{updateMarkers()}}
-or \code{\link[=deconvolute]{deconvolute()}}. The elements of the vector are the values to be tuned.}
+\item{grid}{Named list of vectors for the tuning grid similar to
+\code{\link[=expand.grid]{expand.grid()}}. Names represent the parameter to be tuned which must be an
+argument in either \code{\link[=updateMarkers]{updateMarkers()}} or \code{\link[=deconvolute]{deconvolute()}}. The elements of
+each vector are the values to be tuned for each parameter.}
 
 \item{output}{Character value, either "output" or "percent" specifying which
 output from the subclass results element resulting from a call to
@@ -33,11 +34,12 @@ sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
 
 \item{force_intercept}{Logical whether to force intercept through 0.}
 
-\item{...}{Optional arguments passed to \code{\link[=deconvolute]{deconvolute()}}.}
+\item{...}{Optional arguments passed to \code{\link[=deconvolute]{deconvolute()}} to control fixed
+settings.}
 }
 \value{
-Dataframe whose columns include: the parameter being tuned, cell
-subclass and R squared.
+Dataframe whose columns include: the parameters being tuned via
+\code{grid}, cell subclass and R squared.
 }
 \description{
 Tests a tuning grid of a deconvolution parameter for either \code{\link[=updateMarkers]{updateMarkers()}}
