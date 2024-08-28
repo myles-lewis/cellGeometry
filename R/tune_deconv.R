@@ -22,6 +22,7 @@
 #' @returns Dataframe whose columns include: the parameters being tuned via
 #'   `grid`, cell subclass and R squared.
 #' @seealso [plot_tune()]
+#' @importFrom stats aggregate
 #' @export
 tune_deconv <- function(cm, test, samples, grid,
                         output = "output",
