@@ -153,7 +153,7 @@ summary.tune_deconv <- function(object, ...) {
 #' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
 #' @export
 plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
-                      title = "") {
+                      title = NULL) {
   params <- colnames(result)
   params <- params[!params %in% c("subclass", "Rsq")]
   if (!group %in% colnames(result)) stop("incorrect `group`")
@@ -176,6 +176,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
                  collapse = ", ")
       message("Fix ", p)
+      if (is.null(title)) title <- p
       fix <- do.call(cbind, fix)
       if (ncol(fix) > 1) fix <- rowSums(fix) == ncol(fix)
       result <- result[fix, ]
@@ -191,7 +192,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       stat_summary(fun = mean, geom = "point", col = "black") +
       ggtitle(title) +
       theme_bw() +
-      theme(plot.title = element_text(size = 10),
+      theme(plot.title = element_text(size = 9),
             axis.text = element_text(colour = "black"))
   } else {
     # mean Rsq over subclasses
@@ -203,6 +204,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
                  collapse = ", ")
       message("Fix ", p)
+      if (is.null(title)) title <- p
       fix <- do.call(cbind, fix)
       if (ncol(fix) > 1) fix <- rowSums(fix) == ncol(fix)
       mres <- mres[fix, ]
@@ -214,7 +216,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       geom_point() +
       ggtitle(title) +
       theme_bw() +
-      theme(plot.title = element_text(size = 10),
+      theme(plot.title = element_text(size = 9),
             axis.text = element_text(colour = "black"))
   }
 }
