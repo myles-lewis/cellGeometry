@@ -137,18 +137,43 @@ summary.tune_deconv <- function(object, ...) {
 #' @param title Character value for the plot title.
 #' @returns ggplot2 scatter plot.
 #' @details
+#' If `group` is set to `"subclass"`, then the tuning parameter specified by
+#' `xvar` is varied on the x axis. Any other tuning parameters (i.e. if 2 or
+#' more have been tuned) are fixed to their best tuned values.
+#' 
 #' If `group` is set to a different column than `"subclass"`, then the mean
-#' R-squared values in `result` are averaged over subclasses (and any remaining
-#' parameters not specified in `group` and `xvar` if 3 or more parameters were
-#' tuned). This makes it easier to compare the overall effect (mean R-squared)
-#' of 2 tuned parameters.
+#' R-squared values in `result` are averaged over subclasses. This makes it
+#' easier to compare the overall effect (mean R-squared) of 2 tuned parameters
+#' which are specified by `xvar` and `group`. Any remaining parameters not shown
+#' are fixed to their best tuned values.
 #' 
 #' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
 #' @export
 plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       title = "") {
+  params <- colnames(result)
+  params <- params[!params %in% c("subclass", "Rsq")]
+  by_params <- c(group, xvar)
+  fix_params <- params[!params %in% by_params]
+  mres <- aggregate(result$Rsq, by = result[, params], FUN = mean)
+  colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
+  w <- which.max(mres$mean.Rsq)
+  best_tune <- mres[w, ]
+  
   if (group == "subclass") {
     # usual plot
+    if (length(fix_params)) {
+      # 2 or more params tuned, fix using best_tune
+      fix <- lapply(fix_params, function(i) {
+        near(result[, i], best_tune[, i])
+      })
+      p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
+                 collapse = ", ")
+      message("Fix ", p)
+      fix <- do.call(cbind, fix)
+      if (ncol(fix) > 1) fix <- rowSums(fix) == ncol(fix)
+      result <- result[fix, ]
+    }
     ggplot(result, aes(x = .data[[xvar]], y = .data$Rsq,
                        color = .data[[group]])) +
       geom_line() +
@@ -162,9 +187,18 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
             axis.text = element_text(colour = "black"))
   } else {
     # mean Rsq over subclasses
-    params <- c(group, xvar)
-    mres <- aggregate(result$Rsq, by = result[, params], FUN = mean)
-    colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
+    if (length(fix_params)) {
+      # 3 or more params tuned, fix using best_tune
+      fix <- lapply(fix_params, function(i) {
+        near(mres[, i], best_tune[, i])
+      })
+      p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
+                 collapse = ", ")
+      message("Fix ", p)
+      fix <- do.call(cbind, fix)
+      if (ncol(fix) > 1) fix <- rowSums(fix) == ncol(fix)
+      mres <- mres[fix, ]
+    }
     mres[, group] <- factor(mres[, group])
     ggplot(mres, aes(x = .data[[xvar]], y = .data$mean.Rsq,
                        color = .data[[group]])) +
