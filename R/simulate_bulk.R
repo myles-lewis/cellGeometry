@@ -151,5 +151,5 @@ Rsq_set <- function(obs, pred,
     }, numeric(1))
     return(out)
   }
-  diag(cor(obs, pred))^2
+  diag(cor(obs, pred))^2 |> suppressWarnings()
 }
