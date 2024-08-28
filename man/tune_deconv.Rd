@@ -28,8 +28,8 @@ in rows.}
 argument in either \code{\link[=updateMarkers]{updateMarkers()}} or \code{\link[=deconvolute]{deconvolute()}}. The elements of
 each vector are the values to be tuned for each parameter.}
 
-\item{output}{Character value, either "output" or "percent" specifying which
-output from the subclass results element resulting from a call to
+\item{output}{Character value, either \code{"output"} or \code{"percent"} specifying
+which output from the subclass results element resulting from a call to
 \code{\link[=deconvolute]{deconvolute()}}. This deconvolution result is compared against the actual
 sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
 
@@ -39,13 +39,13 @@ sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
 settings.}
 }
 \value{
-Dataframe whose columns include: the parameters being tuned via
-\code{grid}, cell subclass and R squared.
+Dataframe with class \code{'tune_deconv'} whose columns include: the
+parameters being tuned via \code{grid}, cell subclass and R squared.
 }
 \description{
 Tests a tuning grid of a deconvolution parameter for either \code{\link[=updateMarkers]{updateMarkers()}}
 (e.g. \code{expfilter} or \code{nsubclass}) or \code{\link[=deconvolute]{deconvolute()}} (e.g. \code{comp_amount}).
 }
 \seealso{
-\code{\link[=plot_tune]{plot_tune()}}
+\code{\link[=plot_tune]{plot_tune()}} \code{\link[=summary.tune_deconv]{summary.tune_deconv()}}
 }

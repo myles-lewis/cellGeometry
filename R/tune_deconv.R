@@ -12,16 +12,16 @@
 #'   [expand.grid()]. Names represent the parameter to be tuned which must be an
 #'   argument in either [updateMarkers()] or [deconvolute()]. The elements of
 #'   each vector are the values to be tuned for each parameter.
-#' @param output Character value, either "output" or "percent" specifying which
-#'   output from the subclass results element resulting from a call to
+#' @param output Character value, either `"output"` or `"percent"` specifying
+#'   which output from the subclass results element resulting from a call to
 #'   [deconvolute()]. This deconvolution result is compared against the actual
 #'   sample cell numbers in `samples`, using [Rsq_set()].
 #' @param force_intercept Logical whether to force intercept through 0.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
-#' @returns Dataframe whose columns include: the parameters being tuned via
-#'   `grid`, cell subclass and R squared.
-#' @seealso [plot_tune()]
+#' @returns Dataframe with class `'tune_deconv'` whose columns include: the
+#'   parameters being tuned via `grid`, cell subclass and R squared.
+#' @seealso [plot_tune()] [summary.tune_deconv()]
 #' @importFrom stats aggregate
 #' @export
 tune_deconv <- function(cm, test, samples, grid,
@@ -36,12 +36,15 @@ tune_deconv <- function(cm, test, samples, grid,
   w1 <- which(params %in% arg_set1)
   w2 <- which(params %in% arg_set2)
   grid2 <- if (length(w2) > 0) expand.grid(grid[w2]) else NULL
-  if (verbose) message("Tuning parameters: ", paste(params, collapse = ", "))
+  if (verbose) {
+    message("Tuning parameters: ", paste(params, collapse = ", "))
+    pb <- txtProgressBar2()
+  }
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
     res <- lapply(seq_len(nrow(grid1)), function(i) {
-      if (verbose) cat(".")
+      if (verbose) setTxtProgressBar(pb, i / nrow(grid1))
       args <- list(object = cm)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
@@ -62,6 +65,7 @@ tune_deconv <- function(cm, test, samples, grid,
   w <- which.max(mres$mean.Rsq)
   best_tune <- mres[w, ]
   if (verbose) {
+    close(pb)
     cat("\nBest tune:\n")
     print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
           print.gap = 2L)
@@ -70,7 +74,7 @@ tune_deconv <- function(cm, test, samples, grid,
   res
 }
 
-
+# tune inner grid of arguments for deconvolute()
 tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
   if (is.null(grid2)) {
     fit <- deconvolute(cm, test, ...) |> suppressMessages()
@@ -98,9 +102,13 @@ tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
 
 #' Summarising deconvolution tuning
 #' 
-#' summary method for class "tune_deconv".
+#' `summary` method for class `'tune_deconv'`.
 #' 
-#' 
+#' @param object dataframe of class `'tune_deconv'`.
+#' @param ... further arguments passed to other methods.
+#' @returns Prints the row representing the best tuning of parameters (maximum
+#'   mean R squared, averaged across subclasses). Invisibly returns a dataframe
+#'   of mean R squared values averaged over subclasses.
 #' @export
 summary.tune_deconv <- function(object, ...) {
   params <- colnames(object)
