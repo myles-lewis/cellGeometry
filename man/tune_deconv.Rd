@@ -11,6 +11,7 @@ tune_deconv(
   grid,
   output = "output",
   force_intercept = FALSE,
+  verbose = TRUE,
   ...
 )
 }
