@@ -62,12 +62,12 @@ tune_deconv <- function(cm, test, samples, grid,
     res <- tune_dec(cm, test, samples, grid2, output, force_intercept, ...)
   }
   
-  mres <- aggregate(res$Rsq, by = res[, params], FUN = mean)
+  mres <- aggregate(res$Rsq, by = res[, params, drop = FALSE], FUN = mean)
   colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
   w <- which.max(mres$mean.Rsq)
   best_tune <- mres[w, ]
   if (verbose) {
-    cat("\nBest tune:\n")
+    cat("Best tune:\n")
     print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
           print.gap = 2L)
   }
@@ -114,7 +114,7 @@ tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
 summary.tune_deconv <- function(object, ...) {
   params <- colnames(object)
   params <- params[!params %in% c("subclass", "Rsq")]
-  mres <- aggregate(object$Rsq, by = object[, params], FUN = mean)
+  mres <- aggregate(object$Rsq, by = object[, params, drop = FALSE], FUN = mean)
   colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
   w <- which.max(mres$mean.Rsq)
   best_tune <- mres[w, ]
@@ -154,9 +154,11 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       title = "") {
   params <- colnames(result)
   params <- params[!params %in% c("subclass", "Rsq")]
+  if (!group %in% colnames(result)) stop("incorrect `group`")
+  if (!xvar %in% params) stop("incorrect `xvar`")
   by_params <- c(group, xvar)
   fix_params <- params[!params %in% by_params]
-  mres <- aggregate(result$Rsq, by = result[, params], FUN = mean)
+  mres <- aggregate(result$Rsq, by = result[, params, drop = FALSE], FUN = mean)
   colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
   w <- which.max(mres$mean.Rsq)
   best_tune <- mres[w, ]
