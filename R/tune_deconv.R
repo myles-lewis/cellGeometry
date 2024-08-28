@@ -26,7 +26,8 @@
 #' @export
 tune_deconv <- function(cm, test, samples, grid,
                         output = "output",
-                        force_intercept = FALSE, ...) {
+                        force_intercept = FALSE,
+                        verbose = TRUE, ...) {
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
   arg_set2 <- names(formals(deconvolute))
@@ -35,42 +36,41 @@ tune_deconv <- function(cm, test, samples, grid,
   w1 <- which(params %in% arg_set1)
   w2 <- which(params %in% arg_set2)
   grid2 <- if (length(w2) > 0) expand.grid(grid[w2]) else NULL
-  message("Tuning parameters: ", paste(params, collapse = ", "))
+  if (verbose) message("Tuning parameters: ", paste(params, collapse = ", "))
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
     res <- lapply(seq_len(nrow(grid1)), function(i) {
-      cat(".")
+      if (verbose) cat(".")
       args <- list(object = cm)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       cm_update <- do.call("updateMarkers", args) |> suppressMessages()
-      df2 <- tune_dec(cm_update, test, samples, grid2, output,
-                      force_intercept = FALSE, ...)
+      df2 <- tune_dec(cm_update, test, samples, grid2, output, force_intercept,
+                      ...)
       data.frame(grid1_row, df2, row.names = NULL)
     })
     res <- do.call(rbind, res)
   } else {
     # null grid1
     if (is.null(grid2)) stop("No parameters to tune")
-    res <- tune_dec(cm, test, samples, grid2, output, force_intercept = FALSE,
-                    ...)
+    res <- tune_dec(cm, test, samples, grid2, output, force_intercept, ...)
   }
   
   mres <- aggregate(res$Rsq, by = res[, params], FUN = mean)
   colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
   w <- which.max(mres$mean.Rsq)
   best_tune <- mres[w, ]
-  cat("\nBest tune:\n")
-  print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
-        print.gap = 2L)
-  
+  if (verbose) {
+    cat("\nBest tune:\n")
+    print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
+          print.gap = 2L)
+  }
   res
 }
 
 
-tune_dec <- function(cm, test, samples, grid2, output, force_intercept,
-                     ...) {
+tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
   if (is.null(grid2)) {
     fit <- deconvolute(cm, test, ...) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
