@@ -35,6 +35,8 @@ sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
 
 \item{force_intercept}{Logical whether to force intercept through 0.}
 
+\item{verbose}{Logical whether to show progress.}
+
 \item{...}{Optional arguments passed to \code{\link[=deconvolute]{deconvolute()}} to control fixed
 settings.}
 }

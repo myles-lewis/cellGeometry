@@ -17,6 +17,7 @@
 #'   [deconvolute()]. This deconvolution result is compared against the actual
 #'   sample cell numbers in `samples`, using [Rsq_set()].
 #' @param force_intercept Logical whether to force intercept through 0.
+#' @param verbose Logical whether to show progress.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
 #' @returns Dataframe with class `'tune_deconv'` whose columns include: the
@@ -113,7 +114,7 @@ tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
 summary.tune_deconv <- function(object, ...) {
   params <- colnames(object)
   params <- params[!params %in% c("subclass", "Rsq")]
-  mres <- aggregate(object$Rsq, by = res[, params], FUN = mean)
+  mres <- aggregate(object$Rsq, by = object[, params], FUN = mean)
   colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
   w <- which.max(mres$mean.Rsq)
   best_tune <- mres[w, ]
