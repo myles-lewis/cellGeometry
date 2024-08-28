@@ -174,12 +174,14 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       if (ncol(fix) > 1) fix <- rowSums(fix) == ncol(fix)
       result <- result[fix, ]
     }
+    xdiff <- diff(range(result[, xvar], na.rm = TRUE))
+    
     ggplot(result, aes(x = .data[[xvar]], y = .data$Rsq,
                        color = .data[[group]])) +
       geom_line() +
       geom_point() +
       stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
-                   width = 0.02) +
+                   width = 0.02 * xdiff) +
       stat_summary(fun = mean, geom = "point", col = "black") +
       ggtitle(title) +
       theme_bw() +
