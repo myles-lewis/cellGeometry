@@ -140,10 +140,6 @@ summary.tune_deconv <- function(object, ...) {
 #' @param title Character value for the plot title.
 #' @returns ggplot2 scatter plot.
 #' @details
-#' If `group` is `NULL`, the tuning parameter specified by `xvar` is varied on
-#' the x axis and R-squared values are averaged over the whole grid to give the
-#' mean effect of varying the `xvar` parameter.
-#' 
 #' If `group` is set to `"subclass"`, then the tuning parameter specified by
 #' `xvar` is varied on the x axis. Any other tuning parameters (i.e. if 2 or
 #' more have been tuned) are fixed to their best tuned values.
@@ -154,6 +150,9 @@ summary.tune_deconv <- function(object, ...) {
 #' which are specified by `xvar` and `group`. Any remaining parameters not shown
 #' are fixed to their best tuned values.
 #' 
+#' If `group` is `NULL`, the tuning parameter specified by `xvar` is varied on
+#' the x axis and R-squared values are averaged over the whole grid to give the
+#' mean effect of varying the `xvar` parameter.
 #' @importFrom dplyr near
 #' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
 #' @export
