@@ -11,9 +11,9 @@
 
 \item{method}{Either "top" or "overall". Determines how best parameter values
 are chosen. With "top" the single top configuration is chosen. With
-"overall", the effects on R-squared across while varying each parameter are
-averaged using the mean across all variations of other parameters. This can
-give a more stable choice of final tuning.}
+"overall", the average effect of varying each parameter is calculated using
+the mean R-squared across all variations of other parameters. This can give
+a more stable choice of final tuning.}
 
 \item{...}{further arguments passed to other methods.}
 }

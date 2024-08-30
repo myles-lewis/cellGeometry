@@ -21,9 +21,9 @@
 #'   calculation of R-squared. See [Rsq_set()].
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
-#'   "overall", the effects on R-squared across while varying each parameter are
-#'   averaged using the mean across all variations of other parameters. This can
-#'   give a more stable choice of final tuning.
+#'   "overall", the average effect of varying each parameter is calculated using
+#'   the mean R-squared across all variations of other parameters. This can give
+#'   a more stable choice of final tuning.
 #' @param verbose Logical whether to show progress.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
@@ -138,9 +138,9 @@ tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
 #' @param object dataframe of class `'tune_deconv'`.
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
-#'   "overall", the effects on R-squared across while varying each parameter are
-#'   averaged using the mean across all variations of other parameters. This can
-#'   give a more stable choice of final tuning.
+#'   "overall", the average effect of varying each parameter is calculated using
+#'   the mean R-squared across all variations of other parameters. This can give
+#'   a more stable choice of final tuning.
 #' @param ... further arguments passed to other methods.
 #' @returns Prints the row representing the best tuning of parameters (maximum
 #'   mean R squared, averaged across subclasses). Invisibly returns a dataframe
@@ -162,7 +162,7 @@ summary.tune_deconv <- function(object,
     best_tune <- mres[w, ]
   } else {
     best_tune <- lapply(params, function(i) {
-      mres <- aggregate(res$Rsq, by = res[, i, drop = FALSE], FUN = mean,
+      mres <- aggregate(object$Rsq, by = object[, i, drop = FALSE], FUN = mean,
                         na.rm = TRUE)
       w <- which.max(mres$x)
       mres[w, i]
