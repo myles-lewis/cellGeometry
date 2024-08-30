@@ -4,10 +4,16 @@
 \alias{summary.tune_deconv}
 \title{Summarising deconvolution tuning}
 \usage{
-\method{summary}{tune_deconv}(object, ...)
+\method{summary}{tune_deconv}(object, method = attr(object, "method"), ...)
 }
 \arguments{
 \item{object}{dataframe of class \code{'tune_deconv'}.}
+
+\item{method}{Either "top" or "overall". Determines how best parameter values
+are chosen. With "top" the single top configuration is chosen. With
+"overall", the effects on R-squared across while varying each parameter are
+averaged using the mean across all variations of other parameters. This can
+give a more stable choice of final tuning.}
 
 \item{...}{further arguments passed to other methods.}
 }

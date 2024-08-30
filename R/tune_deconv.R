@@ -19,11 +19,11 @@
 #'   sample cell numbers in `samples`, using [Rsq_set()].
 #' @param force_intercept Logical whether to force intercept through 0. Affects
 #'   calculation of R-squared. See [Rsq_set()].
-#' @param best_tune Either "single" or "overall". Determines how parameters are
-#' chosen. With "top" the single top configuration is chosen. With "overall",
-#' the effects on R-squared across while varying each parameter are averaged
-#' using the mean across all variations of other parameters. This can give a
-#' more stable choice of final tuning.
+#' @param method Either "top" or "overall". Determines how best parameter values
+#'   are chosen. With "top" the single top configuration is chosen. With
+#'   "overall", the effects on R-squared across while varying each parameter are
+#'   averaged using the mean across all variations of other parameters. This can
+#'   give a more stable choice of final tuning.
 #' @param verbose Logical whether to show progress.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
@@ -40,8 +40,9 @@
 tune_deconv <- function(cm, test, samples, grid,
                         output = "output",
                         force_intercept = FALSE,
-                        best_tune = "top",
+                        method = "top",
                         verbose = TRUE, ...) {
+  method <- match.arg(method, c("top", "overall"))
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
   arg_set2 <- names(formals(deconvolute))
@@ -75,31 +76,34 @@ tune_deconv <- function(cm, test, samples, grid,
     res <- tune_dec(cm, test, samples, grid2, output, force_intercept, ...)
   }
   
-  if (best_tune == "top") {
+  if (method == "top") {
     mres <- aggregate(res$Rsq, by = res[, params, drop = FALSE], FUN = mean,
                       na.rm = TRUE)
     colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
     w <- which.max(mres$mean.Rsq)
-    bt <- mres[w, ]
+    best_tune <- mres[w, ]
   } else {
-    bt <- lapply(params, function(i) {
+    best_tune <- lapply(params, function(i) {
       mres <- aggregate(res$Rsq, by = res[, i, drop = FALSE], FUN = mean,
                         na.rm = TRUE)
       w <- which.max(mres$x)
       mres[w, i]
     })
-    bt <- data.frame(bt)
-    colnames(bt) <- params
+    best_tune <- data.frame(best_tune)
+    colnames(best_tune) <- params
   }
   if (verbose) {
     cat("Best tune:\n")
-    print(bt, row.names = FALSE, digits = max(3, getOption("digits")-3),
+    print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
           print.gap = 2L)
   }
   
+  attr(res, "tune") <- best_tune
+  attr(res, "method") <- method
   class(res) <- c("tune_deconv", class(res))
   res
 }
+
 
 # tune inner grid of arguments for deconvolute()
 tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
@@ -132,19 +136,41 @@ tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
 #' `summary` method for class `'tune_deconv'`.
 #' 
 #' @param object dataframe of class `'tune_deconv'`.
+#' @param method Either "top" or "overall". Determines how best parameter values
+#'   are chosen. With "top" the single top configuration is chosen. With
+#'   "overall", the effects on R-squared across while varying each parameter are
+#'   averaged using the mean across all variations of other parameters. This can
+#'   give a more stable choice of final tuning.
 #' @param ... further arguments passed to other methods.
 #' @returns Prints the row representing the best tuning of parameters (maximum
 #'   mean R squared, averaged across subclasses). Invisibly returns a dataframe
 #'   of mean R squared values averaged over subclasses.
 #' @export
-summary.tune_deconv <- function(object, ...) {
+summary.tune_deconv <- function(object,
+                                method = attr(object, "method"),
+                                ...) {
   params <- colnames(object)
   params <- params[!params %in% c("subclass", "Rsq")]
   mres <- aggregate(object$Rsq, by = object[, params, drop = FALSE], FUN = mean,
                     na.rm = TRUE)
   colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
-  w <- which.max(mres$mean.Rsq)
-  best_tune <- mres[w, ]
+  method <- match.arg(method, c("top", "overall"))
+  if (method == attr(object, "method")) {
+    best_tune <- attr(object, "tune")
+  } else if (method == "top") {
+    w <- which.max(mres$mean.Rsq)
+    best_tune <- mres[w, ]
+  } else {
+    best_tune <- lapply(params, function(i) {
+      mres <- aggregate(res$Rsq, by = res[, i, drop = FALSE], FUN = mean,
+                        na.rm = TRUE)
+      w <- which.max(mres$x)
+      mres[w, i]
+    })
+    best_tune <- data.frame(best_tune)
+    colnames(best_tune) <- params
+  }
+  
   cat("Best tune:\n")
   print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
         print.gap = 2L)

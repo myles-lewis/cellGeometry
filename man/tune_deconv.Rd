@@ -11,7 +11,7 @@ tune_deconv(
   grid,
   output = "output",
   force_intercept = FALSE,
-  best_tune = "top",
+  method = "top",
   verbose = TRUE,
   ...
 )
@@ -37,11 +37,11 @@ sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
 \item{force_intercept}{Logical whether to force intercept through 0. Affects
 calculation of R-squared. See \code{\link[=Rsq_set]{Rsq_set()}}.}
 
-\item{best_tune}{Either "single" or "overall". Determines how parameters are
-chosen. With "top" the single top configuration is chosen. With "overall",
-the effects on R-squared across while varying each parameter are averaged
-using the mean across all variations of other parameters. This can give a
-more stable choice of final tuning.}
+\item{method}{Either "top" or "overall". Determines how best parameter values
+are chosen. With "top" the single top configuration is chosen. With
+"overall", the effects on R-squared across while varying each parameter are
+averaged using the mean across all variations of other parameters. This can
+give a more stable choice of final tuning.}
 
 \item{verbose}{Logical whether to show progress.}
 
