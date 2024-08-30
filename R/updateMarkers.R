@@ -103,7 +103,7 @@ updateMarkers <- function(object = NULL,
     rn <- rownames(groupmeans_filtered)
     miss <- rn[!rn %in% rownames(genemeans_filtered)]
     if (length(miss) > 0) {
-      extra <- reduceNoise(genemeans[miss, ], noisefilter, noisefraction)
+      extra <- reduceNoise(genemeans[miss, , drop = FALSE], noisefilter, noisefraction)
       genemeans_filtered <- rbind(genemeans_filtered, extra)
     }
     group_angle <- gene_angle(groupmeans_filtered)

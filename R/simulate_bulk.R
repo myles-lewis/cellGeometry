@@ -60,6 +60,7 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
     mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
+  if (!is.matrix(object)) stop("`object` is not a matrix")
   if (!is.factor(subclass)) subclass <- factor(subclass)
   if (!identical(levels(subclass), colnames(samples))) stop("subclasses not identical")
   samples <- samples * times
@@ -71,7 +72,8 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
   sim_pseudo <- object %*% cmat
-  mode(sim_pseudo) <- "integer"
+  colnames(sim_pseudo) <- rownames(samples)
+  if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   sim_pseudo
 }
 
