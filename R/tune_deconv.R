@@ -142,9 +142,12 @@ tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
 #'   the mean R-squared across all variations of other parameters. This can give
 #'   a more stable choice of final tuning.
 #' @param ... further arguments passed to other methods.
-#' @returns Prints the row representing the best tuning of parameters (maximum
-#'   mean R squared, averaged across subclasses). Invisibly returns a dataframe
-#'   of mean R squared values averaged over subclasses.
+#' @returns If `method = "top"` prints the row representing the best tuning of
+#'   parameters (maximum mean R squared, averaged across subclasses). For method
+#'   = "overall", the average effect of varying each parameter is calculated by
+#'   mean R-squared across the rest of the grid and the best value for each
+#'   parameter is printed. Invisibly returns a dataframe of mean R squared
+#'   values averaged over subclasses.
 #' @export
 summary.tune_deconv <- function(object,
                                 method = attr(object, "method"),

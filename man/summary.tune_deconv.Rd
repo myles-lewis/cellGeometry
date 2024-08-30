@@ -18,9 +18,12 @@ a more stable choice of final tuning.}
 \item{...}{further arguments passed to other methods.}
 }
 \value{
-Prints the row representing the best tuning of parameters (maximum
-mean R squared, averaged across subclasses). Invisibly returns a dataframe
-of mean R squared values averaged over subclasses.
+If \code{method = "top"} prints the row representing the best tuning of
+parameters (maximum mean R squared, averaged across subclasses). For method
+= "overall", the average effect of varying each parameter is calculated by
+mean R-squared across the rest of the grid and the best value for each
+parameter is printed. Invisibly returns a dataframe of mean R squared
+values averaged over subclasses.
 }
 \description{
 \code{summary} method for class \code{'tune_deconv'}.
