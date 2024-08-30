@@ -2,14 +2,14 @@
 
 Tools for identifying best gene markers for single-cell and bulk RNA-Seq datasets.
 
-## Installation
+### Installation
 
 Install from Github
 ```
 devtools::install_github("myles-lewis/cellGeometry")
 ```
 
-# BLAS libraries
+### BLAS libraries
 
 Matrix operations can be substantially sped up by using an optimised BLAS 
 library. The standard library installed with R is accurate but not optimised for 
