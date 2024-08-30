@@ -11,6 +11,7 @@ tune_deconv(
   grid,
   output = "output",
   force_intercept = FALSE,
+  best_tune = "overall",
   verbose = TRUE,
   ...
 )
@@ -33,7 +34,14 @@ which output from the subclass results element resulting from a call to
 \code{\link[=deconvolute]{deconvolute()}}. This deconvolution result is compared against the actual
 sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
 
-\item{force_intercept}{Logical whether to force intercept through 0.}
+\item{force_intercept}{Logical whether to force intercept through 0. Affects
+calculation of R-squared. See \code{\link[=Rsq_set]{Rsq_set()}}.}
+
+\item{best_tune}{Either "single" or "overall". Determines how parameters are
+chosen. With "single" the single top configuration is chosen (a greedy
+choice). With "overall", the effects on R-squared across while varying each
+parameter are averaged using the mean across all variations of other
+parameters. This gives a more stable choice of final tuning.}
 
 \item{verbose}{Logical whether to show progress.}
 
@@ -45,8 +53,14 @@ Dataframe with class \code{'tune_deconv'} whose columns include: the
 parameters being tuned via \code{grid}, cell subclass and R squared.
 }
 \description{
-Tests a tuning grid of a deconvolution parameter for either \code{\link[=updateMarkers]{updateMarkers()}}
-(e.g. \code{expfilter} or \code{nsubclass}) or \code{\link[=deconvolute]{deconvolute()}} (e.g. \code{comp_amount}).
+Performs an exhaustive grid search over a tuning grid of cell marker and
+deconvolution parameters for either \code{\link[=updateMarkers]{updateMarkers()}} (e.g. \code{expfilter} or
+\code{nsubclass}) or \code{\link[=deconvolute]{deconvolute()}} (e.g. \code{comp_amount}).
+}
+\details{
+Tuning plots on the resulting object can be visualised using \code{\link[=plot_tune]{plot_tune()}}.
+If \code{best_tune} is set to "overall", this corresponds to setting
+\code{subclass = NULL} in \code{\link[=plot_tune]{plot_tune()}}.
 }
 \seealso{
 \code{\link[=plot_tune]{plot_tune()}} \code{\link[=summary.tune_deconv]{summary.tune_deconv()}}

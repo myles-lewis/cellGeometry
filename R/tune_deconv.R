@@ -1,8 +1,9 @@
 
 #' Tune deconvolution parameters
 #' 
-#' Tests a tuning grid of a deconvolution parameter for either [updateMarkers()]
-#' (e.g. `expfilter` or `nsubclass`) or [deconvolute()] (e.g. `comp_amount`).
+#' Performs an exhaustive grid search over a tuning grid of cell marker and
+#' deconvolution parameters for either [updateMarkers()] (e.g. `expfilter` or
+#' `nsubclass`) or [deconvolute()] (e.g. `comp_amount`).
 #' 
 #' @param cm cellMarkers class object
 #' @param test matrix of bulk RNA-Seq to be deconvoluted. Passed to [deconvolute()].
@@ -16,18 +17,30 @@
 #'   which output from the subclass results element resulting from a call to
 #'   [deconvolute()]. This deconvolution result is compared against the actual
 #'   sample cell numbers in `samples`, using [Rsq_set()].
-#' @param force_intercept Logical whether to force intercept through 0.
+#' @param force_intercept Logical whether to force intercept through 0. Affects
+#'   calculation of R-squared. See [Rsq_set()].
+#' @param best_tune Either "single" or "overall". Determines how parameters are
+#'   chosen. With "single" the single top configuration is chosen (a greedy
+#'   choice). With "overall", the effects on R-squared across while varying each
+#'   parameter are averaged using the mean across all variations of other
+#'   parameters. This gives a more stable choice of final tuning.
 #' @param verbose Logical whether to show progress.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
 #' @returns Dataframe with class `'tune_deconv'` whose columns include: the
 #'   parameters being tuned via `grid`, cell subclass and R squared.
+#' @details
+#' Tuning plots on the resulting object can be visualised using [plot_tune()].
+#' If `best_tune` is set to "overall", this corresponds to setting 
+#' `subclass = NULL` in [plot_tune()].
+#' 
 #' @seealso [plot_tune()] [summary.tune_deconv()]
 #' @importFrom stats aggregate
 #' @export
 tune_deconv <- function(cm, test, samples, grid,
                         output = "output",
                         force_intercept = FALSE,
+                        best_tune = "overall",
                         verbose = TRUE, ...) {
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
@@ -62,16 +75,28 @@ tune_deconv <- function(cm, test, samples, grid,
     res <- tune_dec(cm, test, samples, grid2, output, force_intercept, ...)
   }
   
-  mres <- aggregate(res$Rsq, by = res[, params, drop = FALSE], FUN = mean,
-                    na.rm = TRUE)
-  colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
-  w <- which.max(mres$mean.Rsq)
-  best_tune <- mres[w, ]
+  if (best_tune == "single") {
+    mres <- aggregate(res$Rsq, by = res[, params, drop = FALSE], FUN = mean,
+                      na.rm = TRUE)
+    colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
+    w <- which.max(mres$mean.Rsq)
+    bt <- mres[w, ]
+  } else {
+    bt <- lapply(params, function(i) {
+      mres <- aggregate(res$Rsq, by = res[, i, drop = FALSE], FUN = mean,
+                        na.rm = TRUE)
+      w <- which.max(mres$x)
+      mres[w, i]
+    })
+    bt <- data.frame(bt)
+    colnames(bt) <- params
+  }
   if (verbose) {
     cat("Best tune:\n")
-    print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
+    print(bt, row.names = FALSE, digits = max(3, getOption("digits")-3),
           print.gap = 2L)
   }
+  
   class(res) <- c("tune_deconv", class(res))
   res
 }
