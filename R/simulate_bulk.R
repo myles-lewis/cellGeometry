@@ -60,12 +60,13 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
     mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
-  if (!is.matrix(object)) stop("`object` is not a matrix")
   if (!is.factor(subclass)) subclass <- factor(subclass)
-  if (!identical(levels(subclass), colnames(samples))) stop("subclasses not identical")
+  if (!identical(levels(subclass), colnames(samples))) warning("subclasses not identical")
   samples <- samples * times
+  subclass_lev <- levels(subclass)
+  subclass_lev <- subclass_lev[subclass_lev %in% colnames(samples)]
   cmat <- vapply(seq_len(nrow(samples)), function(j) {
-    s <- unlist(lapply(levels(subclass), function(i) {
+    s <- unlist(lapply(subclass_lev, function(i) {
       w <- which(subclass == i)
       sample(w, samples[j, i], replace = TRUE)
     }))
