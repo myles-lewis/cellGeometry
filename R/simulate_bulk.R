@@ -45,6 +45,8 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' used with [deconvolute()]: `exp_signature = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
+#' `simulate_bulk()` can be sped up by installing an optimised BLAS library.
+#' 
 #' @param object Either a 'cellMarkers' class object or a single cell count
 #'   matrix with genes in rows and cells in columns.
 #' @param samples An integer matrix with samples in rows and columns for each

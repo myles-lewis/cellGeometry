@@ -39,6 +39,8 @@ sampling is scaled up by the factor \code{times}.
 The first method can give perfect deconvolution if the following settings are
 used with \code{\link[=deconvolute]{deconvolute()}}: \code{exp_signature = TRUE}, \code{convert_bulk = FALSE},
 \code{use_filter = FALSE} and \code{comp_amount = 1}.
+
+\code{simulate_bulk()} can be sped up by installing an optimised BLAS library.
 }
 \seealso{
 \code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}
