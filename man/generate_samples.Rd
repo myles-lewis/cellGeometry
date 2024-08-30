@@ -4,12 +4,16 @@
 \alias{generate_samples}
 \title{Generate random cell number samples}
 \usage{
-generate_samples(object, n)
+generate_samples(object, n, equal_sample = TRUE)
 }
 \arguments{
 \item{object}{A 'cellMarkers' class object}
 
 \item{n}{Integer value for the number of samples to generate}
+
+\item{equal_sample}{Logical whether to sample subclasses equally or generate
+samples with proportions of cells in keeping with the original subtotal of
+cells in the main scRNA-Seq data.}
 }
 \value{
 An integer matrix with \code{n} rows, with columns for each cell

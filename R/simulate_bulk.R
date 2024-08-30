@@ -8,17 +8,23 @@
 #' 
 #' @param object A 'cellMarkers' class object
 #' @param n Integer value for the number of samples to generate
+#' @param equal_sample Logical whether to sample subclasses equally or generate
+#'   samples with proportions of cells in keeping with the original subtotal of
+#'   cells in the main scRNA-Seq data.
 #' @returns An integer matrix with `n` rows, with columns for each cell
 #'   subclasses in `object`, representing cell counts for each cell subclass.
 #'   Designed to be passed to [simulate_bulk()].
 #' @seealso [simulate_bulk()]
 #' @export
-generate_samples <- function(object, n) {
+generate_samples <- function(object, n, equal_sample = TRUE) {
   lim <- object$subclass_table
   nc <- length(lim)
   sim_counts <- matrix(runif(n * nc), ncol = nc,
                        dimnames = list(paste0("S", c(1:n)), names(lim)))
-  sim_counts <- t(t(sim_counts) * as.vector(lim))
+  if (equal_sample) {
+    fac <- sum(lim) / nc
+    sim_counts <- sim_counts * fac
+  } else sim_counts <- t(t(sim_counts) * as.vector(lim))
   mode(sim_counts) <- "integer"
   sim_counts
 }
