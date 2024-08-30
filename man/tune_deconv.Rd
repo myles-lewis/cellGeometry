@@ -11,7 +11,7 @@ tune_deconv(
   grid,
   output = "output",
   force_intercept = FALSE,
-  best_tune = "overall",
+  best_tune = "top",
   verbose = TRUE,
   ...
 )
@@ -38,10 +38,10 @@ sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
 calculation of R-squared. See \code{\link[=Rsq_set]{Rsq_set()}}.}
 
 \item{best_tune}{Either "single" or "overall". Determines how parameters are
-chosen. With "single" the single top configuration is chosen (a greedy
-choice). With "overall", the effects on R-squared across while varying each
-parameter are averaged using the mean across all variations of other
-parameters. This gives a more stable choice of final tuning.}
+chosen. With "top" the single top configuration is chosen. With "overall",
+the effects on R-squared across while varying each parameter are averaged
+using the mean across all variations of other parameters. This can give a
+more stable choice of final tuning.}
 
 \item{verbose}{Logical whether to show progress.}
 

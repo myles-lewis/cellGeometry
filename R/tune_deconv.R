@@ -20,10 +20,10 @@
 #' @param force_intercept Logical whether to force intercept through 0. Affects
 #'   calculation of R-squared. See [Rsq_set()].
 #' @param best_tune Either "single" or "overall". Determines how parameters are
-#'   chosen. With "single" the single top configuration is chosen (a greedy
-#'   choice). With "overall", the effects on R-squared across while varying each
-#'   parameter are averaged using the mean across all variations of other
-#'   parameters. This gives a more stable choice of final tuning.
+#' chosen. With "top" the single top configuration is chosen. With "overall",
+#' the effects on R-squared across while varying each parameter are averaged
+#' using the mean across all variations of other parameters. This can give a
+#' more stable choice of final tuning.
 #' @param verbose Logical whether to show progress.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
@@ -40,7 +40,7 @@
 tune_deconv <- function(cm, test, samples, grid,
                         output = "output",
                         force_intercept = FALSE,
-                        best_tune = "overall",
+                        best_tune = "top",
                         verbose = TRUE, ...) {
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
@@ -75,7 +75,7 @@ tune_deconv <- function(cm, test, samples, grid,
     res <- tune_dec(cm, test, samples, grid2, output, force_intercept, ...)
   }
   
-  if (best_tune == "single") {
+  if (best_tune == "top") {
     mres <- aggregate(res$Rsq, by = res[, params, drop = FALSE], FUN = mean,
                       na.rm = TRUE)
     colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
