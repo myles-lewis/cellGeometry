@@ -11,7 +11,7 @@ cellMarkers(
   cellgroup = NULL,
   nsubclass = 5,
   ngroup = 5,
-  expfilter = 1,
+  expfilter = 0.5,
   noisefilter = 2,
   noisefraction = 0.25,
   min_cells = 10,
