@@ -5,7 +5,7 @@
 #' deconvolution parameters for either [updateMarkers()] (e.g. `expfilter` or
 #' `nsubclass`) or [deconvolute()] (e.g. `comp_amount`).
 #' 
-#' @param cm cellMarkers class object
+#' @param mk cellMarkers class object
 #' @param test matrix of bulk RNA-Seq to be deconvoluted. Passed to [deconvolute()].
 #' @param samples matrix of cell amounts with subclasses in columns and samples
 #'   in rows.
@@ -37,7 +37,7 @@
 #' @seealso [plot_tune()] [summary.tune_deconv()]
 #' @importFrom stats aggregate
 #' @export
-tune_deconv <- function(cm, test, samples, grid,
+tune_deconv <- function(mk, test, samples, grid,
                         output = "output",
                         force_intercept = FALSE,
                         method = "top",
@@ -60,11 +60,11 @@ tune_deconv <- function(cm, test, samples, grid,
     if (verbose) pb <- txtProgressBar2()
     res <- lapply(seq_len(nrow(grid1)), function(i) {
       if (verbose) setTxtProgressBar(pb, i / nrow(grid1))
-      args <- list(object = cm)
+      args <- list(object = mk)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
-      cm_update <- do.call("updateMarkers", args) |> suppressMessages()
-      df2 <- tune_dec(cm_update, test, samples, grid2, output, force_intercept,
+      mk_update <- do.call("updateMarkers", args) |> suppressMessages()
+      df2 <- tune_dec(mk_update, test, samples, grid2, output, force_intercept,
                       ...)
       data.frame(grid1_row, df2, row.names = NULL)
     })
@@ -73,7 +73,7 @@ tune_deconv <- function(cm, test, samples, grid,
   } else {
     # null grid1
     if (is.null(grid2)) stop("No parameters to tune")
-    res <- tune_dec(cm, test, samples, grid2, output, force_intercept, ...)
+    res <- tune_dec(mk, test, samples, grid2, output, force_intercept, ...)
   }
   
   if (method == "top") {
@@ -106,9 +106,9 @@ tune_deconv <- function(cm, test, samples, grid,
 
 
 # tune inner grid of arguments for deconvolute()
-tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
+tune_dec <- function(mk, test, samples, grid2, output, force_intercept, ...) {
   if (is.null(grid2)) {
-    fit <- deconvolute(cm, test, ...) |> suppressMessages()
+    fit <- deconvolute(mk, test, ...) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- Rsq_set(samples, fit_output, force_intercept)
     df <- data.frame(subclass = names(out), Rsq = out, row.names = NULL)
@@ -118,7 +118,7 @@ tune_dec <- function(cm, test, samples, grid2, output, force_intercept, ...) {
   res <- lapply(seq_len(nrow(grid2)), function(i) {
     dots <- list(...)
     grid2_row <- grid2[i, , drop = FALSE]
-    args <- list(mk = cm, test = test)
+    args <- list(mk = mk, test = test)
     args <- c(args, grid2_row)
     if (length(dots)) args[names(dots)] <- dots
     fit <- do.call("deconvolute", args) |> suppressMessages()

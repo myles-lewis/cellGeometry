@@ -5,7 +5,7 @@
 \title{Tune deconvolution parameters}
 \usage{
 tune_deconv(
-  cm,
+  mk,
   test,
   samples,
   grid,
@@ -17,7 +17,7 @@ tune_deconv(
 )
 }
 \arguments{
-\item{cm}{cellMarkers class object}
+\item{mk}{cellMarkers class object}
 
 \item{test}{matrix of bulk RNA-Seq to be deconvoluted. Passed to \code{\link[=deconvolute]{deconvolute()}}.}
 
