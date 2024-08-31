@@ -82,7 +82,7 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
   message("Matrix multiplication")
-  sim_pseudo <- object %*% cmat
+  sim_pseudo <- as.matrix(object %*% cmat)
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   sim_pseudo
