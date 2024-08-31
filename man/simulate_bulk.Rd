@@ -4,7 +4,7 @@
 \alias{simulate_bulk}
 \title{Simulate pseudo-bulk RNA-Seq}
 \usage{
-simulate_bulk(object, samples, subclass, times = 10)
+simulate_bulk(object, samples, subclass, times = 300)
 }
 \arguments{
 \item{object}{Either a 'cellMarkers' class object or a single cell count

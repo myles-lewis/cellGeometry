@@ -14,6 +14,9 @@
 #' @returns An integer matrix with `n` rows, with columns for each cell
 #'   subclasses in `object`, representing cell counts for each cell subclass.
 #'   Designed to be passed to [simulate_bulk()].
+#' @details
+#' Leaving `equal_sample = TRUE` is better for tuning deconvolution parameters.
+#' 
 #' @seealso [simulate_bulk()]
 #' @export
 generate_samples <- function(object, n, equal_sample = TRUE) {
@@ -58,7 +61,7 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]
 #' @export
-simulate_bulk <- function(object, samples, subclass, times = 10) {
+simulate_bulk <- function(object, samples, subclass, times = 300) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")

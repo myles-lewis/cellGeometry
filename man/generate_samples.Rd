@@ -26,6 +26,9 @@ counts are randomly sampled from the uniform distribution, using the original
 subclass contingency table as a limit on the maximum number of cells in each
 subclass.
 }
+\details{
+Leaving \code{equal_sample = TRUE} is better for tuning deconvolution parameters.
+}
 \seealso{
 \code{\link[=simulate_bulk]{simulate_bulk()}}
 }
