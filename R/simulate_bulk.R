@@ -66,9 +66,10 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
     mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
+  if (ncol(object) != length(subclass)) stop("incompatible dimensions")
   if (!is.factor(subclass)) subclass <- factor(subclass)
-  if (!identical(levels(subclass), colnames(samples))) warning("subclasses not identical")
-  message("Setting up sampling matrix")
+  if (any(!colnames(samples) %in% levels(subclass))) stop("incompatible subclasses")
+  message("Creating sampling matrix")
   samples <- samples * times
   subclass_lev <- levels(subclass)
   subclass_lev <- subclass_lev[subclass_lev %in% colnames(samples)]
