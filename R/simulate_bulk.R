@@ -66,6 +66,7 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
     mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
+  if (!inherits(object, c("dgCMatrix", "matrix", "Seurat"))) object <- as.matrix(object)
   if (ncol(object) != length(subclass)) stop("incompatible dimensions")
   if (!is.factor(subclass)) subclass <- factor(subclass)
   if (any(!colnames(samples) %in% levels(subclass))) stop("incompatible subclasses")
