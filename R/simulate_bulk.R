@@ -45,8 +45,6 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' used with [deconvolute()]: `exp_signature = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
-#' `simulate_bulk()` can be sped up by installing an optimised BLAS library.
-#' 
 #' @param object Either a 'cellMarkers' class object or a single cell count
 #'   matrix with genes in rows and cells in columns.
 #' @param samples An integer matrix with samples in rows and columns for each
@@ -70,6 +68,7 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
   }
   if (!is.factor(subclass)) subclass <- factor(subclass)
   if (!identical(levels(subclass), colnames(samples))) warning("subclasses not identical")
+  message("Setting up sampling matrix")
   samples <- samples * times
   subclass_lev <- levels(subclass)
   subclass_lev <- subclass_lev[subclass_lev %in% colnames(samples)]
@@ -80,6 +79,7 @@ simulate_bulk <- function(object, samples, subclass, times = 10) {
     }))
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
+  message("Matrix multiplication")
   sim_pseudo <- object %*% cmat
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
