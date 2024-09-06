@@ -18,9 +18,9 @@
 #'   removes genes containing "-" which are usually antisense or mitochondrial
 #'   genes, or "." which are either pseudogenes or ribosomal genes.
 #' @param knots Vector of quantile points for knots for fitting natural splines.
-#' @param method Either "splines" to fit natural splines or "linear" which uses
-#'   linear interpolation (see [approxfun()]). "linear" will not interpolate
-#'   beyond the limits of the original data, i.e. it will clip.
+#' @param use_splines Logical whether to use "splines" to fit natural splines.
+#'   If set to `FALSE`, interpolation is limited to the original range of `x`,
+#'   i.e. it will clip for values > `max(x)`.
 #' @returns A list object of class 'qqmap' containing:
 #' \item{quantiles}{Dataframe containing matching quantiles of `x` and `y`}
 #' \item{map}{A function of form `FUN(x)` where `x` can be supplied as a numeric

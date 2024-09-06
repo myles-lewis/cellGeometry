@@ -31,9 +31,9 @@ genes, or "." which are either pseudogenes or ribosomal genes.}
 
 \item{knots}{Vector of quantile points for knots for fitting natural splines.}
 
-\item{method}{Either "splines" to fit natural splines or "linear" which uses
-linear interpolation (see \code{\link[=approxfun]{approxfun()}}). "linear" will not interpolate
-beyond the limits of the original data, i.e. it will clip.}
+\item{use_splines}{Logical whether to use "splines" to fit natural splines.
+If set to \code{FALSE}, interpolation is limited to the original range of \code{x},
+i.e. it will clip for values > \code{max(x)}.}
 }
 \value{
 A list object of class 'qqmap' containing:
