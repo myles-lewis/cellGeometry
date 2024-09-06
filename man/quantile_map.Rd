@@ -4,7 +4,14 @@
 \alias{quantile_map}
 \title{Quantile mapping function between two scRNA-Seq datasets}
 \usage{
-quantile_map(x, y, n = 10000, remove_noncoding = TRUE)
+quantile_map(
+  x,
+  y,
+  n = 10000,
+  remove_noncoding = TRUE,
+  knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
+  method = c("splines", "linear")
+)
 }
 \arguments{
 \item{x}{scRNA-Seq data whose distribution is to be mapped onto \code{y}: either a
@@ -15,16 +22,26 @@ in which case the \verb{$genemeans} list element is extracted.}
 log2+1 scale, or a 'cellMarkers' class object, in which case the
 \verb{$genemeans} list element is extracted.}
 
-\item{n}{Number of quantiles to split x and y}
+\item{n}{Number of quantiles to split \code{x} and \code{y}.}
 
 \item{remove_noncoding}{Logical, whether to remove noncoding. This is a basic
 filter which looks at the gene names (rownames) in both matrices and
 removes genes containing "-" which are usually antisense or mitochondrial
 genes, or "." which are either pseudogenes or ribosomal genes.}
+
+\item{knots}{Vector of quantile points for knots for fitting natural splines.}
+
+\item{method}{Either "splines" to fit natural splines or "linear" which uses
+linear interpolation (see \code{\link[=approxfun]{approxfun()}}). "linear" will not interpolate
+beyond the limits of the original data, i.e. it will clip.}
 }
 \value{
-A function of form \code{FUN(x)} where \code{x} can be supplied as a numeric
-vector or matrix and the same type is returned.
+A list object of class 'qqmap' containing:
+\item{quantiles}{Dataframe containing matching quantiles of \code{x} and \code{y}}
+\item{map}{A function of form \code{FUN(x)} where \code{x} can be supplied as a numeric
+vector or matrix and the same type is returned. The function converts given
+data points to the distribution
+of \code{y}.}
 }
 \description{
 Quantile mapping to combine two scRNA-Seq datasets based on mapping either

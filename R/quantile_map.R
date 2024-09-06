@@ -12,17 +12,31 @@
 #' @param y Reference scRNA-Seq data: either a matrix of gene expression on
 #'   log2+1 scale, or a 'cellMarkers' class object, in which case the
 #'   `$genemeans` list element is extracted.
-#' @param n Number of quantiles to split x and y
+#' @param n Number of quantiles to split `x` and `y`.
 #' @param remove_noncoding Logical, whether to remove noncoding. This is a basic
 #'   filter which looks at the gene names (rownames) in both matrices and
 #'   removes genes containing "-" which are usually antisense or mitochondrial
 #'   genes, or "." which are either pseudogenes or ribosomal genes.
-#' @returns A function of form `FUN(x)` where `x` can be supplied as a numeric
-#'   vector or matrix and the same type is returned.
-#' @importFrom stats quantile
+#' @param knots Vector of quantile points for knots for fitting natural splines.
+#' @param method Either "splines" to fit natural splines or "linear" which uses
+#'   linear interpolation (see [approxfun()]). "linear" will not interpolate
+#'   beyond the limits of the original data, i.e. it will clip.
+#' @returns A list object of class 'qqmap' containing:
+#' \item{quantiles}{Dataframe containing matching quantiles of `x` and `y`}
+#' \item{map}{A function of form `FUN(x)` where `x` can be supplied as a numeric
+#'   vector or matrix and the same type is returned. The function converts given
+#'   data points to the distribution
+#'   of `y`.}
+#' @importFrom stats quantile predict
+#' @importFrom splines ns
 #' @export
 
-quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE) {
+quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
+                         knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
+                         method = c("splines", "linear")) {
+  xlab <- deparse(substitute(x))
+  ylab <- deparse(substitute(y))
+  method <- match.arg(method)
   if (inherits(x, "cellMarkers")) x <- x$genemeans
   if (inherits(y, "cellMarkers")) y <- y$genemeans
   common <- intersect(rownames(x), rownames(y))
@@ -34,7 +48,18 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE) {
   y <- y[y != 0]
   qx <- quantile(x, seq(0, 1, 1/n))
   qy <- quantile(y, seq(0, 1, 1/n))
-  FUN <- approxfun(qx, qy, yleft = 0, rule = 2) |> suppressWarnings()
+  df <- data.frame(qx, qy)
+  if (method == "linear") {
+    FUN <- approxfun(qx, qy, yleft = 0, rule = 2) |> suppressWarnings()
+  } else {
+    kn <- quantile(qx, knots)
+    fit <- lm(qy ~ ns(qx, knots = kn), df)
+    FUN <- function(x) {
+      pred <- predict(fit, data.frame(qx = x))
+      pred[pred < 0] <- 0
+      pred
+    }
+  }
   approxfun.matrix <- function(x) {
     if (is.data.frame(x)) x <- as.matrix(x)
     if (is.matrix(x)) {
@@ -44,5 +69,27 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE) {
     }
     FUN(x)
   }
-  approxfun.matrix
+  structure(list(quantiles = df, map = approxfun.matrix,
+                 xlab = xlab, ylab = ylab),
+            class = "qqmap")
+}
+
+
+#' Quantile-quantile plot
+#' 
+#' Produces a QQ plot showing the conversion function from the first dataset to
+#' the second.
+#' @param x A 'qqmap' class object created by [quantile_map()].
+#' @param ... Optional plotting parameters passed to [plot()].
+#' @returns No return value. Produces a QQ plot using base graphics with a red
+#'   line showing the conversion function.
+#' @importFrom graphics lines
+#' @export
+plot.qqmap <- function(x, ...) {
+  plot(x$quantiles$qx, x$quantiles$qy, cex = 0.5,
+       xlab = x$xlab, ylab = x$ylab, ...)
+  xr <- par("usr")[1:2]
+  xr[1] <- max(c(0, xr[1]))
+  px <- seq(xr[1], xr[2], length.out = 1000)
+  lines(px, x$map(px), col = "red")
 }
