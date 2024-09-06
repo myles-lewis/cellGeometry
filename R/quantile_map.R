@@ -33,10 +33,9 @@
 
 quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
                          knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-                         method = c("splines", "linear")) {
+                         use_splines = TRUE) {
   xlab <- deparse(substitute(x))
   ylab <- deparse(substitute(y))
-  method <- match.arg(method)
   if (inherits(x, "cellMarkers")) x <- x$genemeans
   if (inherits(y, "cellMarkers")) y <- y$genemeans
   common <- intersect(rownames(x), rownames(y))
@@ -49,17 +48,14 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   qx <- quantile(x, seq(0, 1, 1/n))
   qy <- quantile(y, seq(0, 1, 1/n))
   df <- data.frame(qx, qy)
-  if (method == "linear") {
-    FUN <- approxfun(qx, qy, yleft = 0, rule = 2) |> suppressWarnings()
-  } else {
+  if (use_splines) {
     kn <- quantile(qx, knots)
     fit <- lm(qy ~ ns(qx, knots = kn), df)
-    FUN <- function(x) {
-      pred <- predict(fit, data.frame(qx = x))
-      pred[pred < 0] <- 0
-      pred
-    }
+    qx <- seq(0, max(qx) *2, length.out = 1000)
+    qy <- predict(fit, data.frame(qx))
+    qy[qy < 0] <- 0
   }
+  FUN <- approxfun(qx, qy, yleft = 0, rule = 2) |> suppressWarnings()
   approxfun.matrix <- function(x) {
     if (is.data.frame(x)) x <- as.matrix(x)
     if (is.matrix(x)) {

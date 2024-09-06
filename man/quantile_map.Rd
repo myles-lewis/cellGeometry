@@ -10,7 +10,7 @@ quantile_map(
   n = 10000,
   remove_noncoding = TRUE,
   knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-  method = c("splines", "linear")
+  use_splines = TRUE
 )
 }
 \arguments{
