@@ -25,8 +25,13 @@
 #' \item{quantiles}{Dataframe containing matching quantiles of `x` and `y`}
 #' \item{map}{A function of form `FUN(x)` where `x` can be supplied as a numeric
 #'   vector or matrix and the same type is returned. The function converts given
-#'   data points to the distribution
-#'   of `y`.}
+#'   data points to the distribution of `y`.}
+#' @details
+#' The conversion uses the function [approxfun()] which uses interpolation. It
+#' is not designed to be exact. Zeroes are removed before mapping each dataset
+#' to quantiles.
+#' 
+#' @seealso [approxfun()]
 #' @importFrom stats quantile predict
 #' @importFrom splines ns
 #' @export

@@ -40,12 +40,19 @@ A list object of class 'qqmap' containing:
 \item{quantiles}{Dataframe containing matching quantiles of \code{x} and \code{y}}
 \item{map}{A function of form \code{FUN(x)} where \code{x} can be supplied as a numeric
 vector or matrix and the same type is returned. The function converts given
-data points to the distribution
-of \code{y}.}
+data points to the distribution of \code{y}.}
 }
 \description{
 Quantile mapping to combine two scRNA-Seq datasets based on mapping either
 the distribution of mean log2+1 gene expression in cell clusters to the
 distribution of the 2nd dataset, or mapping the quantiles of one matrix of
 gene expression (with genes in rows) to another.
+}
+\details{
+The conversion uses the function \code{\link[=approxfun]{approxfun()}} which uses interpolation. It
+is not designed to be exact. Zeroes are removed before mapping each dataset
+to quantiles.
+}
+\seealso{
+\code{\link[=approxfun]{approxfun()}}
 }
