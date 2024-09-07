@@ -48,10 +48,9 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   message(length(common), " common genes")
   x <- as.vector(x[common, ])
   y <- as.vector(y[common, ])
-  x <- x[x != 0]
-  y <- y[y != 0]
-  qx <- quantile(x, seq(0, 1, 1/n))
-  qy <- quantile(y, seq(0, 1, 1/n))
+  qi <- log10(seq(1, 10, length.out = n))  # better spacing
+  qx <- quantile(x, qi)
+  qy <- quantile(y, qi)
   df <- data.frame(qx, qy)
   if (use_splines) {
     kn <- quantile(qx, knots)
