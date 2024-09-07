@@ -28,8 +28,8 @@
 #'   data points to the distribution of `y`.}
 #' @details
 #' The conversion uses the function [approxfun()] which uses interpolation. It
-#' is not designed to be exact. Zeroes are removed before mapping each dataset
-#' to quantiles.
+#' is not designed to perform stepwise (exact) quantile transformation. Zeroes
+#' are removed before mapping each dataset to quantiles.
 #' 
 #' @seealso [approxfun()]
 #' @importFrom stats quantile predict
@@ -76,8 +76,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
     FUN0(x)
   }
   structure(list(quantiles = df, map = approxfun.matrix,
-                 xlab = xlab, ylab = ylab),
-            class = "qqmap")
+                 xlab = xlab, ylab = ylab), class = "qqmap")
 }
 
 
@@ -92,8 +91,12 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
 #' @importFrom graphics lines
 #' @export
 plot.qqmap <- function(x, ...) {
-  plot(x$quantiles$qx, x$quantiles$qy, cex = 0.5,
-       xlab = x$xlab, ylab = x$ylab, ...)
+  new.args <- list(...)
+  args <- list(x = x$quantiles$qx, y = x$quantiles$qy, cex = 0.5,
+               xlab = x$xlab, ylab = x$ylab)
+  if (length(new.args)) args[names(new.args)] <- new.args
+  do.call("plot", args)
+  
   xr <- par("usr")[1:2]
   xr[1] <- max(c(0, xr[1]))
   px <- seq(xr[1], xr[2], length.out = 1000)

@@ -50,8 +50,8 @@ gene expression (with genes in rows) to another.
 }
 \details{
 The conversion uses the function \code{\link[=approxfun]{approxfun()}} which uses interpolation. It
-is not designed to be exact. Zeroes are removed before mapping each dataset
-to quantiles.
+is not designed to perform stepwise (exact) quantile transformation. Zeroes
+are removed before mapping each dataset to quantiles.
 }
 \seealso{
 \code{\link[=approxfun]{approxfun()}}
