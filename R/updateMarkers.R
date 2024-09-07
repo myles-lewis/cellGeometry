@@ -1,11 +1,11 @@
 
 #' Update cellMarkers object
 #'
-#' Updates a cellMarkers gene signature object without having to rerun
-#' calculation of gene means which can be slow.
+#' Updates a 'cellMarkers' gene signature object with new settings without
+#' having to rerun calculation of gene means, which can be slow.
 #'
-#' @param object A cellMarkers class object. Either `object` or `genemeans` must
-#'   be specified.
+#' @param object A 'cellMarkers' class object. Either `object` or `genemeans`
+#'   must be specified.
 #' @param genemeans A matrix of mean gene expression with genes in rows and cell
 #'   subclasses in columns.
 #' @param groupmeans Optional matrix of mean gene expression for overarching
@@ -144,6 +144,7 @@ updateMarkers <- function(object = NULL,
                          noisefilter = noisefilter,
                          noisefraction = noisefraction))
   if (!is.null(object$symbol)) out$symbol <- object$symbol
+  if (!is.null(object$qmap)) out$qmap <- object$qmap
   class(out) <- "cellMarkers"
   out
 }

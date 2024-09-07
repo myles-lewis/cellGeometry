@@ -1,4 +1,20 @@
-
+#' Merge cellMarker signatures
+#' 
+#' Takes 2 cellMarkers signatures, merges them and recalculates optimal gene
+#' signatures.
+#' 
+#' @param mk1 The reference 'cellMarkers' class object.
+#' @param mk2 A 'cellMarkers' class object containing cell signatures to merge
+#'   into `mk1`.
+#' @param remove_subclass Optional character vector of subclasses to remove when
+#'   merging.
+#' @param remove_group Optional character vector of cell groups to remove when
+#'   merging.
+#' @param quantile_map Logical whether to apply [quantile_map()] to `mk2` to
+#'   quantile transform it onto the same distribution as `mk1`.
+#' @param ... Optional arguments and settings passed to [updateMarkers()].
+#' @returns A list object of S3 class 'cellMarkers'. See [cellMarkers()] for
+#'   details.
 #' @export
 mergeMarkers <- function(mk1, mk2,
                          remove_subclass = NULL,
@@ -7,12 +23,16 @@ mergeMarkers <- function(mk1, mk2,
   .call <- match.call()
   if (!inherits(mk1, "cellMarkers")) stop("'mk1' is not a 'cellMarkers' object")
   if (!inherits(mk2, "cellMarkers")) stop("'mk2' is not a 'cellMarkers' object")
+  xlab <- deparse(substitute(mk2))
+  ylab <- deparse(substitute(mk1))
   
   if (quantile_map) {
     message("Quantile mapping")
     qfun <- quantile_map(mk2, mk1) |> suppressMessages()
     mk2$genemeans <- qfun$map(mk2$genemeans)
     mk2$groupmeans <- qfun$map(mk2$groupmeans)
+    qfun$xlab <- xlab
+    qfun$ylab <- ylab
   }
   
   common <- intersect(rownames(mk1$genemeans), rownames(mk2$genemeans))

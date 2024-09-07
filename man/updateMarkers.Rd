@@ -22,8 +22,8 @@ updateMarkers(
 )
 }
 \arguments{
-\item{object}{A cellMarkers class object. Either \code{object} or \code{genemeans} must
-be specified.}
+\item{object}{A 'cellMarkers' class object. Either \code{object} or \code{genemeans}
+must be specified.}
 
 \item{genemeans}{A matrix of mean gene expression with genes in rows and cell
 subclasses in columns.}
@@ -75,8 +75,8 @@ will be present. The list element \code{update} stores the call to
 \code{updateMarkers()}.
 }
 \description{
-Updates a cellMarkers gene signature object without having to rerun
-calculation of gene means which can be slow.
+Updates a 'cellMarkers' gene signature object with new settings without
+having to rerun calculation of gene means, which can be slow.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=gene2symbol]{gene2symbol()}}
