@@ -2,10 +2,18 @@
 #' @export
 mergeMarkers <- function(mk1, mk2,
                          remove_subclass = NULL,
-                         remove_group = NULL, ...) {
+                         remove_group = NULL,
+                         quantile_map = TRUE, ...) {
   .call <- match.call()
   if (!inherits(mk1, "cellMarkers")) stop("'mk1' is not a 'cellMarkers' object")
   if (!inherits(mk2, "cellMarkers")) stop("'mk2' is not a 'cellMarkers' object")
+  
+  if (quantile_map) {
+    message("Quantile mapping")
+    qfun <- quantile_map(mk2, mk1) |> suppressMessages()
+    mk2$genemeans <- qfun$map(mk2$genemeans)
+    mk2$groupmeans <- qfun$map(mk2$groupmeans)
+  }
   
   common <- intersect(rownames(mk1$genemeans), rownames(mk2$genemeans))
   message(length(common), " common genes")
@@ -33,8 +41,10 @@ mergeMarkers <- function(mk1, mk2,
   mk1$genemeans <- genemeans
   mk1$groupmeans <- groupmeans
   mk1$cell_table <- cell_table
-  mk1$subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
-  mk1$subclass_table[!names(mk1$subclass_table) %in% remove_subclass]
+  subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
+  subclass_table <- subclass_table[!names(subclass_table) %in% remove_subclass]
+  mk1$subclass_table <- subclass_table
+  mk1$qmap <- qfun
   
-  updateMarkers(mk1)
+  updateMarkers(mk1, ...)
 }
