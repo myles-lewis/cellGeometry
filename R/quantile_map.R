@@ -56,14 +56,19 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
     qy[qy < 0] <- 0
   }
   FUN <- approxfun(qx, qy, yleft = 0, rule = 2) |> suppressWarnings()
+  FUN0 <- function(x) {
+    nzero <- x != 0
+    x[nzero] <- FUN(x[nzero])
+    x
+  }
   approxfun.matrix <- function(x) {
     if (is.data.frame(x)) x <- as.matrix(x)
     if (is.matrix(x)) {
-      out <- FUN(as.vector(x))
+      out <- FUN0(as.vector(x))
       out <- matrix(out, nrow = nrow(x), dimnames = dimnames(x))
       return(out)
     }
-    FUN(x)
+    FUN0(x)
   }
   structure(list(quantiles = df, map = approxfun.matrix,
                  xlab = xlab, ylab = ylab),
