@@ -1,3 +1,4 @@
+
 #' Merge cellMarker signatures
 #' 
 #' Takes 2 cellMarkers signatures, merges them and recalculates optimal gene
@@ -15,6 +16,7 @@
 #' @param ... Optional arguments and settings passed to [updateMarkers()].
 #' @returns A list object of S3 class 'cellMarkers'. See [cellMarkers()] for
 #'   details.
+#' @seealso [cellMarkers()] [updateMarkers()] [quantile_map()]
 #' @export
 mergeMarkers <- function(mk1, mk2,
                          remove_subclass = NULL,

@@ -83,6 +83,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
 #' 
 #' Produces a QQ plot showing the conversion function from the first dataset to
 #' the second.
+#' 
 #' @param x A 'qqmap' class object created by [quantile_map()].
 #' @param ... Optional plotting parameters passed to [plot()].
 #' @returns No return value. Produces a QQ plot using base graphics with a red

@@ -38,3 +38,6 @@ details.
 Takes 2 cellMarkers signatures, merges them and recalculates optimal gene
 signatures.
 }
+\seealso{
+\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=quantile_map]{quantile_map()}}
+}
