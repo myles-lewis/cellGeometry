@@ -9,7 +9,7 @@ mergeMarkers(
   mk2,
   remove_subclass = NULL,
   remove_group = NULL,
-  transform = c("quantile", "linear-quantile", "scale"),
+  transform = c("quantile", "linear.quantile", "scale"),
   scale = 1,
   ...
 )

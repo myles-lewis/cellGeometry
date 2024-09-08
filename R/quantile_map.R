@@ -102,3 +102,12 @@ plot.qqmap <- function(x, ...) {
   px <- seq(xr[1], xr[2], length.out = 1000)
   lines(px, x$map(px), col = "red")
 }
+
+
+linear_quantile <- function(x, y) {
+  qm <- quantile_map(x, y)
+  xmax <- max(qm$quantiles$qx)
+  s <- seq(xmax / 0.5, xmax, length.out = 10)
+  ratios <- qm$map(s) / s
+  mean(ratios)
+}

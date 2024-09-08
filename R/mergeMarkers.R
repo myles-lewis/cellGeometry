@@ -26,7 +26,7 @@
 mergeMarkers <- function(mk1, mk2,
                          remove_subclass = NULL,
                          remove_group = NULL,
-                         transform = c("quantile", "linear-quantile", "scale"),
+                         transform = c("quantile", "linear.quantile", "scale"),
                          scale = 1, ...) {
   .call <- match.call()
   if (!inherits(mk1, "cellMarkers")) stop("'mk1' is not a 'cellMarkers' object")
@@ -42,7 +42,11 @@ mergeMarkers <- function(mk1, mk2,
     mk2$groupmeans <- qfun$map(mk2$groupmeans)
     qfun$xlab <- xlab
     qfun$ylab <- ylab
-  } else if (transform == "scale") {
+  } else if (transform %in% c("scale", "linear.quantile")) {
+    if (transform == "linear.quantile") {
+      message("Quantile transformation, linear approximation")
+      scale <- linear_quantile(mk2, mk1)
+    }
     mk2$genemeans <- mk2$genemeans * scale
     mk2$groupmeans <- mk2$groupmeans * scale
   }
