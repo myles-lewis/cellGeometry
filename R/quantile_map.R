@@ -106,8 +106,9 @@ plot.qqmap <- function(x, ...) {
 
 linear_quantile <- function(x, y) {
   qm <- quantile_map(x, y)
-  xmax <- max(qm$quantiles$qx)
-  s <- seq(xmax / 0.5, xmax, length.out = 10)
+  # xlim <- max(qm$quantiles$qx)
+  xlim <- qm$quantiles$qx[nrow(qm$quantiles) -1]
+  s <- seq(xlim / 2, xlim, length.out = 10)
   ratios <- qm$map(s) / s
   mean(ratios)
 }
