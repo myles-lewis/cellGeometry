@@ -11,8 +11,13 @@
 #'   merging.
 #' @param remove_group Optional character vector of cell groups to remove when
 #'   merging.
-#' @param quantile_map Logical whether to apply [quantile_map()] to `mk2` to
-#'   quantile transform it onto the same distribution as `mk1`.
+#' @param transform Either "quantile" which applies [quantile_map()] to `mk2` to
+#'   quantile transform it onto the same distribution as `mk1`,
+#'   "linear-quantile", which determines the quantile transformation and then
+#'   applies a linear approximation of this, or "scale" which simply scales the
+#'   gene expression by the value `scale`.
+#' @param scale Numeric value determining the scaling factor for `mk2` if
+#'   `transform` is set to "scale".
 #' @param ... Optional arguments and settings passed to [updateMarkers()].
 #' @returns A list object of S3 class 'cellMarkers'. See [cellMarkers()] for
 #'   details.
@@ -21,20 +26,25 @@
 mergeMarkers <- function(mk1, mk2,
                          remove_subclass = NULL,
                          remove_group = NULL,
-                         quantile_map = TRUE, ...) {
+                         transform = c("quantile", "linear-quantile", "scale"),
+                         scale = 1, ...) {
   .call <- match.call()
   if (!inherits(mk1, "cellMarkers")) stop("'mk1' is not a 'cellMarkers' object")
   if (!inherits(mk2, "cellMarkers")) stop("'mk2' is not a 'cellMarkers' object")
   xlab <- deparse(substitute(mk2))
   ylab <- deparse(substitute(mk1))
   
-  if (quantile_map) {
-    message("Quantile mapping")
+  transform <- match.arg(transform)
+  if (transform == "quantile") {
+    message("Quantile transforming '", xlab, "'")
     qfun <- quantile_map(mk2, mk1) |> suppressMessages()
     mk2$genemeans <- qfun$map(mk2$genemeans)
     mk2$groupmeans <- qfun$map(mk2$groupmeans)
     qfun$xlab <- xlab
     qfun$ylab <- ylab
+  } else if (transform == "scale") {
+    mk2$genemeans <- mk2$genemeans * scale
+    mk2$groupmeans <- mk2$groupmeans * scale
   }
   
   common <- intersect(rownames(mk1$genemeans), rownames(mk2$genemeans))
