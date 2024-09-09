@@ -11,9 +11,9 @@
 #'   merging.
 #' @param remove_group Optional character vector of cell groups to remove when
 #'   merging.
-#' @param transform Either "quantile" which applies [quantile_map()] to `mk2` to
+#' @param transform Either "qq" which applies [quantile_map()] to `mk2` to
 #'   quantile transform it onto the same distribution as `mk1`,
-#'   "linear-quantile", which determines the quantile transformation and then
+#'   "linear.qq", which determines the quantile transformation and then
 #'   applies a linear approximation of this, or "scale" which simply scales the
 #'   gene expression by the value `scale`.
 #' @param scale Numeric value determining the scaling factor for `mk2` if
@@ -26,7 +26,7 @@
 mergeMarkers <- function(mk1, mk2,
                          remove_subclass = NULL,
                          remove_group = NULL,
-                         transform = c("quantile", "linear.quantile", "scale"),
+                         transform = c("qq", "linear.qq", "scale"),
                          scale = 1, ...) {
   .call <- match.call()
   if (!inherits(mk1, "cellMarkers")) stop("'mk1' is not a 'cellMarkers' object")
@@ -35,17 +35,17 @@ mergeMarkers <- function(mk1, mk2,
   ylab <- deparse(substitute(mk1))
   
   transform <- match.arg(transform)
-  if (transform == "quantile") {
+  if (transform == "qq") {
     message("Quantile transforming '", xlab, "'")
     qfun <- quantile_map(mk2, mk1) |> suppressMessages()
     mk2$genemeans <- qfun$map(mk2$genemeans)
     mk2$groupmeans <- qfun$map(mk2$groupmeans)
     qfun$xlab <- xlab
     qfun$ylab <- ylab
-  } else if (transform %in% c("scale", "linear.quantile")) {
-    if (transform == "linear.quantile") {
+  } else if (transform %in% c("scale", "linear.qq")) {
+    if (transform == "linear.qq") {
       message("Quantile transformation, linear approximation")
-      scale <- linear_quantile(mk2, mk1)
+      scale <- linear_qq(mk2, mk1)
     }
     mk2$genemeans <- mk2$genemeans * scale
     mk2$groupmeans <- mk2$groupmeans * scale

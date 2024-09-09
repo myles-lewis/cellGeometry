@@ -9,7 +9,7 @@ mergeMarkers(
   mk2,
   remove_subclass = NULL,
   remove_group = NULL,
-  transform = c("quantile", "linear.quantile", "scale"),
+  transform = c("qq", "linear.qq", "scale"),
   scale = 1,
   ...
 )
@@ -26,9 +26,9 @@ merging.}
 \item{remove_group}{Optional character vector of cell groups to remove when
 merging.}
 
-\item{transform}{Either "quantile" which applies \code{\link[=quantile_map]{quantile_map()}} to \code{mk2} to
+\item{transform}{Either "qq" which applies \code{\link[=quantile_map]{quantile_map()}} to \code{mk2} to
 quantile transform it onto the same distribution as \code{mk1},
-"linear-quantile", which determines the quantile transformation and then
+"linear.qq", which determines the quantile transformation and then
 applies a linear approximation of this, or "scale" which simply scales the
 gene expression by the value \code{scale}.}
 

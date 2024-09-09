@@ -104,7 +104,7 @@ plot.qqmap <- function(x, ...) {
 }
 
 
-linear_quantile <- function(x, y) {
+linear_qq <- function(x, y) {
   qm <- quantile_map(x, y)
   # xlim <- max(qm$quantiles$qx)
   xlim <- qm$quantiles$qx[nrow(qm$quantiles) -1]
