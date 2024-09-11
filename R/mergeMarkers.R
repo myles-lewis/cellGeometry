@@ -35,6 +35,7 @@ mergeMarkers <- function(mk1, mk2,
   ylab <- deparse(substitute(mk1))
   
   transform <- match.arg(transform)
+  qfun <- NULL
   if (transform == "qq") {
     message("Quantile transforming '", xlab, "'")
     qfun <- quantile_map(mk2, mk1) |> suppressMessages()
@@ -80,7 +81,7 @@ mergeMarkers <- function(mk1, mk2,
   subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
   subclass_table <- subclass_table[!names(subclass_table) %in% remove_subclass]
   mk1$subclass_table <- subclass_table
-  mk1$qmap <- qfun
+  if (!is.null(qfun)) mk1$qmap <- qfun
   
   updateMarkers(mk1, ...)
 }
