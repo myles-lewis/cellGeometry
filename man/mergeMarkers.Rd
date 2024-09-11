@@ -9,7 +9,7 @@ mergeMarkers(
   mk2,
   remove_subclass = NULL,
   remove_group = NULL,
-  transform = c("qq", "linear.qq", "scale"),
+  transform = c("qq", "linear.qq", "scale", "none"),
   scale = 1,
   ...
 )
@@ -29,8 +29,8 @@ merging.}
 \item{transform}{Either "qq" which applies \code{\link[=quantile_map]{quantile_map()}} to \code{mk2} to
 quantile transform it onto the same distribution as \code{mk1},
 "linear.qq", which determines the quantile transformation and then
-applies a linear approximation of this, or "scale" which simply scales the
-gene expression by the value \code{scale}.}
+applies a linear approximation of this, "scale" which simply scales the
+gene expression by the value \code{scale}, or "none" for no transformation.}
 
 \item{scale}{Numeric value determining the scaling factor for \code{mk2} if
 \code{transform} is set to "scale".}

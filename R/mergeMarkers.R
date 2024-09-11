@@ -14,8 +14,8 @@
 #' @param transform Either "qq" which applies [quantile_map()] to `mk2` to
 #'   quantile transform it onto the same distribution as `mk1`,
 #'   "linear.qq", which determines the quantile transformation and then
-#'   applies a linear approximation of this, or "scale" which simply scales the
-#'   gene expression by the value `scale`.
+#'   applies a linear approximation of this, "scale" which simply scales the
+#'   gene expression by the value `scale`, or "none" for no transformation.
 #' @param scale Numeric value determining the scaling factor for `mk2` if
 #'   `transform` is set to "scale".
 #' @param ... Optional arguments and settings passed to [updateMarkers()].
@@ -26,7 +26,7 @@
 mergeMarkers <- function(mk1, mk2,
                          remove_subclass = NULL,
                          remove_group = NULL,
-                         transform = c("qq", "linear.qq", "scale"),
+                         transform = c("qq", "linear.qq", "scale", "none"),
                          scale = 1, ...) {
   .call <- match.call()
   if (!inherits(mk1, "cellMarkers")) stop("'mk1' is not a 'cellMarkers' object")
