@@ -46,8 +46,8 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   common <- intersect(rownames(x), rownames(y))
   if (remove_noncoding) common <- common[!grepl("-|\\.", common)]
   message(length(common), " common genes")
-  x <- as.vector(x[common, ])
-  y <- as.vector(y[common, ])
+  x <- x[common, ]
+  y <- y[common, ]
   qi <- log10(seq(1, 10, length.out = n))  # better spacing
   qx <- quantile(x, qi)
   qy <- quantile(y, qi)
