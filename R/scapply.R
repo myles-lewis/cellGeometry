@@ -1,12 +1,13 @@
 
-#' Single-cell 'tapply' function
+#' Single-cell apply a function to a matrix split by a factor
 #' 
 #' Workhorse function designed to handle large scRNA-Seq gene expression
 #' matrices such as embedded Seurat matrices, and apply a function to columns of
-#' the matrix as a ragged array, similar to [tapply()], [by()] or [aggregate()].
-#' Note that the index is applied to columns as these represent cells in the
-#' single-cell format, rather than rows as in [aggregate()]. Very large matrices
-#' are handled by slicing rows into blocks to avoid excess memory requirements.
+#' the matrix split as a ragged array by an index factor, similar to [tapply()],
+#' [by()] or [aggregate()]. Note that here the index is applied to columns as
+#' these represent cells in the single-cell format, rather than rows as in
+#' [aggregate()]. Very large matrices are handled by slicing rows into blocks to
+#' avoid excess memory requirements.
 #' 
 #' @param x matrix or sparse matrix of raw counts with genes in rows and cells
 #'   in columns.
@@ -45,20 +46,22 @@
 #' @returns By default returns a list, unless `combine` is invoked in which case
 #'   the returned data type will depend on the functions specified by `FUN` and
 #'   `combine`.
-#' @seealso [scmean()]
+#' @seealso [scmean()] which applies a fixed function `logmean()` in a similar
+#'   manner, and [slapply()] which applies a function to a big matrix with
+#'   slicing but without splitting by an index factor.
 #' @examples
 #' # equivalent
 #' m <- matrix(sample(0:100, 1000, replace = TRUE), nrow = 10)
 #' cell_index <- sample(letters[1:5], 100, replace = TRUE)
 #' o <- scmean(m, cell_index)
-#' o2 <- sctapply(m, cell_index, logmean, combine1 = "cbind")
+#' o2 <- scapply(m, cell_index, logmean, combine1 = "cbind")
 #' identical(o, o2)
 #' 
 #' @export
 
-sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
-                     big = NULL, verbose = TRUE,
-                     sliceSize = 5000L, cores = 1L, ...) {
+scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
+                    big = NULL, verbose = TRUE,
+                    sliceSize = 5000L, cores = 1L, ...) {
   if (!is.factor(INDEX)) INDEX <- factor(INDEX)
   tab <- table(INDEX)
   if (any(tab * as.numeric(sliceSize) > 2^31))
@@ -88,6 +91,7 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
       if (verbose) setTxtProgressBar(pb, i / length(lev))
       ind <- lev[i]
       c_index <- which(INDEX == ind & ok)
+      # slicing inner loop
       out2 <- parallel::mclapply(s, function(j) {
         FUN(as.matrix(x[j, c_index]), ...) |> suppressWarnings()
       }, mc.cores = cores)
@@ -103,12 +107,12 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
 }
 
 
-#' Apply a function to a large matrix
+#' Apply a function to a big matrix by slicing
 #' 
-#' Workhorse function designed to handle large scRNA-Seq gene expression
-#' matrices such as embedded Seurat matrices, and apply a function to the whole
-#' matrix. Very large matrices are handled by slicing rows into blocks to avoid
-#' excess memory requirements.
+#' Workhorse function ('slice apply') designed to handle large scRNA-Seq gene
+#' expression matrices such as embedded Seurat matrices, and apply a function to
+#' the whole matrix. Very large matrices are handled by slicing rows into blocks
+#' to avoid excess memory requirements.
 #' 
 #' @param x matrix or sparse matrix of raw counts with genes in rows and cells
 #'   in columns.
@@ -139,10 +143,10 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
 #' 
 #' @returns The returned data type will depend on the functions specified by
 #'   `FUN` and `combine`.
-#' @seealso [sctapply()]
+#' @seealso [scapply()]
 #' @export
 
-scapply <- function(x, FUN, combine = "c",
+slapply <- function(x, FUN, combine = "c",
                     big = NULL, verbose = TRUE,
                     sliceSize = 1000L, cores = 1L, ...) {
   start <- Sys.time()

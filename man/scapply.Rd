@@ -2,15 +2,17 @@
 % Please edit documentation in R/scapply.R
 \name{scapply}
 \alias{scapply}
-\title{Apply a function to a large matrix}
+\title{Single-cell apply a function to a matrix split by a factor}
 \usage{
 scapply(
   x,
+  INDEX,
   FUN,
-  combine = "c",
+  combine = NULL,
+  combine2 = "c",
   big = NULL,
   verbose = TRUE,
-  sliceSize = 1000L,
+  sliceSize = 5000L,
   cores = 1L,
   ...
 )
@@ -19,15 +21,23 @@ scapply(
 \item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
 in columns.}
 
+\item{INDEX}{a factor whose length matches the number of columns in \code{x}. It
+is coerced to a factor. \code{NA} are tolerated and the matching columns in \code{x}
+are skipped.}
+
 \item{FUN}{Function to be applied to each subblock of the matrix.}
 
-\item{combine}{A function or a name of a function to combine results after
+\item{combine}{A function or a name of a function to apply to the list
+output to bind the final results together, e.g. 'cbind' or 'rbind' to
+return a matrix, or 'unlist' to return a vector.}
+
+\item{combine2}{A function or a name of a function to combine results after
 slicing, i.e. only invoked if \code{big} is \code{TRUE}. As the function is usually
-applied to blocks of 1000 genes or so, the result is usually a vector wih
+applied to blocks of 5000 genes or so, the result is usually a vector wih
 an element per gene. Hence 'c' is the default function for combining
-vectors into a single longer vector. However if each gene row returns a
-number of results (e.g. a vector or dataframe), then \code{combine} could be set
-to 'rbind'.}
+vectors into a single longer vector. However if each gene returns a number
+of results (e.g. a vector or dataframe), then \code{combine2} could be set to
+'rbind'.}
 
 \item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
 invoked automatically if \code{x} is a large matrix with >2^31 elements.}
@@ -44,23 +54,39 @@ parallelisation has increased memory requirements.}
 \item{...}{Optional arguments passed to \code{FUN}.}
 }
 \value{
-The returned data type will depend on the functions specified by
-\code{FUN} and \code{combine}.
+By default returns a list, unless \code{combine} is invoked in which case
+the returned data type will depend on the functions specified by \code{FUN} and
+\code{combine}.
 }
 \description{
 Workhorse function designed to handle large scRNA-Seq gene expression
-matrices such as embedded Seurat matrices, and apply a function to the whole
-matrix. Very large matrices are handled by slicing rows into blocks to avoid
-excess memory requirements.
+matrices such as embedded Seurat matrices, and apply a function to columns of
+the matrix split as a ragged array by an index factor, similar to \code{\link[=tapply]{tapply()}},
+\code{\link[=by]{by()}} or \code{\link[=aggregate]{aggregate()}}. Note that here the index is applied to columns as
+these represent cells in the single-cell format, rather than rows as in
+\code{\link[=aggregate]{aggregate()}}. Very large matrices are handled by slicing rows into blocks to
+avoid excess memory requirements.
 }
 \details{
 The limit on \code{sliceSize} is that the number of elements manipulated in each
 block (i.e. \code{sliceSize} x number of cells in a given subclass/group) must be
 kept below the long vector limit of 2^31 (around 2e9). Increasing \code{cores}
 and/or \code{sliceSize} requires substantial amounts of spare RAM. \code{combine} works
-in a similar way to \code{.combine} in \code{foreach()} across slices of genes; it
-is only invoked if \code{big} is \code{TRUE}.
+in a similar way to \code{.combine} in \code{foreach()}; it works across the levels in
+\code{INDEX}. \code{combine2} is nested and works across slices of genes (an inner
+loop), so it is only invoked if \code{big} is \code{TRUE}.
+}
+\examples{
+# equivalent
+m <- matrix(sample(0:100, 1000, replace = TRUE), nrow = 10)
+cell_index <- sample(letters[1:5], 100, replace = TRUE)
+o <- scmean(m, cell_index)
+o2 <- scapply(m, cell_index, logmean, combine1 = "cbind")
+identical(o, o2)
+
 }
 \seealso{
-\code{\link[=sctapply]{sctapply()}}
+\code{\link[=scmean]{scmean()}} which applies a fixed function \code{logmean()} in a similar
+manner, and \code{\link[=slapply]{slapply()}} which applies a function to a big matrix with
+slicing but without splitting by an index factor.
 }
