@@ -7,7 +7,7 @@
 scapply(
   x,
   FUN,
-  combine = "unlist",
+  combine = "c",
   big = NULL,
   verbose = TRUE,
   sliceSize = 1000L,
@@ -24,10 +24,10 @@ in columns.}
 \item{combine}{A function or a name of a function to combine results after
 slicing, i.e. only invoked if \code{big} is \code{TRUE}. As the function is usually
 applied to blocks of 1000 genes or so, the result is usually a vector wih
-an element per gene. Hence "unlist" is the default for combining vectors
-into a single longer vector. However if each gene row returns a number of
-results (e.g. a vector or dataframe), then \code{combine} could be set to
-'rbind'.}
+an element per gene. Hence 'c' is the default function for combining
+vectors into a single longer vector. However if each gene row returns a
+number of results (e.g. a vector or dataframe), then \code{combine} could be set
+to 'rbind'.}
 
 \item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
 invoked automatically if \code{x} is a large matrix with >2^31 elements.}

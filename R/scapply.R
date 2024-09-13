@@ -20,9 +20,9 @@
 #' @param combine2 A function or a name of a function to combine results after
 #'   slicing, i.e. only invoked if `big` is `TRUE`. As the function is usually
 #'   applied to blocks of 5000 genes or so, the result is usually a vector wih
-#'   an element per gene. Hence "unlist" is the default for combining vectors
-#'   into a single longer vector. However if each gene returns a number of
-#'   results (e.g. a vector or dataframe), then `combine2` could be set to
+#'   an element per gene. Hence 'c' is the default function for combining
+#'   vectors into a single longer vector. However if each gene returns a number
+#'   of results (e.g. a vector or dataframe), then `combine2` could be set to
 #'   'rbind'.
 #' @param big Logical, whether to invoke slicing of `x` into rows. This is
 #'   invoked automatically if `x` is a large matrix with >2^31 elements.
@@ -56,7 +56,7 @@
 #' 
 #' @export
 
-sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "unlist",
+sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
                      big = NULL, verbose = TRUE,
                      sliceSize = 5000L, cores = 1L, ...) {
   if (!is.factor(INDEX)) INDEX <- factor(INDEX)
@@ -111,10 +111,10 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "unlist",
 #' @param combine A function or a name of a function to combine results after
 #'   slicing, i.e. only invoked if `big` is `TRUE`. As the function is usually
 #'   applied to blocks of 1000 genes or so, the result is usually a vector wih
-#'   an element per gene. Hence "unlist" is the default for combining vectors
-#'   into a single longer vector. However if each gene row returns a number of
-#'   results (e.g. a vector or dataframe), then `combine` could be set to
-#'   'rbind'.
+#'   an element per gene. Hence 'c' is the default function for combining
+#'   vectors into a single longer vector. However if each gene row returns a
+#'   number of results (e.g. a vector or dataframe), then `combine` could be set
+#'   to 'rbind'.
 #' @param big Logical, whether to invoke slicing of `x` into rows. This is
 #'   invoked automatically if `x` is a large matrix with >2^31 elements.
 #' @param verbose Logical, whether to show progress.
@@ -137,7 +137,7 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "unlist",
 #' @seealso [sctapply()]
 #' @export
 
-scapply <- function(x, FUN, combine = "unlist",
+scapply <- function(x, FUN, combine = "c",
                     big = NULL, verbose = TRUE,
                     sliceSize = 1000L, cores = 1L, ...) {
   dimx <- dim(x)
@@ -152,9 +152,10 @@ scapply <- function(x, FUN, combine = "unlist",
     # slice large matrix
     if (verbose & cores <= 1) pb <- txtProgressBar2()
     s <- sliceIndex(dimx[1], sliceSize)
-    out <- parallel::mclapply(s, function(j) {
+    out <- parallel::mclapply(seq_along(s), function(j) {
       if (verbose & cores <= 1) setTxtProgressBar(pb, j / length(s))
-      FUN(as.matrix(x[j, ]), ...) |> suppressWarnings()
+      ind <- s[[j]]
+      FUN(as.matrix(x[ind, ]), ...) |> suppressWarnings()
     }, mc.cores = cores)
     if (!is.null(combine)) out <- do.call(combine, out)
     if (verbose & cores <= 1) close(pb)

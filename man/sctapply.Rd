@@ -9,7 +9,7 @@ sctapply(
   INDEX,
   FUN,
   combine = NULL,
-  combine2 = "unlist",
+  combine2 = "c",
   big = NULL,
   verbose = TRUE,
   sliceSize = 5000L,
@@ -34,9 +34,9 @@ return a matrix, or 'unlist' to return a vector.}
 \item{combine2}{A function or a name of a function to combine results after
 slicing, i.e. only invoked if \code{big} is \code{TRUE}. As the function is usually
 applied to blocks of 5000 genes or so, the result is usually a vector wih
-an element per gene. Hence "unlist" is the default for combining vectors
-into a single longer vector. However if each gene returns a number of
-results (e.g. a vector or dataframe), then \code{combine2} could be set to
+an element per gene. Hence 'c' is the default function for combining
+vectors into a single longer vector. However if each gene returns a number
+of results (e.g. a vector or dataframe), then \code{combine2} could be set to
 'rbind'.}
 
 \item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
