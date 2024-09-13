@@ -1,9 +1,9 @@
 
 #' Single-cell 'tapply' function
 #' 
-#' Workhorse function which takes as input a scRNA-Seq gene expression matrix
-#' such as embedded in a Seurat object, and applies a function to columns of the
-#' matrix as a ragged array, similar to [tapply()], [by()] or [aggregate()].
+#' Workhorse function designed to handle large scRNA-Seq gene expression
+#' matrices such as embedded Seurat matrices, and apply a function to columns of
+#' the matrix as a ragged array, similar to [tapply()], [by()] or [aggregate()].
 #' Note that the index is applied to columns as these represent cells in the
 #' single-cell format, rather than rows as in [aggregate()]. Very large matrices
 #' are handled by slicing rows into blocks to avoid excess memory requirements.

@@ -59,9 +59,9 @@ the returned data type will depend on the functions specified by \code{FUN} and
 \code{combine}.
 }
 \description{
-Workhorse function which takes as input a scRNA-Seq gene expression matrix
-such as embedded in a Seurat object, and applies a function to columns of the
-matrix as a ragged array, similar to \code{\link[=tapply]{tapply()}}, \code{\link[=by]{by()}} or \code{\link[=aggregate]{aggregate()}}.
+Workhorse function designed to handle large scRNA-Seq gene expression
+matrices such as embedded Seurat matrices, and apply a function to columns of
+the matrix as a ragged array, similar to \code{\link[=tapply]{tapply()}}, \code{\link[=by]{by()}} or \code{\link[=aggregate]{aggregate()}}.
 Note that the index is applied to columns as these represent cells in the
 single-cell format, rather than rows as in \code{\link[=aggregate]{aggregate()}}. Very large matrices
 are handled by slicing rows into blocks to avoid excess memory requirements.
