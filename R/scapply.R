@@ -169,7 +169,7 @@ scapply <- function(x, FUN, combine = "c",
     }, mc.cores = cores)
     if (!is.null(combine)) out <- do.call(combine, out)
     if (verbose) {
-      if (cores <= 1) close(pb) else timer(start)
+      if (cores <= 1) close(pb) else timer(start, "Duration")
     }
   }
   
