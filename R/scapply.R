@@ -98,7 +98,7 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "unlist",
 }
 
 
-#' Single-cell 'apply' function
+#' Apply a function to a large matrix
 #' 
 #' Workhorse function designed to handle large scRNA-Seq gene expression
 #' matrices such as embedded Seurat matrices, and apply a function to the whole

@@ -2,7 +2,7 @@
 % Please edit documentation in R/scapply.R
 \name{scapply}
 \alias{scapply}
-\title{Single-cell 'apply' function}
+\title{Apply a function to a large matrix}
 \usage{
 scapply(
   x,
