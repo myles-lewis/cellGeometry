@@ -60,12 +60,17 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
                      big = NULL, verbose = TRUE,
                      sliceSize = 5000L, cores = 1L, ...) {
   if (!is.factor(INDEX)) INDEX <- factor(INDEX)
-  if (any(table(INDEX) * as.numeric(sliceSize) > 2^31))
+  tab <- table(INDEX)
+  if (any(tab * as.numeric(sliceSize) > 2^31))
     message("Warning: >2^31 matrix elements anticipated. `sliceSize` is too large")
   ok <- !is.na(INDEX)
   dimx <- dim(x)
   if (dimx[2] != length(INDEX)) stop("Incompatible dimensions")
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
+  dimmax <- as.numeric(max(tab)) * sliceSize
+  mem <- structure(dimmax * 8 * cores, class = "object_size")
+  if (verbose & mem > 1e9)
+    message("Absolute minimum memory headroom ", format(mem, units = "GB"))
   
   if (verbose) pb <- txtProgressBar2()
   lev <- levels(INDEX)
@@ -140,10 +145,15 @@ sctapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
 scapply <- function(x, FUN, combine = "c",
                     big = NULL, verbose = TRUE,
                     sliceSize = 1000L, cores = 1L, ...) {
+  start <- Sys.time()
   dimx <- dim(x)
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (as.numeric(dimx[2]) * as.numeric(sliceSize) > 2^31)
     message("Warning: >2^31 matrix elements anticipated. `sliceSize` is too large")
+  dimmax <- dimx[2] * sliceSize
+  mem <- structure(dimmax * 8 * cores, class = "object_size")
+  if (verbose & mem > 1e9)
+    message("Absolute minimum memory headroom ", format(mem, units = "GB"))
   
   if (is.null(big) || !big) {
     # small matrix
@@ -158,7 +168,9 @@ scapply <- function(x, FUN, combine = "c",
       FUN(as.matrix(x[ind, ]), ...) |> suppressWarnings()
     }, mc.cores = cores)
     if (!is.null(combine)) out <- do.call(combine, out)
-    if (verbose & cores <= 1) close(pb)
+    if (verbose) {
+      if (cores <= 1) close(pb) else timer(start)
+    }
   }
   
   out
