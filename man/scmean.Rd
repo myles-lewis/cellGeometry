@@ -48,3 +48,7 @@ given subclass/group) must be kept below the long vector limit of 2^31
 (around 2e9). Increasing \code{cores} and/or \code{sliceSize} requires substantial
 amounts of spare RAM.
 }
+\seealso{
+\code{\link[=sctapply]{sctapply()}} which is a more general version which can apply any
+function to the matrix.
+}
