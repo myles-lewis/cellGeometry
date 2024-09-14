@@ -199,7 +199,6 @@ cat_parallel <- function(...) {
   system(sprintf('echo "%s', paste0(..., '\\c"', collapse = "")))
 }
 
-# Prints a message using shell echo from inside mclapply when run in Rstudio
 message_parallel <- function(...) {
   if (Sys.getenv("RSTUDIO") != "1") return()
   system(sprintf('echo "%s"', paste0(..., collapse = "")))
