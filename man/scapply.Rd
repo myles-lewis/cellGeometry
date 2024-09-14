@@ -81,7 +81,8 @@ loop), so it is only invoked if \code{big} is \code{TRUE}.
 m <- matrix(sample(0:100, 1000, replace = TRUE), nrow = 10)
 cell_index <- sample(letters[1:5], 100, replace = TRUE)
 o <- scmean(m, cell_index)
-o2 <- scapply(m, cell_index, logmean, combine1 = "cbind")
+o2 <- scapply(m, cell_index, function(x) rowMeans(log2(x +1)),
+              combine1 = "cbind")
 identical(o, o2)
 
 }
