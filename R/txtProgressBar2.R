@@ -31,7 +31,7 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
     pc <- round(100 * (value - min)/(max - min))
     if (nb == .nb && pc == .pc) 
       return()
-    cat(paste0("\r", title, "  |", strrep(" ", nw * width + 6)))
+    cat(paste0("\r", title, "  |", strrep(" ", width + 6)))
     cat(paste(c("\r", title, "  |", rep.int(char, nb),
                 rep.int(" ", nw * (width - nb)),
                 sprintf("| %3d%%", pc)), collapse = ""))
@@ -52,3 +52,38 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
   structure(list(getVal = getVal, up = up, kill = kill),
             class = "txtProgressBar")
 }
+
+
+mcProgressBar <- function(value) {
+  width <- getOption("width") - 22L
+  nb <- round(width * value)
+  pc <- round(100 * value)
+  p <- paste(c("  |", rep.int("=", nb), rep.int(" ", width - nb),
+               sprintf("| %3d%%", pc)), collapse = "")
+  over_parallel(p)
+}
+
+closeProgress <- function(start) {
+  end <- Sys.time()
+  mcProgressBar(1)
+  message_parallel("  (", format(end - start, digits = 3), ")")
+}
+
+# prints using shell echo from inside mclapply when run in Rstudio
+cat_parallel <- function(...) {
+  if (Sys.getenv("RSTUDIO") != "1") return()
+  system(sprintf('echo "%s', paste0(..., '\\c"', collapse = "")))
+}
+
+message_parallel <- function(...) {
+  if (Sys.getenv("RSTUDIO") != "1") return()
+  system(sprintf('echo "%s"', paste0(..., collapse = "")))
+}
+
+over_parallel <- function(...) {
+  if (Sys.getenv("RSTUDIO") != "1") return()
+  p <- paste0('\\r', ..., '\\c"', collapse = "")
+  system(sprintf('echo "%s', p))
+}
+
+
