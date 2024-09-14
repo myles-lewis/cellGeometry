@@ -164,18 +164,42 @@ slapply <- function(x, FUN, combine = "c",
     out <- FUN(as.matrix(x), ...)
   } else {
     # slice large matrix
-    if (verbose & cores <= 1) pb <- txtProgressBar2()
+    if (verbose) {
+      if (cores == 1) pb <- txtProgressBar2() else cat_parallel("  |")
+    }
     s <- sliceIndex(dimx[1], sliceSize)
     out <- parallel::mclapply(seq_along(s), function(j) {
-      if (verbose & cores <= 1) setTxtProgressBar(pb, j / length(s))
+      if (verbose) {
+        if (cores == 1) {
+          setTxtProgressBar(pb, j / length(s))
+        } else if (j %% cores == 1) cat_parallel("=")
+      }
       ind <- s[[j]]
       FUN(as.matrix(x[ind, ]), ...) |> suppressWarnings()
     }, mc.cores = cores)
     if (!is.null(combine)) out <- do.call(combine, out)
     if (verbose) {
-      if (cores <= 1) close(pb) else timer(start, "Duration")
+      if (cores == 1) {
+        close(pb)
+      } else {
+        end <- Sys.time()
+        message_parallel("|  (", format(end - start, digits = 3), ")")
+      }
     }
   }
   
   out
+}
+
+
+# Prints using shell echo from inside mclapply when run in Rstudio
+cat_parallel <- function(...) {
+  if (Sys.getenv("RSTUDIO") != "1") return()
+  system(sprintf('echo "%s', paste0(..., '\\c"', collapse = "")))
+}
+
+# Prints a message using shell echo from inside mclapply when run in Rstudio
+message_parallel <- function(...) {
+  if (Sys.getenv("RSTUDIO") != "1") return()
+  system(sprintf('echo "%s"', paste0(..., collapse = "")))
 }

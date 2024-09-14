@@ -33,7 +33,7 @@
 #' 
 #' @returns a matrix of mean log2 gene expression across cell types with genes
 #'   in rows and cell types in columns.
-#' @seealso [sctapply()] which is a more general version which can apply any
+#' @seealso [scapply()] which is a more general version which can apply any
 #'   function to the matrix.
 #' @importFrom parallel mclapply
 #' @export

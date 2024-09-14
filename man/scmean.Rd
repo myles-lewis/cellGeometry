@@ -49,6 +49,6 @@ given subclass/group) must be kept below the long vector limit of 2^31
 amounts of spare RAM.
 }
 \seealso{
-\code{\link[=sctapply]{sctapply()}} which is a more general version which can apply any
+\code{\link[=scapply]{scapply()}} which is a more general version which can apply any
 function to the matrix.
 }
