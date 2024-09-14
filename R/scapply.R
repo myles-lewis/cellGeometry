@@ -55,7 +55,7 @@
 #' cell_index <- sample(letters[1:5], 100, replace = TRUE)
 #' o <- scmean(m, cell_index)
 #' o2 <- scapply(m, cell_index, function(x) rowMeans(log2(x +1)),
-#'               combine1 = "cbind")
+#'               combine = "cbind")
 #' identical(o, o2)
 #' 
 #' @export
