@@ -54,18 +54,18 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
 }
 
 
-mcProgressBar <- function(value) {
-  width <- getOption("width") - 22L
+mcProgressBar <- function(value, title = "") {
+  width <- getOption("width") - 22L - nchar(title)
   nb <- round(width * value)
   pc <- round(100 * value)
-  p <- paste(c("  |", rep.int("=", nb), rep.int(" ", width - nb),
-               sprintf("| %3d%%", pc)), collapse = "")
+  p <- paste(c(title, "  |\\x1b[36m", rep.int("=", nb), rep.int(" ", width - nb),
+               sprintf("\\x1b[37m| %3d%%", pc)), collapse = "")
   over_parallel(p)
 }
 
-closeProgress <- function(start) {
+closeProgress <- function(start, title = "") {
   end <- Sys.time()
-  mcProgressBar(1)
+  mcProgressBar(1, title)
   message_parallel("  (", format(end - start, digits = 3), ")")
 }
 
