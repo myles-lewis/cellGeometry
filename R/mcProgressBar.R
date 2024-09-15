@@ -20,7 +20,7 @@ mcProgressBar <- function(val, len = 1L, cores = 1L, title = "",
   nb <- round(width * val / len)
   pc <- round(100 * val / len)
   i <- val %% 4 +1
-  sp <- if (pc == 100 | !spinner) "  " else c("/ ", "- ", "\\\ ", "| ")[i]
+  sp <- if (!spinner || pc == 100) "  " else c("/ ", "- ", "\\\ ", "| ")[i]
   if (title != "") title <- paste0(title, " ")
   # standard
   p <- paste(c(title, sp, "|", rep.int("=", nb), rep.int(" ", width - nb),
