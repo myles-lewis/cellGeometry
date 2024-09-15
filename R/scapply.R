@@ -173,7 +173,7 @@ slapply <- function(x, FUN, combine = "c",
       if (verbose) {
         if (cores == 1) {
           setTxtProgressBar(pb, j / length(s))
-        } else if (j %% cores == 0) mcProgressBar(j / length(s))
+        } else mcProgressBar(j, length(s), cores)
       }
       ind <- s[[j]]
       FUN(as.matrix(x[ind, ]), ...) |> suppressWarnings()
