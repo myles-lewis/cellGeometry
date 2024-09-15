@@ -58,8 +58,18 @@ mcProgressBar <- function(value, title = "") {
   width <- getOption("width") - 22L - nchar(title)
   nb <- round(width * value)
   pc <- round(100 * value)
-  p <- paste(c(title, "  |\\x1b[36m", rep.int("=", nb), rep.int(" ", width - nb),
-               sprintf("\\x1b[37m| %3d%%", pc)), collapse = "")
+  # standard
+  p <- paste(c(title, "  |", rep.int("=", nb), rep.int(" ", width - nb),
+               sprintf("| %3d%%", pc)), collapse = "")
+  if (Sys.getenv("RSTUDIO") == "1") {
+    if (requireNamespace("rstudioapi", quietly = TRUE) &&
+        rstudioapi::getThemeInfo()$dark) {
+      # colour
+      p <- paste(c(title, "  |\\x1b[36m", rep.int("=", nb),
+                   rep.int(" ", width - nb),
+                   sprintf("\\x1b[37m| %3d%%", pc)), collapse = "")
+    }
+  }
   over_parallel(p)
 }
 
