@@ -42,7 +42,7 @@ mcProgressBar <- function(val, len = 1L, cores = 1L, subval = NULL, title = "",
   # standard
   p <- paste(c(title, sp, "|", rep.int("=", nb), rep.int(" ", width - nb),
                sprintf("| %3d%%", pc)), collapse = "")
-  if (Sys.getenv("RSTUDIO") == "1") {
+  if (Sys.getenv("RSTUDIO") == "1" && rstudioapi::isAvailable()) {
     if (requireNamespace("rstudioapi", quietly = TRUE) &&
         rstudioapi::getThemeInfo()$dark) {
       # colour
