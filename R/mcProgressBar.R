@@ -13,15 +13,32 @@
 # }
 # x <- my_fun()
 
-mcProgressBar <- function(val, len = 1L, cores = 1L, title = "",
+mcProgressBar <- function(val, len = 1L, cores = 1L, subval = NULL, title = "",
                           spinner = TRUE) {
-  if (val %% cores != 0) return(if (spinner) mcSpinner(val, title))
   width <- getOption("width") - 22L - nchar(title)
-  nb <- round(width * val / len)
-  pc <- round(100 * val / len)
-  i <- val %% 4 +1
-  sp <- if (!spinner || pc == 100) "  " else c("/ ", "- ", "\\\ ", "| ")[i]
+  if (is.null(subval)) {
+    if (val %% cores != 0) return(if (spinner) mcSpinner(val, title))
+    nb <- round(width * val / len)
+    pc <- round(100 * val / len)
+    i <- val %% 4 +1
+    sp <- if (!spinner || pc == 100) "  " else c("/ ", "- ", "\\\ ", "| ")[i]
+  } else {
+    # with subvalue
+    if (subval < 0 | subval > 1) stop_parallel("impossible subval")
+    if (cores == 1) {
+      val2 <- (val + subval -1) / len
+    } else {
+      if (val %% cores != 1) return()
+      nround <- ceiling(len / cores)
+      val2 <- (val-1) / cores / nround + subval / nround
+    }
+    nb <- round(width * val2)
+    pc <- round(100 * val2)
+    sp <- "  "
+  }
+  if (pc > 100) stop_parallel("impossible percent progress")
   if (title != "") title <- paste0(title, " ")
+  
   # standard
   p <- paste(c(title, sp, "|", rep.int("=", nb), rep.int(" ", width - nb),
                sprintf("| %3d%%", pc)), collapse = "")
@@ -65,4 +82,9 @@ over_parallel <- function(...) {
   if (Sys.getenv("RSTUDIO") != "1") return()
   p <- paste0('\\r', ..., '\\c"', collapse = "")
   system(sprintf('echo "%s', p))
+}
+
+stop_parallel <- function(...) {
+  message_parallel(...)
+  stop()
 }
