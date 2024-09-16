@@ -85,6 +85,6 @@ over_parallel <- function(...) {
 }
 
 stop_parallel <- function(...) {
-  message_parallel(...)
+  message_parallel('\\n', ...)
   stop()
 }
