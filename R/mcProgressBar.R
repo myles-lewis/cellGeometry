@@ -21,7 +21,7 @@ mcProgressBar <- function(val, len = 1L, cores = 1L, subval = NULL, title = "",
     nb <- round(width * val / len)
     pc <- round(100 * val / len)
     i <- val %% 4 +1
-    sp <- if (!spinner || pc == 100) "  " else c("/ ", "- ", "\\\ ", "| ")[i]
+    sp <- if (!spinner || pc == 0 || pc == 100) "  " else c("/ ", "- ", "\\\ ", "| ")[i]
   } else {
     # with subvalue
     if (subval < 0 | subval > 1) stop_parallel("impossible subval")
