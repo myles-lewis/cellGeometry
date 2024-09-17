@@ -80,3 +80,6 @@ compensation for spillover.
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}}
 }
+\author{
+Myles Lewis
+}

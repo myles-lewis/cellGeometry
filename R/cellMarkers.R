@@ -76,6 +76,7 @@
 #' settings using [updateMarkers()]. Ensembl gene ids can be substituted for
 #' recognisable gene symbols by applying [gene2symbol()].
 #' @seealso [deconvolute()] [updateMarkers()] [gene2symbol()]
+#' @author Myles Lewis
 #' @importFrom matrixStats rowMaxs
 #' @export
 #' 

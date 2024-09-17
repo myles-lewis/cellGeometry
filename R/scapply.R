@@ -49,6 +49,7 @@
 #' @seealso [scmean()] which applies a fixed function `logmean()` in a similar
 #'   manner, and [slapply()] which applies a function to a big matrix with
 #'   slicing but without splitting by an index factor.
+#' @author Myles Lewis
 #' @examples
 #' # equivalent
 #' m <- matrix(sample(0:100, 1000, replace = TRUE), nrow = 10)
@@ -145,6 +146,7 @@ scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
 #' @returns The returned data type will depend on the functions specified by
 #'   `FUN` and `combine`.
 #' @seealso [scapply()]
+#' @author Myles Lewis
 #' @export
 
 slapply <- function(x, FUN, combine = "c",

@@ -117,3 +117,6 @@ the best markers for individual cell types.
 \seealso{
 \code{\link[=deconvolute]{deconvolute()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=gene2symbol]{gene2symbol()}}
 }
+\author{
+Myles Lewis
+}

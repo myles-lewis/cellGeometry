@@ -41,6 +41,7 @@
 #'   will be present. The list element `update` stores the call to 
 #'   `updateMarkers()`.
 #' @seealso [cellMarkers()] [gene2symbol()]
+#' @author Myles Lewis
 #' @export
 
 updateMarkers <- function(object = NULL,

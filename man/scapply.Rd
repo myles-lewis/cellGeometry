@@ -91,3 +91,6 @@ identical(o, o2)
 manner, and \code{\link[=slapply]{slapply()}} which applies a function to a big matrix with
 slicing but without splitting by an index factor.
 }
+\author{
+Myles Lewis
+}

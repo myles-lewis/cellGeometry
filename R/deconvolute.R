@@ -48,6 +48,7 @@
 #'   within cell group percentages. The total percentage still adds to 100%.}
 #'   \item{comp_amount}{original argument `comp_amount`}
 #' @seealso [cellMarkers()] [updateMarkers()]
+#' @author Myles Lewis
 #' @importFrom matrixStats colMins
 #' @importFrom stats optimise
 #' @export

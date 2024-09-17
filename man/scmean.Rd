@@ -52,3 +52,6 @@ amounts of spare RAM.
 \code{\link[=scapply]{scapply()}} which is a more general version which can apply any
 function to the matrix.
 }
+\author{
+Myles Lewis
+}

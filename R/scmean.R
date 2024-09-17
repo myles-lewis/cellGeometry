@@ -35,6 +35,7 @@
 #'   in rows and cell types in columns.
 #' @seealso [scapply()] which is a more general version which can apply any
 #'   function to the matrix.
+#' @author Myles Lewis
 #' @importFrom parallel mclapply
 #' @export
 

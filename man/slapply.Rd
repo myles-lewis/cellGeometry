@@ -64,3 +64,6 @@ is only invoked if \code{big} is \code{TRUE}.
 \seealso{
 \code{\link[=scapply]{scapply()}}
 }
+\author{
+Myles Lewis
+}
