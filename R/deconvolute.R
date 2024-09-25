@@ -23,8 +23,9 @@
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
 #' @param use_filter logical, whether to use denoised signature matrix
-#' @param convert_bulk logical, whether to convert bulk RNA-Seq to scRNA-Seq
-#'   scaling.
+#' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
+#'   using reference data or "qqmap" using quantile mapping of the bulk to
+#'   scRNA-Seq datasets, or "none" for no conversion.
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
 #'   \item{mk}{the original 'cellMarkers' class object}
@@ -60,11 +61,15 @@ deconvolute <- function(mk, test, log = TRUE,
                         equal_weight = FALSE,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
-                        convert_bulk = TRUE) {
+                        convert_bulk = c("ref", "qqmap", "none")) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   .call <- match.call()
   
   test <- as.matrix(test)
+  
+  convert_bulk <- match.arg(convert_bulk)
+  if (convert_bulk == "qqmap" & is.null(mk$qqmap)) stop("missing qqmap in mk")
+  bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = mk$qqmap$map)
   
   # group first
   if (!is.null(mk$group_geneset)) {
@@ -75,7 +80,7 @@ deconvolute <- function(mk, test, log = TRUE,
       stop("some signature genes not found in test")
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
-    if (convert_bulk) logtest <- bulk2sc(logtest)
+    if (convert_bulk) logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, equal_weight,
                            adjust_comp, exp_signature)
   } else {
@@ -90,7 +95,7 @@ deconvolute <- function(mk, test, log = TRUE,
     stop("some signature genes not found in test")
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
-  if (convert_bulk) logtest2 <- bulk2sc(logtest2)
+  if (convert_bulk) logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
                          adjust_comp, exp_signature)
   

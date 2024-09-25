@@ -14,7 +14,7 @@ deconvolute(
   equal_weight = FALSE,
   adjust_comp = TRUE,
   use_filter = TRUE,
-  convert_bulk = TRUE
+  convert_bulk = c("ref", "qqmap", "none")
 )
 }
 \arguments{
@@ -46,8 +46,9 @@ negative cell proportion projections.}
 
 \item{use_filter}{logical, whether to use denoised signature matrix}
 
-\item{convert_bulk}{logical, whether to convert bulk RNA-Seq to scRNA-Seq
-scaling.}
+\item{convert_bulk}{either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
+using reference data or "qqmap" using quantile mapping of the bulk to
+scRNA-Seq datasets, or "none" for no conversion.}
 }
 \value{
 A list object of S3 class 'deconv' containing:
