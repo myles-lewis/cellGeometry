@@ -4,10 +4,12 @@
 \alias{plot.qqmap}
 \title{Quantile-quantile plot}
 \usage{
-\method{plot}{qqmap}(x, ...)
+\method{plot}{qqmap}(x, points = TRUE, ...)
 }
 \arguments{
 \item{x}{A 'qqmap' class object created by \code{\link[=quantile_map]{quantile_map()}}.}
+
+\item{points}{Logical whether to show quantile points.}
 
 \item{...}{Optional plotting parameters passed to \code{\link[=plot]{plot()}}.}
 }

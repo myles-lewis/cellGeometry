@@ -9,8 +9,10 @@ quantile_map(
   y,
   n = 10000,
   remove_noncoding = TRUE,
+  remove_zeros = FALSE,
   knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-  use_splines = TRUE
+  use_splines = TRUE,
+  respace = FALSE
 )
 }
 \arguments{
@@ -29,11 +31,17 @@ filter which looks at the gene names (rownames) in both matrices and
 removes genes containing "-" which are usually antisense or mitochondrial
 genes, or "." which are either pseudogenes or ribosomal genes.}
 
+\item{remove_zeros}{Logical, whether to remove zeros from both datasets.
+This shifts the quantile relationships.}
+
 \item{knots}{Vector of quantile points for knots for fitting natural splines.}
 
 \item{use_splines}{Logical whether to use "splines" to fit natural splines.
 If set to \code{FALSE}, interpolation is limited to the original range of \code{x},
 i.e. it will clip for values > \code{max(x)}.}
+
+\item{respace}{Logical whether to respace quantile points so their x axis
+density is more even.}
 }
 \value{
 A list object of class 'qqmap' containing:

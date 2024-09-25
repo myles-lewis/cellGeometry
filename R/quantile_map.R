@@ -17,10 +17,14 @@
 #'   filter which looks at the gene names (rownames) in both matrices and
 #'   removes genes containing "-" which are usually antisense or mitochondrial
 #'   genes, or "." which are either pseudogenes or ribosomal genes.
+#' @param remove_zeros Logical, whether to remove zeros from both datasets.
+#'   This shifts the quantile relationships.
 #' @param knots Vector of quantile points for knots for fitting natural splines.
 #' @param use_splines Logical whether to use "splines" to fit natural splines.
 #'   If set to `FALSE`, interpolation is limited to the original range of `x`,
 #'   i.e. it will clip for values > `max(x)`.
+#' @param respace Logical whether to respace quantile points so their x axis
+#'   density is more even.
 #' @returns A list object of class 'qqmap' containing:
 #' \item{quantiles}{Dataframe containing matching quantiles of `x` and `y`}
 #' \item{map}{A function of form `FUN(x)` where `x` can be supplied as a numeric
@@ -37,8 +41,10 @@
 #' @export
 
 quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
+                         remove_zeros = FALSE,
                          knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-                         use_splines = TRUE) {
+                         use_splines = TRUE,
+                         respace = FALSE) {
   xlab <- deparse(substitute(x))
   ylab <- deparse(substitute(y))
   if (inherits(x, "cellMarkers")) x <- x$genemeans
@@ -48,14 +54,30 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   message(length(common), " common genes")
   x <- x[common, ]
   y <- y[common, ]
+  if (remove_zeros) {
+    x <- as.vector(x)
+    y <- as.vector(y)
+    x <- x[x != 0]
+    y <- y[y != 0]
+  }
   qi <- log10(seq(1, 10, length.out = n))  # better spacing
   qx <- quantile(x, qi)
   qy <- quantile(y, qi)
   df <- data.frame(qx, qy)
+  if (respace) {
+    xseq <- seq(qx[1], qx[length(qx)], length.out = 1000)
+    ind <- vapply(xseq, function(xi) {
+      which(qx >= xi)[1]
+    }, integer(1L))
+    ind <- unique(ind)
+    qx <- qx[ind]
+    qy <- qy[ind]
+    df <- data.frame(qx, qy)
+  }
   if (use_splines) {
     kn <- quantile(qx, knots)
     fit <- lm(qy ~ ns(qx, knots = kn), df)
-    qx <- seq(0, max(qx) *2, length.out = 1000)
+    qx <- seq(0, qx[length(qx)] *2, length.out = 1000)
     qy <- predict(fit, data.frame(qx))
     qy[qy < 0] <- 0
   }
@@ -85,22 +107,30 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
 #' the second.
 #' 
 #' @param x A 'qqmap' class object created by [quantile_map()].
+#' @param points Logical whether to show quantile points.
 #' @param ... Optional plotting parameters passed to [plot()].
 #' @returns No return value. Produces a QQ plot using base graphics with a red
 #'   line showing the conversion function.
 #' @importFrom graphics lines
 #' @export
-plot.qqmap <- function(x, ...) {
-  new.args <- list(...)
-  args <- list(x = x$quantiles$qx, y = x$quantiles$qy, cex = 0.5,
-               xlab = x$xlab, ylab = x$ylab)
-  if (length(new.args)) args[names(new.args)] <- new.args
-  do.call("plot", args)
-  
-  xr <- par("usr")[1:2]
-  xr[1] <- max(c(0, xr[1]))
-  px <- seq(xr[1], xr[2], length.out = 1000)
-  lines(px, x$map(px), col = "red")
+plot.qqmap <- function(x, points = TRUE, ...) {
+  if (points) {
+    new.args <- list(...)
+    args <- list(x = x$quantiles$qx, y = x$quantiles$qy, cex = 0.5,
+                 xlab = x$xlab, ylab = x$ylab)
+    if (length(new.args)) args[names(new.args)] <- new.args
+    do.call("plot", args)
+    
+    xr <- par("usr")[1:2]
+    xr[1] <- max(c(0, xr[1]))
+    px <- seq(xr[1], xr[2], length.out = 1000)
+    lines(px, x$map(px), col = "red")
+  } else {
+    xr <- c(x$quantiles$qx[1], x$quantiles$qx[nrow(x$quantiles)])
+    px <- seq(xr[1], xr[2], length.out = 1000)
+    plot(px, x$map(px), col = "red", type = "l",
+         xlab = x$xlab, ylab = x$ylab, ...)
+  }
 }
 
 
