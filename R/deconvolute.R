@@ -61,13 +61,14 @@ deconvolute <- function(mk, test, log = TRUE,
                         equal_weight = FALSE,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
-                        convert_bulk = c("ref", "qqmap", "none")) {
+                        convert_bulk = "ref") {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   .call <- match.call()
   
   test <- as.matrix(test)
   
-  convert_bulk <- match.arg(convert_bulk)
+  if (isTRUE(convert_bulk)) convert_bulk <- "ref"
+  if (isFALSE(convert_bulk)) convert_bulk <- "none"
   if (convert_bulk == "qqmap" & is.null(mk$qqmap)) stop("missing qqmap in mk")
   bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = mk$qqmap$map)
   

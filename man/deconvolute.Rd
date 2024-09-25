@@ -14,7 +14,7 @@ deconvolute(
   equal_weight = FALSE,
   adjust_comp = TRUE,
   use_filter = TRUE,
-  convert_bulk = c("ref", "qqmap", "none")
+  convert_bulk = "ref"
 )
 }
 \arguments{
