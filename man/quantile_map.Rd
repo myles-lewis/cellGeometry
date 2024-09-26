@@ -10,7 +10,8 @@ quantile_map(
   n = 10000,
   remove_noncoding = TRUE,
   remove_zeros = FALSE,
-  smooth = "lowess",
+  smooth = "loess",
+  span = 0.1,
   knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
   respace = FALSE
 )
@@ -34,11 +35,14 @@ genes, or "." which are either pseudogenes or ribosomal genes.}
 \item{remove_zeros}{Logical, whether to remove zeros from both datasets.
 This shifts the quantile relationships.}
 
-\item{smooth}{Either "lowess" which applies \code{\link[=lowess]{lowess()}} to smooth the QQ
+\item{smooth}{Either "loess" which applies \code{\link[=loess]{loess()}} to smooth the QQ
 fitted line, or "ns" which uses natural splines via \code{\link[=ns]{ns()}}. With any other
 value no smoothing is applied. With no smoothing or "lowess", interpolation
 is limited to the original range of \code{x}, i.e. it will clip for values >
 \code{max(x)}.}
+
+\item{span}{the parameter alpha which controls the degree of smoothing in
+\code{\link[=loess]{loess()}}.}
 
 \item{knots}{Vector of quantile points for knots for fitting natural splines.}
 
