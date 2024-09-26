@@ -69,7 +69,10 @@ deconvolute <- function(mk, test, log = TRUE,
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
-  if (convert_bulk == "qqmap" & is.null(mk$qqmap)) stop("missing qqmap in mk")
+  if (convert_bulk == "qqmap" & is.null(mk$qqmap)) {
+    message("Quantile map bulk to sc, ", appendLF = FALSE)
+    mk$qqmap <- quantile_map(log2(test +1), mk$genemeans, remove_zeros = TRUE)
+  }
   bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = mk$qqmap$map)
   
   # group first
