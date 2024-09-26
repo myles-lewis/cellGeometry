@@ -60,5 +60,6 @@ The base graphics function has no return value. It plots a stacked
 barchart using base graphics. The ggplot2 version returns a ggplot2 object.
 }
 \description{
-Produces stacked bar plots using base graphics or ggplot2.
+Produces stacked bar plots using base graphics or ggplot2 showing amounts of
+cell subclasses in deconvoluted bulk samples.
 }

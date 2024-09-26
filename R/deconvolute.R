@@ -84,7 +84,7 @@ deconvolute <- function(mk, test, log = TRUE,
       stop("some signature genes not found in test")
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
-    if (convert_bulk) logtest <- bulk2scfun(logtest)
+    if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, equal_weight,
                            adjust_comp, exp_signature)
   } else {
@@ -99,7 +99,7 @@ deconvolute <- function(mk, test, log = TRUE,
     stop("some signature genes not found in test")
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
-  if (convert_bulk) logtest2 <- bulk2scfun(logtest2)
+  if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
                          adjust_comp, exp_signature)
   

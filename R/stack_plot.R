@@ -1,7 +1,8 @@
 
 #' Stacked bar plot
 #' 
-#' Produces stacked bar plots using base graphics or ggplot2.
+#' Produces stacked bar plots using base graphics or ggplot2 showing amounts of
+#' cell subclasses in deconvoluted bulk samples.
 #' 
 #' @param x matrix of deconvolution results with samples in rows and cell
 #'   subclasses or groups in columns. If a 'deconv' class object is supplied the
@@ -128,4 +129,41 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     xlab("") + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"))
+}
+
+
+#' Cell subclass violin plot
+#' 
+#' Produces violin plots using ggplot2 showing amounts of cell subclasses in
+#' deconvoluted bulk samples.
+#' 
+#' @param x matrix of deconvolution results with samples in rows and cell
+#'   subclasses or groups in columns. If a 'deconv' class object is supplied the
+#'   deconvolution values for the cell subclasses are extracted and plotted.
+#' @param percent Logical whether to scale the matrix rows as percentage.
+#' @param order_cols Character value specifying with cell types are ordered by
+#'   mean abundance.
+#' @returns A ggplot2 plotting object.
+#' @importFrom ggplot2 geom_violin
+#' @export
+violin_plot <- function(x, percent = FALSE,
+                        order_cols = c("none", "increase", "decrease")) {
+  order_cols <- match.arg(order_cols)
+  if (inherits(x, "deconv")) {
+    x <- if (percent) x$subclass$percent else x$subclass$output
+  }
+  if (order_cols != "none") {
+    o <- order(colMeans(x), decreasing = (order_cols == "decrease"))
+    x <- x[, o]
+  }
+  ylab <- if (percent) "Cell proportion(%)" else "Relative cell amount"
+  df <- stack(as.data.frame(x))
+  
+  ggplot(df, aes(x = .data$ind, y = .data$values, fill = .data$ind)) +
+    geom_violin(scale = "width") +
+    guides(x = guide_axis(angle = 60)) +
+    xlab("") + ylab(ylab) +
+    theme_classic() +
+    theme(axis.text = element_text(colour = "black"),
+          legend.position = "none")
 }
