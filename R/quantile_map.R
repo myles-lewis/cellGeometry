@@ -81,7 +81,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   }
   if (smooth == "loess") {
     fit <- loess(qy ~ qx, span = span)
-    qx <- seq(0, qx[length(qx)] *2, length.out = 1000)
+    qx <- seq(0, qx[length(qx)], length.out = 1000)
     qy <- predict(fit, data.frame(qx))
     qy[qy < 0] <- 0
   } else if (smooth == "ns") {
@@ -134,7 +134,7 @@ plot.qqmap <- function(x, points = TRUE, ...) {
     xr <- par("usr")[1:2]
     xr[1] <- max(c(0, xr[1]))
     px <- seq(xr[1], xr[2], length.out = 1000)
-    lines(px, x$map(px), col = "red")
+    lines(px, x$map(px), col = "red", lwd = 1.5)
   } else {
     xr <- c(x$quantiles$qx[1], x$quantiles$qx[nrow(x$quantiles)])
     px <- seq(xr[1], xr[2], length.out = 1000)
