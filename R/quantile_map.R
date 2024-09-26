@@ -19,12 +19,14 @@
 #'   genes, or "." which are either pseudogenes or ribosomal genes.
 #' @param remove_zeros Logical, whether to remove zeros from both datasets.
 #'   This shifts the quantile relationships.
+#' @param smooth Either "lowess" which applies [lowess()] to smooth the QQ
+#'   fitted line, or "ns" which uses natural splines via [ns()]. With any other
+#'   value no smoothing is applied. With no smoothing or "lowess", interpolation
+#'   is limited to the original range of `x`, i.e. it will clip for values >
+#'   `max(x)`.
 #' @param knots Vector of quantile points for knots for fitting natural splines.
-#' @param use_splines Logical whether to use "splines" to fit natural splines.
-#'   If set to `FALSE`, interpolation is limited to the original range of `x`,
-#'   i.e. it will clip for values > `max(x)`.
 #' @param respace Logical whether to respace quantile points so their x axis
-#'   density is more even.
+#'   density is more even. Can help spline fitting.
 #' @returns A list object of class 'qqmap' containing:
 #' \item{quantiles}{Dataframe containing matching quantiles of `x` and `y`}
 #' \item{map}{A function of form `FUN(x)` where `x` can be supplied as a numeric
@@ -32,18 +34,18 @@
 #'   data points to the distribution of `y`.}
 #' @details
 #' The conversion uses the function [approxfun()] which uses interpolation. It
-#' is not designed to perform stepwise (exact) quantile transformation. Zeroes
-#' are removed before mapping each dataset to quantiles.
+#' is not designed to perform stepwise (exact) quantile transformation of every
+#' individual datapoint.
 #' 
 #' @seealso [approxfun()]
-#' @importFrom stats quantile predict
+#' @importFrom stats quantile predict lowess
 #' @importFrom splines ns
 #' @export
 
 quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
                          remove_zeros = FALSE,
+                         smooth = "lowess",
                          knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-                         use_splines = TRUE,
                          respace = FALSE) {
   xlab <- deparse(substitute(x))
   ylab <- deparse(substitute(y))
@@ -74,7 +76,12 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
     qy <- qy[ind]
     df <- data.frame(qx, qy)
   }
-  if (use_splines) {
+  if (smooth == "lowess") {
+    fit <- lowess(qx, qy, f = 0.01, delta = 0.001 * diff(range(x)))
+    qx <- fit$x
+    qy <- fit$y
+    qy[qy < 0] <- 0
+  } else if (smooth == "ns") {
     kn <- quantile(qx, knots)
     fit <- lm(qy ~ ns(qx, knots = kn), df)
     qx <- seq(0, qx[length(qx)] *2, length.out = 1000)

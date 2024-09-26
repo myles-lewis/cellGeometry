@@ -185,10 +185,8 @@ cellMarkers <- function(scdata,
   
   # map bulk to sc
   qqmap <- if (!is.null(bulkdata)) {
-    message("Quantile map bulk to sc")
-    quantile_map(log2(bulkdata +1), genemeans,
-                 use_splines = FALSE, remove_zeros = TRUE) |>
-      suppressMessages()
+    message("Quantile map bulk to sc, ", appendLF = FALSE)
+    quantile_map(log2(bulkdata +1), genemeans, remove_zeros = TRUE)
   } else NULL
   
   out <- list(call = .call,

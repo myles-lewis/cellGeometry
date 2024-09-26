@@ -10,8 +10,8 @@ quantile_map(
   n = 10000,
   remove_noncoding = TRUE,
   remove_zeros = FALSE,
+  smooth = "lowess",
   knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-  use_splines = TRUE,
   respace = FALSE
 )
 }
@@ -34,14 +34,16 @@ genes, or "." which are either pseudogenes or ribosomal genes.}
 \item{remove_zeros}{Logical, whether to remove zeros from both datasets.
 This shifts the quantile relationships.}
 
+\item{smooth}{Either "lowess" which applies \code{\link[=lowess]{lowess()}} to smooth the QQ
+fitted line, or "ns" which uses natural splines via \code{\link[=ns]{ns()}}. With any other
+value no smoothing is applied. With no smoothing or "lowess", interpolation
+is limited to the original range of \code{x}, i.e. it will clip for values >
+\code{max(x)}.}
+
 \item{knots}{Vector of quantile points for knots for fitting natural splines.}
 
-\item{use_splines}{Logical whether to use "splines" to fit natural splines.
-If set to \code{FALSE}, interpolation is limited to the original range of \code{x},
-i.e. it will clip for values > \code{max(x)}.}
-
 \item{respace}{Logical whether to respace quantile points so their x axis
-density is more even.}
+density is more even. Can help spline fitting.}
 }
 \value{
 A list object of class 'qqmap' containing:
@@ -58,8 +60,8 @@ gene expression (with genes in rows) to another.
 }
 \details{
 The conversion uses the function \code{\link[=approxfun]{approxfun()}} which uses interpolation. It
-is not designed to perform stepwise (exact) quantile transformation. Zeroes
-are removed before mapping each dataset to quantiles.
+is not designed to perform stepwise (exact) quantile transformation of every
+individual datapoint.
 }
 \seealso{
 \code{\link[=approxfun]{approxfun()}}
