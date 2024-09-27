@@ -103,8 +103,18 @@ deconvolute <- function(mk, test, log = TRUE,
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
                          adjust_comp, exp_signature)
   
-  # subclass percent as nested percent of groups
+  # subclass nested within group output/percent
   if (!is.null(gtest)) {
+    # subclass output as nested output of groups
+    output2 <- lapply(levels(mk$cell_table), function(i) {
+      output1 <- gtest$output[, i]
+      ind <- mk$cell_table == i
+      subclass_i <- atest$output[, ind, drop = FALSE]
+      rs <- rowSums(subclass_i)
+      subclass_i / rs * output1
+    })
+    nest_output <- do.call(cbind, output2)
+    # subclass percent as nested percent of groups
     pc2 <- lapply(levels(mk$cell_table), function(i) {
       pc1 <- gtest$percent[, i]
       ind <- mk$cell_table == i
@@ -113,10 +123,11 @@ deconvolute <- function(mk, test, log = TRUE,
       subclass_i / rs * pc1
     })
     nest_percent <- do.call(cbind, pc2)
-  } else nest_percent <- NULL
+  } else nest_output <- nest_percent <- NULL
   
   out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
-              nest_percent = nest_percent, comp_amount = comp_amount)
+              nest_output = nest_output, nest_percent = nest_percent,
+              comp_amount = comp_amount)
   class(out) <- "deconv"
   out
 }
