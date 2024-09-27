@@ -44,6 +44,9 @@
 #'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
 #'   cell group analysis.}
+#'   \item{nest_output}{alternative matrix of cell output results for each 
+#'   subclass adjusted so that the cell outputs across subclasses are nested
+#'   as a proportion of cell group outputs.}
 #'   \item{nest_percent}{alternative matrix of cell proportion results for each 
 #'   subclass adjusted so that the percentages across subclasses are nested
 #'   within cell group percentages. The total percentage still adds to 100%.}
