@@ -48,7 +48,9 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
   getVal <- function() .val
   kill <- function() if (!.killed) {
     end <- Sys.time()
-    cat(paste0("  (", format(end - .start, digits = 3), ")\n"))
+    p <- oaste0("  (", format(end - .start, digits = 3), ")")
+    if (eta) p <- str_pad(p, 15)
+    cat(paste0(p, "\n"))
     flush.console()
     .killed <<- TRUE
   }
