@@ -54,6 +54,8 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   ylab <- deparse(substitute(y))
   if (inherits(x, "cellMarkers")) x <- x$genemeans
   if (inherits(y, "cellMarkers")) y <- y$genemeans
+  if (inherits(x, "data.frame")) x <- as.matrix(x)
+  if (inherits(y, "data.frame")) y <- as.matrix(y)
   common <- intersect(rownames(x), rownames(y))
   if (remove_noncoding) common <- common[!grepl("-|\\.", common)]
   message(length(common), " common genes")
