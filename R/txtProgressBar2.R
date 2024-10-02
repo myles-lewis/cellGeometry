@@ -35,8 +35,7 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
       curr <- Sys.time()
       dur <- as.numeric(difftime(curr, .start, units = "secs"))
       rem <- format_dur((100 - pc) / pc * dur)
-      tim <- if (pc != 100) paste("  eta", rem) else ""
-      tim <- str_pad(tim, 15)
+      tim <- if (pc != 100) str_pad(paste("  eta", rem), 15) else ""
     }
     cat(paste0("\r", title, "  |", strrep(" ", width + 6)))
     cat(paste(c("\r", title, "  |", strrep(char, nb),
@@ -54,8 +53,8 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
     .killed <<- TRUE
   }
   up <- up3
-  up(initial)
   .start <- Sys.time()
+  up(initial)
   structure(list(getVal = getVal, up = up, kill = kill),
             class = "txtProgressBar")
 }
