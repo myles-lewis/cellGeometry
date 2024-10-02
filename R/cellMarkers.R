@@ -115,8 +115,8 @@ cellMarkers <- function(scdata,
     subclass <- factor(subclass)
   }
   
-  if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
   if (!is.null(bulkdata)) {
+    if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
     ok <- rownames(scdata) %in% rownames(bulkdata)
     if (any(!ok) & (is.null(big) || !big)) {
       if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
