@@ -34,8 +34,9 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
     if (eta) {
       curr <- Sys.time()
       dur <- as.numeric(difftime(curr, .start, units = "secs"))
-      rem <- format_dur((100 - pc) / pc * dur)
-      tim <- if (pc != 100) str_pad(paste("  eta", rem), 15) else ""
+      rem <- (100 - pc) / pc * dur
+      remf <- format_dur(rem)
+      tim <- if (pc != 100 & rem > 1) str_pad(paste("  eta", remf), 15) else ""
     }
     cat(paste0("\r", title, "  |", strrep(" ", width + 6)))
     cat(paste(c("\r", title, "  |", strrep(char, nb),
