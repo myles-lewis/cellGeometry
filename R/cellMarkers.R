@@ -115,6 +115,7 @@ cellMarkers <- function(scdata,
     subclass <- factor(subclass)
   }
   
+  if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
   if (!is.null(bulkdata)) {
     ok <- rownames(scdata) %in% rownames(bulkdata)
     if (any(!ok) & (is.null(big) || !big)) {
