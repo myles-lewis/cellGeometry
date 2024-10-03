@@ -83,14 +83,14 @@ scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
     # small matrix
     out <- lapply(seq_along(lev), function(i) {
       ind <- lev[i]
+      ret <- FUN(as.matrix(x[, which(INDEX==ind & ok)]), ...)
       if (verbose) setTxtProgressBar(pb, i / length(lev))
-      FUN(as.matrix(x[, which(INDEX==ind & ok)]), ...)
+      ret
     })
   } else {
     # large matrix
     s <- sliceIndex(dimx[1], sliceSize)
     out <- lapply(seq_along(lev), function(i) {
-      if (verbose) setTxtProgressBar(pb, i / length(lev))
       ind <- lev[i]
       c_index <- which(INDEX == ind & ok)
       # slicing inner loop
@@ -98,6 +98,7 @@ scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
         FUN(as.matrix(x[j, c_index]), ...) |> suppressWarnings()
       }, mc.cores = cores)
       if (!is.null(combine2)) out2 <- do.call(combine2, out2)
+      if (verbose) setTxtProgressBar(pb, i / length(lev))
       out2
     })
   }
@@ -172,13 +173,14 @@ slapply <- function(x, FUN, combine = "c",
     }
     s <- sliceIndex(dimx[1], sliceSize)
     out <- parallel::mclapply(seq_along(s), function(j) {
+      ind <- s[[j]]
+      ret <- FUN(as.matrix(x[ind, ]), ...) |> suppressWarnings()
       if (verbose) {
         if (cores == 1) {
           setTxtProgressBar(pb, j / length(s))
         } else mcProgressBar(j, length(s), cores)
       }
-      ind <- s[[j]]
-      FUN(as.matrix(x[ind, ]), ...) |> suppressWarnings()
+      ret
     }, mc.cores = cores)
     if (!is.null(combine)) out <- do.call(combine, out)
     if (verbose) {
