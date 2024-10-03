@@ -18,6 +18,7 @@ Imports:
     ggrepel,
     grid,
     matrixStats,
+    mcprogress,
     parallel,
     plotly,
     rlang,

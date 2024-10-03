@@ -59,6 +59,7 @@
 #'               combine = "cbind")
 #' identical(o, o2)
 #' 
+#' @importFrom mcprogress mcProgressBar closeProgress
 #' @export
 
 scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
