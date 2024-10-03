@@ -27,16 +27,18 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
     if (!is.finite(value) || value < min || value > max) 
       return()
     .val <<- value
-    nb <- round(width * (value - min)/(max - min))
-    pc <- round(100 * (value - min)/(max - min))
+    v <- (value - min)/(max - min)
+    nb <- round(width * v)
+    pc <- round(100 * v)
     if (nb == .nb && pc == .pc) 
       return()
+    tim <- ""
     if (eta) {
       curr <- Sys.time()
       dur <- as.numeric(difftime(curr, .start, units = "secs"))
-      rem <- (100 - pc) / pc * dur
+      rem <- (1 - v) / v * dur
       remf <- format_dur(rem)
-      tim <- if (pc != 100 & rem > 1) str_pad(paste("  eta", remf), 15) else ""
+      tim <- if (pc > 0 & pc != 100 & rem > 1) str_pad(paste("  eta", remf), 15)
     }
     cat(paste0("\r", title, "  |", strrep(" ", width + 6)))
     cat(paste(c("\r", title, "  |", strrep(char, nb),
@@ -49,7 +51,7 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
   getVal <- function() .val
   kill <- function() if (!.killed) {
     end <- Sys.time()
-    p <- oaste0("  (", format(end - .start, digits = 3), ")")
+    p <- paste0("  (", format(end - .start, digits = 3), ")")
     if (eta) p <- str_pad(p, 15)
     cat(paste0(p, "\n"))
     flush.console()
