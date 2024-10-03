@@ -70,6 +70,7 @@ format_dur <- function(x) {
   m <- floor(x / 60)
   h <- floor(m / 60)
   if (h > 0) {
+    if (h > 99) return(paste0(h, "h"))
     m <- m %% 60
     return(paste0(h, "h ", m, "m"))
   }
