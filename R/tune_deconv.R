@@ -63,13 +63,13 @@ tune_deconv <- function(mk, test, samples, grid,
     grid1 <- expand.grid(grid[w1])
     if (verbose) pb <- txtProgressBar2()
     res <- lapply(seq_len(nrow(grid1)), function(i) {
-      if (verbose) setTxtProgressBar(pb, i / nrow(grid1))
       args <- list(object = mk)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
       df2 <- tune_dec(mk_update, test, samples, grid2, output, force_intercept,
                       ...)
+      if (verbose) setTxtProgressBar(pb, i / nrow(grid1))
       data.frame(grid1_row, df2, row.names = NULL)
     })
     res <- do.call(rbind, res)
