@@ -154,7 +154,6 @@ scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
 slapply <- function(x, FUN, combine = "c",
                     big = NULL, verbose = TRUE,
                     sliceSize = 1000L, cores = 1L, ...) {
-  start <- Sys.time()
   dimx <- dim(x)
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (as.numeric(dimx[2]) * as.numeric(sliceSize) > 2^31)
@@ -163,6 +162,7 @@ slapply <- function(x, FUN, combine = "c",
   mem <- structure(dimmax * 8 * cores, class = "object_size")
   if (verbose & mem > 1e9)
     message("Absolute minimum memory headroom ", format(mem, units = "GB"))
+  start <- Sys.time()
   
   if (is.null(big) || !big) {
     # small matrix
@@ -179,7 +179,7 @@ slapply <- function(x, FUN, combine = "c",
       if (verbose) {
         if (cores == 1) {
           setTxtProgressBar(pb, j / length(s))
-        } else mcProgressBar(j, length(s), cores)
+        } else mcProgressBar(j, length(s), cores, start = start)
       }
       ret
     }, mc.cores = cores)
