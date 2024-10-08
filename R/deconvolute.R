@@ -154,6 +154,7 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
                           exp_signature)
           min(ntest$output[, i], na.rm = TRUE)^2
         }
+        if (comp_amount[i] == 0) return(0)
         xmin <- optimise(f, c(0, comp_amount[i]))
         xmin$minimum
       }, numeric(1))
