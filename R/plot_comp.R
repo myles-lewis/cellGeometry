@@ -13,10 +13,10 @@
 #' @export
 
 plot_comp <- function(x, ...) {
-  if (inherits(x, "deconv")) {
-    x <- x$comp_check
-    if (is.null(x)) stop("missing comp_check analysis")
-  }
+  if (!inherits(x, "deconv")) stop("not a 'deconv' class object")
+  x <- x$comp_check
+  if (is.null(x)) stop("missing comp_check analysis")
+  
   n <- length(x) -1
   px <- x$px
   x <- x[1:n]
