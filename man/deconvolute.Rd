@@ -14,7 +14,8 @@ deconvolute(
   equal_weight = FALSE,
   adjust_comp = TRUE,
   use_filter = TRUE,
-  convert_bulk = "ref"
+  convert_bulk = "ref",
+  plot_comp = FALSE
 )
 }
 \arguments{
@@ -49,6 +50,9 @@ negative cell proportion projections.}
 \item{convert_bulk}{either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" for no conversion.}
+
+\item{plot_comp}{logical, whether to analyse compensation values across
+subclasses.}
 }
 \value{
 A list object of S3 class 'deconv' containing:
@@ -76,6 +80,7 @@ as a proportion of cell group outputs.}
 subclass adjusted so that the percentages across subclasses are nested
 within cell group percentages. The total percentage still adds to 100\%.}
 \item{comp_amount}{original argument \code{comp_amount}}
+\item{comp_check}{optional list element returned when \code{plot_comp = TRUE}}
 }
 \description{
 Deconvolution of bulk RNA-Seq using vector projection method with adjustable

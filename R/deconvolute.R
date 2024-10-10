@@ -26,6 +26,8 @@
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" for no conversion.
+#' @param plot_comp logical, whether to analyse compensation values across
+#'   subclasses.
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
 #'   \item{mk}{the original 'cellMarkers' class object}
@@ -51,6 +53,7 @@
 #'   subclass adjusted so that the percentages across subclasses are nested
 #'   within cell group percentages. The total percentage still adds to 100%.}
 #'   \item{comp_amount}{original argument `comp_amount`}
+#'   \item{comp_check}{optional list element returned when `plot_comp = TRUE`}
 #' @seealso [cellMarkers()] [updateMarkers()]
 #' @author Myles Lewis
 #' @importFrom matrixStats colMins
@@ -64,7 +67,8 @@ deconvolute <- function(mk, test, log = TRUE,
                         equal_weight = FALSE,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
-                        convert_bulk = "ref") {
+                        convert_bulk = "ref",
+                        plot_comp = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   .call <- match.call()
   
@@ -131,6 +135,11 @@ deconvolute <- function(mk, test, log = TRUE,
   out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
               nest_output = nest_output, nest_percent = nest_percent,
               comp_amount = comp_amount)
+  if (plot_comp) {
+    message("analysing compensation")
+    out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
+                                 equal_weight, exp_signature)
+  }
   class(out) <- "deconv"
   out
 }
@@ -216,4 +225,39 @@ bulk2sc <- function(x) {
   bulk2scfun <- approxfun(x = celseqfit$pred.bulk, y = celseqfit$celseq,
                           yleft = 0, rule = 2)
   approxfun.matrix(x, bulk2scfun)
+}
+
+
+comp_check <- function(test, cellmat, comp_amount, equal_weight,
+                       exp_signature) {
+  comp_amount <- rep_len(comp_amount, ncol(cellmat))
+  names(comp_amount) <- colnames(cellmat)
+  px <- seq(0, 1, 0.05)
+  
+  out <- lapply(seq_len(ncol(cellmat)), function(i) {
+    newcomp <- comp_amount
+    vapply(px, function(ci) {
+      newcomp[i] <- ci
+      ntest <- deconv(test, cellmat, newcomp, equal_weight, exp_signature)
+      min(ntest$output[, i], na.rm = TRUE)
+    }, numeric(1))
+  })
+  names(out) <- colnames(cellmat)
+  out$px <- px
+  out
+}
+
+
+plot_comp <- function(x) {
+  if (inherits(x, "deconv")) x <- x$comp_check
+  n <- length(x) -1
+  px <- x$px
+  x <- x[1:n]
+  yr <- range(x)
+  plot(NA, las = 1, xlim = c(0, 1), ylim = yr,
+       xlab = "Compensation", ylab = "min output")
+  abline(h = 0, col = "red")
+  for (i in seq_len(n)) {
+    lines(px, x[[i]])
+  }
 }
