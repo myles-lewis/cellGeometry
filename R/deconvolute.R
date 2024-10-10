@@ -246,18 +246,3 @@ comp_check <- function(test, cellmat, comp_amount, equal_weight,
   out$px <- px
   out
 }
-
-
-plot_comp <- function(x) {
-  if (inherits(x, "deconv")) x <- x$comp_check
-  n <- length(x) -1
-  px <- x$px
-  x <- x[1:n]
-  yr <- range(x)
-  plot(NA, las = 1, xlim = c(0, 1), ylim = yr,
-       xlab = "Compensation", ylab = "min output")
-  abline(h = 0, col = "red")
-  for (i in seq_len(n)) {
-    lines(px, x[[i]])
-  }
-}

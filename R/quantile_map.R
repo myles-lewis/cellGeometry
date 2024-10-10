@@ -82,7 +82,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
     df <- data.frame(qx, qy)
   }
   if (smooth == "loess") {
-    fit <- loess(qy ~ qx, span = span)
+    fit <- loess(qy ~ qx, span = span) |> suppressWarnings()
     qx <- seq(0, qx[length(qx)], length.out = 1000)
     qy <- predict(fit, data.frame(qx))
     qy[qy < 0] <- 0
