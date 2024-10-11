@@ -14,6 +14,7 @@
 #' @param ... Optional graphical arguments passed to [plot()].
 #' @return No return value, plots the effect of varying compensation on minimum
 #'   subclass output for each cell subclass.
+#' @importFrom graphics text
 #' @export
 
 plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
