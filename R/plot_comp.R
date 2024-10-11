@@ -52,8 +52,8 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
       abline(h = 0, col = "darkgrey")
       comp <- ox$subclass$comp_amount[i]
       abline(v = comp, col = "red", lty = 2)
-      text(comp, ylim[2], format(comp, digits = 2, nsmall = 1), col = "red", adj = c(0.5, -0.5),
-           xpd = NA)
+      text(comp, ylim[2], format(comp, digits = 2, nsmall = 1),
+           col = "red", adj = c(0.5, -0.5), xpd = NA)
     }
   }
 }
