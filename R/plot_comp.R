@@ -47,8 +47,7 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
       ylim <- range(x[[i]])
       if (ylim[1] > 0) ylim[1] <- 0
       if (ylim[2] < 0) ylim[2] <- 0
-      plot(px, x[[i]], type = "l", ylim = ylim,
-           las = 1,
+      plot(px, x[[i]], type = "l", ylim = ylim, las = 1,
            xlab = paste(names(x)[i], "comp"), ylab = "")
       abline(h = 0, col = "darkgrey")
       comp <- ox$subclass$comp_amount[i]
