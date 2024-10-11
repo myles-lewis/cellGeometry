@@ -36,8 +36,9 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
       lines(px, x[[i]], col = scheme[i])
     }
   } else {
-    nr <- ceiling(sqrt(n))
-    if (is.null(mfrow)) mfrow <- c(nr, nr)
+    nr1 <- ceiling(sqrt(n))
+    nr2 <- ceiling(n / nr1)
+    if (is.null(mfrow)) mfrow <- c(nr1, nr2)
     op <- par(bty = "l", mgp = c(2.2, 0.6, 0), tcl = -0.3,
               mar = c(3.7, 4.5, 1.5, 1.1), mfrow = mfrow)
     on.exit(par(op))

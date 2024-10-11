@@ -120,8 +120,9 @@ plot_set <- function(obs, pred, mfrow = NULL,
                      title = "", cex.title = 1, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   subclasses <- colnames(obs)
-  nr <- ceiling(sqrt(length(subclasses)))
-  if (is.null(mfrow)) mfrow <- c(nr, nr)
+  nr1 <- ceiling(sqrt(length(subclasses)))
+  nr2 <- ceiling(length(subclasses) / nr1)
+  if (is.null(mfrow)) mfrow <- c(nr1, nr2)
   oma <- par("oma")
   if (title != "" & oma[3] < 1.5) oma[3] <- 1.5
   op <- par(bty = "l", mgp = c(2.2, 0.6, 0), tcl = -0.3, oma = oma,
