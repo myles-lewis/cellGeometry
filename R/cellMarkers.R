@@ -115,6 +115,7 @@ cellMarkers <- function(scdata,
     subclass <- factor(subclass)
   }
   
+  ok <- TRUE
   if (!is.null(bulkdata)) {
     if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
     ok <- rownames(scdata) %in% rownames(bulkdata)
@@ -123,7 +124,7 @@ cellMarkers <- function(scdata,
       scdata <- scdata[ok, ]
       dimx <- dim(scdata)
     }
-  } else ok <- TRUE
+  }
   nsub <- nlevels(subclass)
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
                        nsub, " cell subclasses")
