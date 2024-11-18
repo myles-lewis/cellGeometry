@@ -118,12 +118,12 @@ cellMarkers <- function(scdata,
   if (!is.null(bulkdata)) {
     if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
     ok <- rownames(scdata) %in% rownames(bulkdata)
+    if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
     if (any(!ok) & (is.null(big) || !big)) {
-      if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
       scdata <- scdata[ok, ]
       dimx <- dim(scdata)
     }
-  }
+  } else ok <- TRUE
   nsub <- nlevels(subclass)
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
                        nsub, " cell subclasses")
@@ -131,6 +131,10 @@ cellMarkers <- function(scdata,
   
   nsubclass2 <- rep_len(nsubclass, nsub)
   genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
+  if (isTRUE(big) && any(!ok)) {
+    genemeans <- genemeans[ok, ]
+    dimx[1] <- nrow(genemeans)
+  }
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
@@ -156,6 +160,7 @@ cellMarkers <- function(scdata,
     # test nesting
     tab <- table(subclass, cellgroup)
     groupmeans <- scmean(scdata, cellgroup, big, verbose, sliceSize, cores)
+    if (isTRUE(big) && any(!ok)) groupmeans <- groupmeans[ok, ]
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)
