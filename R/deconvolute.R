@@ -88,7 +88,7 @@ deconvolute <- function(mk, test, log = TRUE,
     } else mk$groupmeans[mk$group_geneset, ]
     # cellmat <- sc2bulk(cellmat)
     if (!all(mk$group_geneset %in% rownames(test)))
-      stop("some signature genes not found in test")
+      stop("some group signature genes not found in test")
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
