@@ -87,7 +87,12 @@ are closest to or lie on the y axis, while also being of highest mean
 expression.
 }
 \details{
-If \code{type = 1}, the coordinates are drawn as x = vector length * sin(angle)
+For \code{type = 1}, coordinates are drawn as x = angle of vector in degrees, y =
+mean gene expression of each gene in the subclass of interest. This version
+is easier to use to identify additional gene markers. The plotly version
+allows users to hover over points and identify which gene they belong to.
+
+If \code{type = 2}, the coordinates are drawn as x = vector length * sin(angle)
 and y = vector length * cos(angle), where vector length is the Euclidean
 length of that gene in space where each cell subclass is a dimension. Angle
 is the angle between the projected vector in space against perfection for
@@ -100,11 +105,6 @@ subclasses, i.e. overall non-specific gene expression in other subclasses.
 Thus, the plot represents a rotation of all genes as vectors around the axis
 of the subclass of interest onto the same plane so that the angle with the
 subclass of interest is visualised between genes.
-
-For \code{type = 2}, coordinates are drawn as x = angle of vector in degrees, y =
-mean gene expression of each gene in the subclass of interest. This version
-is easier to use to identify additional gene markers. The plotly version
-allows users to hover over points and identify which gene they belong to.
 
 Colour is used to overlay the ranking of each gene across the subclasses,
 showing for each gene where the subclass of interest is ranked compared to

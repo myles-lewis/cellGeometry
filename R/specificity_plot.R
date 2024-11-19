@@ -6,7 +6,12 @@
 #' are closest to or lie on the y axis, while also being of highest mean
 #' expression.
 #' 
-#' If `type = 1`, the coordinates are drawn as x = vector length * sin(angle)
+#' For `type = 1`, coordinates are drawn as x = angle of vector in degrees, y =
+#' mean gene expression of each gene in the subclass of interest. This version
+#' is easier to use to identify additional gene markers. The plotly version
+#' allows users to hover over points and identify which gene they belong to.
+#' 
+#' If `type = 2`, the coordinates are drawn as x = vector length * sin(angle)
 #' and y = vector length * cos(angle), where vector length is the Euclidean
 #' length of that gene in space where each cell subclass is a dimension. Angle
 #' is the angle between the projected vector in space against perfection for
@@ -19,11 +24,6 @@
 #' Thus, the plot represents a rotation of all genes as vectors around the axis
 #' of the subclass of interest onto the same plane so that the angle with the
 #' subclass of interest is visualised between genes.
-#' 
-#' For `type = 2`, coordinates are drawn as x = angle of vector in degrees, y =
-#' mean gene expression of each gene in the subclass of interest. This version
-#' is easier to use to identify additional gene markers. The plotly version
-#' allows users to hover over points and identify which gene they belong to.
 #' 
 #' Colour is used to overlay the ranking of each gene across the subclasses,
 #' showing for each gene where the subclass of interest is ranked compared to
@@ -105,7 +105,7 @@ specificity_plot <- function(mk, subclass = NULL,
   nrank <- pmin(ncol(genemeans), nrank)
   gene_rank[gene_rank > nrank] <- nrank
   gene_rank <- factor(floor(gene_rank))
-  if (type == 2) {
+  if (type == 1) {
     if (is.null(expfilter)) expfilter <- mk$opt$expfilter
     gene_rank[genemeans[, subc] < expfilter] <- nrank
     levels(gene_rank)[nrank] <- paste0(nrank, "+/low")
@@ -131,7 +131,7 @@ specificity_plot <- function(mk, subclass = NULL,
     scheme[1] <- "red"
   }
   
-  if (type == 1) {
+  if (type == 2) {
     # use actual angle; radius is vecLength
     xlim <- xr <- range(df$x, na.rm = TRUE)
     yr <- range(df$y, na.rm = TRUE)
@@ -224,7 +224,7 @@ specificity_plotly <- function(mk, subclass = NULL,
   nrank <- pmin(ncol(genemeans), nrank)
   gene_rank[gene_rank > nrank] <- nrank
   gene_rank <- factor(floor(gene_rank))
-  if (type == 2) {
+  if (type == 1) {
     if (is.null(expfilter)) expfilter <- mk$opt$expfilter
     gene_rank[genemeans[, subc] < expfilter] <- nrank
     levels(gene_rank)[nrank] <- paste0(nrank, "+/low")
@@ -252,7 +252,7 @@ specificity_plotly <- function(mk, subclass = NULL,
   }
   scheme <- rev(scheme)
   
-  if (type == 1) {
+  if (type == 2) {
     # use actual angle; radius is vecLength
     plot_ly(df, x = ~x, y = ~y, color = ~rank, colors = scheme,
             mode = "markers", type = "scattergl", hoverinfo = "text",
