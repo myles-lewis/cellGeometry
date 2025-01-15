@@ -32,6 +32,8 @@
 #'   subclass category. Subclass categories with fewer cells will be ignored.
 #' @param remove_subclass Character vector of `subclass` levels to be removed
 #'   from the analysis.
+#' @param logfirst Logical whether log2 +1 is applied to counts first before
+#'   mean is applied, or applied after the mean is calculated.
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @param verbose Logical whether to show messages.
 #' @param sliceSize Integer, number of rows of `x` to use in each slice if 
@@ -93,6 +95,7 @@ cellMarkers <- function(scdata,
                         noisefraction = 0.25,
                         min_cells = 10,
                         remove_subclass = NULL,
+                        logfirst = TRUE,
                         big = NULL,
                         verbose = TRUE,
                         sliceSize = 5000L,
@@ -131,7 +134,7 @@ cellMarkers <- function(scdata,
   if (verbose) message("Subclass analysis")
   
   nsubclass2 <- rep_len(nsubclass, nsub)
-  genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
+  genemeans <- scmean(scdata, subclass, logfirst, big, verbose, sliceSize, cores)
   if (isTRUE(big) && any(!ok)) {
     genemeans <- genemeans[ok, ]
     dimx[1] <- nrow(genemeans)
@@ -160,7 +163,8 @@ cellMarkers <- function(scdata,
     
     # test nesting
     tab <- table(subclass, cellgroup)
-    groupmeans <- scmean(scdata, cellgroup, big, verbose, sliceSize, cores)
+    groupmeans <- scmean(scdata, cellgroup, logfirst, big, verbose, sliceSize, 
+                         cores)
     if (isTRUE(big) && any(!ok)) groupmeans <- groupmeans[ok, ]
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,

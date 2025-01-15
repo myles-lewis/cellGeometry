@@ -16,6 +16,7 @@ cellMarkers(
   noisefraction = 0.25,
   min_cells = 10,
   remove_subclass = NULL,
+  logfirst = TRUE,
   big = NULL,
   verbose = TRUE,
   sliceSize = 5000L,
@@ -61,6 +62,9 @@ subclass category. Subclass categories with fewer cells will be ignored.}
 
 \item{remove_subclass}{Character vector of \code{subclass} levels to be removed
 from the analysis.}
+
+\item{logfirst}{Logical whether log2 +1 is applied to counts first before
+mean is applied, or applied after the mean is calculated.}
 
 \item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
 
