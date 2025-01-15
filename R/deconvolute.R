@@ -28,6 +28,7 @@
 #'   scRNA-Seq datasets, or "none" for no conversion.
 #' @param plot_comp logical, whether to analyse compensation values across
 #'   subclasses.
+#' @param verbose logical, whether to show additional information.
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
 #'   \item{mk}{the original 'cellMarkers' class object}
@@ -67,8 +68,10 @@ deconvolute <- function(mk, test, log = TRUE,
                         equal_weight = FALSE,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
+                        arith_mean = FALSE,
                         convert_bulk = "ref",
-                        plot_comp = FALSE) {
+                        plot_comp = FALSE,
+                        verbose = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   .call <- match.call()
   
@@ -99,8 +102,14 @@ deconvolute <- function(mk, test, log = TRUE,
   }
   
   # cell subclasses
-  cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
-  } else mk$genemeans[mk$geneset, ]
+  if (arith_mean) {
+    cellmat <- if (use_filter) {mk$genemeans_filtered_ar[mk$geneset, ]
+    } else mk$genemeans_ar[mk$geneset, ]
+    if (is.null(cellmat)) stop("arithmetic mean not found")
+  } else {
+    cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
+    } else mk$genemeans[mk$geneset, ]
+  }
   # cellmat <- sc2bulk(cellmat)
   if (!all(mk$geneset %in% rownames(test)))
     stop("some signature genes not found in test")
@@ -110,10 +119,12 @@ deconvolute <- function(mk, test, log = TRUE,
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
                          adjust_comp, exp_signature)
   
-  maxsp <- max_spill(atest$spillover)
-  message("Max spillover ", format(maxsp, digits = 3))
-  message("Max/min compensation ",
-          format(max_abs(atest$compensation), digits = 3))
+  if (verbose) {
+    maxsp <- max_spill(atest$spillover)
+    message("Max spillover ", format(maxsp, digits = 3))
+    message("Max/min compensation ",
+            format(max_abs(atest$compensation), digits = 3))
+  }
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {

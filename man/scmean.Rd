@@ -4,15 +4,7 @@
 \alias{scmean}
 \title{Single-cell mean log gene expression across cell types}
 \usage{
-scmean(
-  x,
-  celltype,
-  logfirst = TRUE,
-  big = NULL,
-  verbose = TRUE,
-  sliceSize = 5000L,
-  cores = 1L
-)
+scmean(x, celltype, big = NULL, verbose = TRUE, sliceSize = 5000L, cores = 1L)
 }
 \arguments{
 \item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
@@ -21,9 +13,6 @@ in columns.}
 \item{celltype}{a vector of cell subclasses or types whose length matches the
 number of columns in \code{x}. It is coerced to a factor. \code{NA} are tolerated and
 the matching columns in \code{x} are skipped.}
-
-\item{logfirst}{Logical whether log2 +1 is applied to counts first before
-mean is applied, or applied after the mean is calculated.}
 
 \item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
 invoked automatically if \code{x} is a large matrix with >2^31 elements.}

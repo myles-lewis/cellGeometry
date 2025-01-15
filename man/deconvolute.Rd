@@ -14,8 +14,10 @@ deconvolute(
   equal_weight = FALSE,
   adjust_comp = TRUE,
   use_filter = TRUE,
+  arith_mean = FALSE,
   convert_bulk = "ref",
-  plot_comp = FALSE
+  plot_comp = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -53,6 +55,8 @@ scRNA-Seq datasets, or "none" for no conversion.}
 
 \item{plot_comp}{logical, whether to analyse compensation values across
 subclasses.}
+
+\item{verbose}{logical, whether to show additional information.}
 }
 \value{
 A list object of S3 class 'deconv' containing:

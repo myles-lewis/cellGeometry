@@ -13,6 +13,8 @@
 #'   "groupsplit" shows the distribution of mean gene expression for the group
 #'   signature across subclasses.
 #' @param use_filter Logical whether to show denoised gene signature.
+#' @param arith_mean Logical whether to show log2(arithmetic mean), if
+#'   calculated, instead of usual mean(log2(counts +1)).
 #' @param rank Either "max" or "angle" controlling whether genes (rows) are
 #'   ordered in the heatmap by max expression (the default) or lowest angle
 #'   (a measure of specificity of the gene as a cell marker).
@@ -36,6 +38,7 @@
 signature_heatmap <- function(x,
                               type = c("subclass", "group", "groupsplit"),
                               use_filter = NULL,
+                              arith_mean = FALSE,
                               rank = c("max", "angle"),
                               scale = c("none", "max", "sphere"),
                               col = rev(hcl.colors(10, "Greens3")),
@@ -54,18 +57,23 @@ signature_heatmap <- function(x,
   }
   if (inherits(x, "cellMarkers")) {
     if (is.null(use_filter)) use_filter <- TRUE
-    if (type == "groupsplit") {
-      gene_signature <- if (use_filter) {x$genemeans_filtered[x$group_geneset, ]
-      } else x$genemeans[x$group_geneset, ]
-      cell_table <- x$cell_table
-    } else if (type == "group") {
-      gene_signature <- if (use_filter) {x$groupmeans_filtered[x$group_geneset, ]
-      } else x$groupmeans[x$group_geneset, ]
+    gset <- if (type == "subclass") x$geneset else x$group_geneset
+    if (type != "group") cell_table <- x$cell_table
+    if (arith_mean) {
+      gmat <- if (type == "group") {
+        stop("arithmetic mean not available for group means")
+      } else {
+        if (use_filter) x$genemeans_filtered_ar else x$genemeans_ar
+      }
+      if (is.null(gmat)) stop("arithmetic mean not available")
     } else {
-      gene_signature <- if (use_filter) {x$genemeans_filtered[x$geneset, ]
-      } else x$genemeans[x$geneset, ]
-      cell_table <- x$cell_table
+      gmat <- if (type == "group") {
+        if (use_filter) x$groupmeans_filtered else x$groupmeans
+      } else {
+        if (use_filter) x$genemeans_filtered else x$genemeans
+      }
     }
+    gene_signature <- gmat[gset, ]
   } else {
     gene_signature <- x
   }

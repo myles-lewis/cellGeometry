@@ -16,7 +16,7 @@ cellMarkers(
   noisefraction = 0.25,
   min_cells = 10,
   remove_subclass = NULL,
-  logfirst = TRUE,
+  dual_mean = FALSE,
   big = NULL,
   verbose = TRUE,
   sliceSize = 5000L,
@@ -63,8 +63,8 @@ subclass category. Subclass categories with fewer cells will be ignored.}
 \item{remove_subclass}{Character vector of \code{subclass} levels to be removed
 from the analysis.}
 
-\item{logfirst}{Logical whether log2 +1 is applied to counts first before
-mean is applied, or applied after the mean is calculated.}
+\item{dual_mean}{Logical whether to calculate arithmetic mean of counts as
+well as mean(log2(counts +1)). This is mainly useful for simulation.}
 
 \item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
 
@@ -111,6 +111,10 @@ subclass}
 quantile mapping from bulk to single-cell}
 \item{opt}{list storing options, namely arguments \code{nsubclass}, \code{ngroup},
 \code{expfilter}, \code{noisefilter}, \code{noisefraction}}
+\item{genemeans_ar}{if \code{dual_mean} is \code{TRUE}, optional matrix of arithmetic
+mean, i.e. log2(mean(counts)+1)}
+\item{genemeans_filtered_ar}{optional matrix of arithmetic mean
+following noise reduction}
 The 'cellMarkers' object is designed to be passed to \code{\link[=deconvolute]{deconvolute()}} to
 deconvolute bulk RNA-Seq data. It can be updated rapidly with different
 settings using \code{\link[=updateMarkers]{updateMarkers()}}. Ensembl gene ids can be substituted for

@@ -8,6 +8,7 @@ signature_heatmap(
   x,
   type = c("subclass", "group", "groupsplit"),
   use_filter = NULL,
+  arith_mean = FALSE,
   rank = c("max", "angle"),
   scale = c("none", "max", "sphere"),
   col = rev(hcl.colors(10, "Greens3")),
@@ -30,6 +31,9 @@ subclass or cell group signature from a 'cellMarkers' or 'deconv' object.
 signature across subclasses.}
 
 \item{use_filter}{Logical whether to show denoised gene signature.}
+
+\item{arith_mean}{Logical whether to show log2(arithmetic mean), if
+calculated, instead of usual mean(log2(counts +1)).}
 
 \item{rank}{Either "max" or "angle" controlling whether genes (rows) are
 ordered in the heatmap by max expression (the default) or lowest angle

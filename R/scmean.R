@@ -12,8 +12,6 @@
 #' @param celltype a vector of cell subclasses or types whose length matches the
 #'   number of columns in `x`. It is coerced to a factor. `NA` are tolerated and
 #'   the matching columns in `x` are skipped.
-#' @param logfirst Logical whether log2 +1 is applied to counts first before
-#'   mean is applied, or applied after the mean is calculated.
 #' @param big Logical, whether to invoke slicing of `x` into rows. This is
 #'   invoked automatically if `x` is a large matrix with >2^31 elements.
 #' @param verbose Logical, whether to print messages.
@@ -41,7 +39,7 @@
 #' @importFrom parallel mclapply
 #' @export
 
-scmean <- function(x, celltype, logfirst = TRUE, big = NULL, verbose = TRUE,
+scmean <- function(x, celltype, big = NULL, verbose = TRUE,
                    sliceSize = 5000L, cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
@@ -50,14 +48,12 @@ scmean <- function(x, celltype, logfirst = TRUE, big = NULL, verbose = TRUE,
   ok <- !is.na(celltype)
   dimx <- dim(x)
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
-  FUN <- if (logfirst) logmean else rowMeans
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (is.null(big) || !big) {
     # small matrix
     genemeans <- vapply(levels(celltype), function(i) {
-      FUN(as.matrix(x[, which(celltype==i & ok)])) |> suppressWarnings()
+      logmean(as.matrix(x[, which(celltype==i & ok)])) |> suppressWarnings()
     }, numeric(dimx[1]))
-    if (!logfirst) genemeans <- log2(genemeans +1)
     return(genemeans)
   }
   # large matrix
@@ -67,12 +63,11 @@ scmean <- function(x, celltype, logfirst = TRUE, big = NULL, verbose = TRUE,
     c_index <- which(celltype == i & ok)
     if (verbose) cat(length(c_index), i, " ")
     out <- parallel::mclapply(s, function(j) {
-      FUN(as.matrix(x[j, c_index])) |> suppressWarnings()
+      logmean(as.matrix(x[j, c_index])) |> suppressWarnings()
     }, mc.cores = cores)
     if (verbose) timer(start)
     unlist(out)
   }, numeric(dimx[1]))
-  if (!logfirst) genemeans <- log2(genemeans +1)
   
   if (verbose) timer(start0, "Duration")
   genemeans
