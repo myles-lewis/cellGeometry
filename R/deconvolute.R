@@ -22,7 +22,9 @@
 #'   equalise the effects of each gene.
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
-#' @param use_filter logical, whether to use denoised signature matrix
+#' @param use_filter logical, whether to use denoised signature matrix.
+#' @param arith_mean logical, whether to use arithmetic means (if available) for
+#'   signature matrix. Mainly useful with pseudo-bulk simulation.
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" for no conversion.

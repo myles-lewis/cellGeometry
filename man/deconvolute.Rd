@@ -47,7 +47,10 @@ equalise the effects of each gene.}
 \item{adjust_comp}{logical, whether to optimise \code{comp_amount} to prevent
 negative cell proportion projections.}
 
-\item{use_filter}{logical, whether to use denoised signature matrix}
+\item{use_filter}{logical, whether to use denoised signature matrix.}
+
+\item{arith_mean}{logical, whether to use arithmetic means (if available) for
+signature matrix. Mainly useful with pseudo-bulk simulation.}
 
 \item{convert_bulk}{either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 using reference data or "qqmap" using quantile mapping of the bulk to
