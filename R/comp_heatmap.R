@@ -33,6 +33,6 @@ comp_heatmap <- function(x, cell_table = NULL, ...) {
                  heatmap_legend_param = list(title = 'compensation',
                                              legend_width = unit(6, "cm"),
                                              direction = "horizontal"),
-                 ...)
+                 ...) |> suppressMessages()
   draw(hm2, heatmap_legend_side = "top")
 }

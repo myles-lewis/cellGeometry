@@ -110,6 +110,11 @@ deconvolute <- function(mk, test, log = TRUE,
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
                          adjust_comp, exp_signature)
   
+  maxsp <- max_spill(atest$spillover)
+  message("Max spillover ", format(maxsp, digits = 3))
+  message("Max/min compensation ",
+          format(max_abs(atest$compensation), digits = 3))
+  
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
     # subclass output as nested output of groups
