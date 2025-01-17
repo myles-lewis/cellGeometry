@@ -263,6 +263,10 @@ summary.cellMarkers <- function(object, ...) {
   cat("Cell subclass signature:", length(object$geneset), "genes\n")
   cat("Cell groups:", ncol(object$groupmeans), "\n")
   cat("Cell group signature:", length(object$group_geneset), "genes\n")
+  mmeth <- if (is.null(object$call[["meanFUN"]])) {
+    "logmean"
+  } else as.character(object$call[["meanFUN"]])
+  cat("Mean method:", mmeth, "\n")
   for (i in 1:5) {
     cat(paste0(names(object$opt)[i], ": ", object$opt[i], "\n"))
   }
