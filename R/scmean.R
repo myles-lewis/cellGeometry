@@ -57,8 +57,6 @@
 
 scmean <- function(x, celltype,
                    FUN = logmean, postFUN = NULL,
-                   # FUN = trimmean,
-                   # postFUN = function(x) log2(x +1),
                    big = NULL, verbose = TRUE,
                    sliceSize = 5000L, cores = 1L) {
   start0 <- Sys.time()
