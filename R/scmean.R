@@ -20,6 +20,9 @@
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements.
+#' @param FUN Function for applying mean.
+#' @param postFUN Optional function to be applied to whole matrix after mean has
+#'   been calculated, e.g. log2.
 #' @details
 #' We find a significant speed up with `cores = 2`, which is almost twice as
 #' fast as single core, but not much to be gained beyond this possibly due to
@@ -40,7 +43,11 @@
 #' @export
 
 scmean <- function(x, celltype, big = NULL, verbose = TRUE,
-                   sliceSize = 5000L, cores = 1L) {
+                   sliceSize = 5000L, cores = 1L,
+                   FUN = logmean, postFUN = NULL
+                   # FUN = trimmean,
+                   # postFUN = function(x) log2(x +1)
+                   ) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   if (any(table(celltype) * as.numeric(sliceSize) > 2^31))
@@ -52,8 +59,9 @@ scmean <- function(x, celltype, big = NULL, verbose = TRUE,
   if (is.null(big) || !big) {
     # small matrix
     genemeans <- vapply(levels(celltype), function(i) {
-      logmean(as.matrix(x[, which(celltype==i & ok)])) |> suppressWarnings()
+      FUN(as.matrix(x[, which(celltype==i & ok)])) |> suppressWarnings()
     }, numeric(dimx[1]))
+    if (!is.null(postFUN)) genemeans <- postFUN(genemeans)
     return(genemeans)
   }
   # large matrix
@@ -63,17 +71,24 @@ scmean <- function(x, celltype, big = NULL, verbose = TRUE,
     c_index <- which(celltype == i & ok)
     if (verbose) cat(length(c_index), i, " ")
     out <- parallel::mclapply(s, function(j) {
-      logmean(as.matrix(x[j, c_index])) |> suppressWarnings()
+      FUN(as.matrix(x[j, c_index])) |> suppressWarnings()
     }, mc.cores = cores)
     if (verbose) timer(start)
     unlist(out)
   }, numeric(dimx[1]))
   
+  if (!is.null(postFUN)) genemeans <- postFUN(genemeans)
   if (verbose) timer(start0, "Duration")
   genemeans
 }
 
 logmean <- function(x) rowMeans(log2(x +1))
+
+trimmean <- function(x) {
+  tm <- Rfast2::rowTrimMean(x)
+  names(tm) <- rownames(x)
+  tm
+}
 
 sliceIndex <- function(nx, sliceSize = 2000) {
   if (is.null(sliceSize)) sliceSize <- nx
