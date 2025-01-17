@@ -4,7 +4,16 @@
 \alias{scmean}
 \title{Single-cell mean log gene expression across cell types}
 \usage{
-scmean(x, celltype, big = NULL, verbose = TRUE, sliceSize = 5000L, cores = 1L)
+scmean(
+  x,
+  celltype,
+  FUN = logmean,
+  postFUN = NULL,
+  big = NULL,
+  verbose = TRUE,
+  sliceSize = 5000L,
+  cores = 1L
+)
 }
 \arguments{
 \item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
@@ -13,6 +22,13 @@ in columns.}
 \item{celltype}{a vector of cell subclasses or types whose length matches the
 number of columns in \code{x}. It is coerced to a factor. \code{NA} are tolerated and
 the matching columns in \code{x} are skipped.}
+
+\item{FUN}{Function for applying mean. When applied to a matrix of count
+values, this must return a vector. Recommended options are \code{logmean} (the
+default) or \code{trimmean}.}
+
+\item{postFUN}{Optional function to be applied to whole matrix after mean has
+been calculated, e.g. \code{log2s}.}
 
 \item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
 invoked automatically if \code{x} is a large matrix with >2^31 elements.}
@@ -47,10 +63,21 @@ elements manipulated in each block (i.e. \code{sliceSize} x number of cells in a
 given subclass/group) must be kept below the long vector limit of 2^31
 (around 2e9). Increasing \code{cores} and/or \code{sliceSize} requires substantial
 amounts of spare RAM.
+
+Mean functions which can be applied by setting \code{FUN} include \code{logmean} (the
+default) which applies row means to log2(counts+1), or \code{trimmean} which
+calculates the trimmed mean of the counts after top/bottom 5\% of values have
+been excluded. Alternatively \code{FUN = rowMeans} calculates the arithmetic mean
+of counts.
+
+If \code{FUN = trimmean} or \code{rowMeans}, \code{postFUN} needs to be set to \code{log2s} which
+is a simple function which applies log2(x+1).
 }
 \seealso{
 \code{\link[=scapply]{scapply()}} which is a more general version which can apply any
-function to the matrix.
+function to the matrix. \code{\link[=logmean]{logmean}},
+\code{\link[=trimmean]{trimmean}} are options for controlling the type of
+mean applied.
 }
 \author{
 Myles Lewis

@@ -21,6 +21,7 @@ Imports:
     mcprogress,
     parallel,
     plotly,
+    Rfast2,
     rlang,
     scales
 Roxygen: list(markdown = TRUE)

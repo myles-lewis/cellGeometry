@@ -34,6 +34,12 @@
 #'   from the analysis.
 #' @param dual_mean Logical whether to calculate arithmetic mean of counts as
 #'   well as mean(log2(counts +1)). This is mainly useful for simulation.
+#' @param meanFUN Function for applying mean which is passed to [scmean()]. Options
+#'   include `logmean` (the default) or `trimmean` which is a trimmed after
+#'   excluding the top/bottom 5% of values.
+#' @param postFUN Optional function applied to `genemeans` matrices after mean
+#'   has been calculated. If `meanFUN` is set to `trimmean`, then `postFUN`
+#'   needs to be set to `log2s`. See [scmean()].
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @param verbose Logical whether to show messages.
 #' @param sliceSize Integer, number of rows of `x` to use in each slice if 
@@ -100,6 +106,8 @@ cellMarkers <- function(scdata,
                         min_cells = 10,
                         remove_subclass = NULL,
                         dual_mean = FALSE,
+                        meanFUN = logmean,
+                        postFUN = NULL,
                         big = NULL,
                         verbose = TRUE,
                         sliceSize = 5000L,
@@ -144,7 +152,8 @@ cellMarkers <- function(scdata,
     genemeans <- gm[[1]]
     genemeans_ar <- gm[[2]]
   } else {
-    genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
+    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, big, verbose,
+                        sliceSize, cores)
   }
   
   if (isTRUE(big) && any(!ok)) {
@@ -180,7 +189,8 @@ cellMarkers <- function(scdata,
     
     # test nesting
     tab <- table(subclass, cellgroup)
-    groupmeans <- scmean(scdata, cellgroup, big, verbose, sliceSize, cores)
+    groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, big, verbose,
+                         sliceSize, cores)
     if (isTRUE(big) && any(!ok)) {
       groupmeans <- groupmeans[ok, ]
     }

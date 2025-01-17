@@ -44,9 +44,9 @@ specificity_plotly(
 \item{group}{character value specifying cell group to be plotted. One of
 \code{subclass} or \code{group} must be specified.}
 
-\item{type}{Numeric value, either 1 for a plot projecting the vector angle
-into the same plain, or 2 a plot of angle on x axis and mean expression on
-y axis. See Details below.}
+\item{type}{Numeric value, either 1 (the default) for a plot of angle on x
+axis and mean expression on y axis; or 2 for a plot projecting the vector
+angle into the same plain. See Details below.}
 
 \item{use_filter}{logical, whether to use gene mean expression to which
 noise reduction filtering has been applied.}
