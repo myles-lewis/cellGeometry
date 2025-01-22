@@ -74,7 +74,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         convert_bulk = "ref",
                         plot_comp = FALSE,
                         verbose = FALSE) {
-  if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
+  if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
   
   test <- as.matrix(test)
@@ -124,8 +124,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (verbose) {
     maxsp <- max_spill(atest$spillover)
     message("Max spillover ", format(maxsp, digits = 3))
-    message("Max/min compensation ",
-            format(max_abs(atest$compensation), digits = 3))
+    # message("Max/min compensation ", format(max_abs(atest$compensation), digits = 3))
   }
   
   # subclass nested within group output/percent
@@ -170,9 +169,9 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
   atest <- deconv(test, cellmat, comp_amount, equal_weight, exp_signature)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
-      message("optimising compensation")
       minout <- colMins(atest$output)
       w <- which(minout < 0)
+      message("optimising compensation (", length(w), ")")
       newcomps <- vapply(w, function(i) {
         f <- function(x) {
           newcomp <- comp_amount
