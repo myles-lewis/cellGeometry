@@ -32,6 +32,14 @@
 #'   subclass category. Subclass categories with fewer cells will be ignored.
 #' @param remove_subclass Character vector of `subclass` levels to be removed
 #'   from the analysis.
+#' @param dual_mean Logical whether to calculate arithmetic mean of counts as
+#'   well as mean(log2(counts +1)). This is mainly useful for simulation.
+#' @param meanFUN Function for applying mean which is passed to [scmean()]. Options
+#'   include `logmean` (the default) or `trimmean` which is a trimmed after
+#'   excluding the top/bottom 5% of values.
+#' @param postFUN Optional function applied to `genemeans` matrices after mean
+#'   has been calculated. If `meanFUN` is set to `trimmean`, then `postFUN`
+#'   needs to be set to `log2s`. See [scmean()].
 #' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @param verbose Logical whether to show messages.
 #' @param sliceSize Integer, number of rows of `x` to use in each slice if 
@@ -73,6 +81,10 @@
 #'   quantile mapping from bulk to single-cell}
 #'   \item{opt}{list storing options, namely arguments `nsubclass`, `ngroup`,
 #'   `expfilter`, `noisefilter`, `noisefraction`}
+#'   \item{genemeans_ar}{if `dual_mean` is `TRUE`, optional matrix of arithmetic 
+#'   mean, i.e. log2(mean(counts)+1)}
+#'   \item{genemeans_filtered_ar}{optional matrix of arithmetic mean
+#'   following noise reduction}
 #' The 'cellMarkers' object is designed to be passed to [deconvolute()] to
 #' deconvolute bulk RNA-Seq data. It can be updated rapidly with different
 #' settings using [updateMarkers()]. Ensembl gene ids can be substituted for
@@ -93,6 +105,9 @@ cellMarkers <- function(scdata,
                         noisefraction = 0.25,
                         min_cells = 10,
                         remove_subclass = NULL,
+                        dual_mean = FALSE,
+                        meanFUN = logmean,
+                        postFUN = NULL,
                         big = NULL,
                         verbose = TRUE,
                         sliceSize = 5000L,
@@ -131,14 +146,29 @@ cellMarkers <- function(scdata,
   if (verbose) message("Subclass analysis")
   
   nsubclass2 <- rep_len(nsubclass, nsub)
-  genemeans <- scmean(scdata, subclass, big, verbose, sliceSize, cores)
+  
+  if (dual_mean) {
+    gm <- scmean2(scdata, subclass, meanFUN, postFUN, big, verbose, sliceSize,
+                  cores)
+    genemeans <- gm[[1]]
+    genemeans_ar <- gm[[2]]
+  } else {
+    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, big, verbose,
+                        sliceSize, cores)
+  }
+  
   if (isTRUE(big) && any(!ok)) {
     genemeans <- genemeans[ok, ]
+    if (dual_mean) genemeans_ar <- genemeans_ar[ok, ]
     dimx[1] <- nrow(genemeans)
   }
   highexp <- rowMaxs(genemeans) > expfilter
   genemeans_filtered <- reduceNoise(genemeans[highexp, ], noisefilter,
                                     noisefraction)
+  if (dual_mean) {
+    genemeans_filtered_ar <- reduceNoise(genemeans_ar[highexp, ], noisefilter,
+                                         noisefraction)
+  }
   best_angle <- gene_angle(genemeans_filtered)
   geneset <- lapply(seq_along(best_angle), function(i) {
     rownames(best_angle[[i]])[seq_len(nsubclass2[i])]
@@ -160,8 +190,11 @@ cellMarkers <- function(scdata,
     
     # test nesting
     tab <- table(subclass, cellgroup)
-    groupmeans <- scmean(scdata, cellgroup, big, verbose, sliceSize, cores)
-    if (isTRUE(big) && any(!ok)) groupmeans <- groupmeans[ok, ]
+    groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, big, verbose,
+                         sliceSize, cores)
+    if (isTRUE(big) && any(!ok)) {
+      groupmeans <- groupmeans[ok, ]
+    }
     highexp <- rowMaxs(groupmeans) > expfilter
     groupmeans_filtered <- reduceNoise(groupmeans[highexp, ], noisefilter,
                                        noisefraction)
@@ -214,6 +247,10 @@ cellMarkers <- function(scdata,
                          expfilter = expfilter,
                          noisefilter = noisefilter,
                          noisefraction = noisefraction))
+  if (dual_mean) {
+    out$genemeans_ar <- genemeans_ar
+    out$genemeans_filtered_ar <- genemeans_filtered_ar
+  }
   class(out) <- "cellMarkers"
   out
 }
@@ -226,6 +263,10 @@ summary.cellMarkers <- function(object, ...) {
   cat("Cell subclass signature:", length(object$geneset), "genes\n")
   cat("Cell groups:", ncol(object$groupmeans), "\n")
   cat("Cell group signature:", length(object$group_geneset), "genes\n")
+  mmeth <- if (is.null(object$call[["meanFUN"]])) {
+    "logmean"
+  } else as.character(object$call[["meanFUN"]])
+  cat("Mean method:", mmeth, "\n")
   for (i in 1:5) {
     cat(paste0(names(object$opt)[i], ": ", object$opt[i], "\n"))
   }

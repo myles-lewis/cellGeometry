@@ -16,6 +16,9 @@ cellMarkers(
   noisefraction = 0.25,
   min_cells = 10,
   remove_subclass = NULL,
+  dual_mean = FALSE,
+  meanFUN = logmean,
+  postFUN = NULL,
   big = NULL,
   verbose = TRUE,
   sliceSize = 5000L,
@@ -62,6 +65,17 @@ subclass category. Subclass categories with fewer cells will be ignored.}
 \item{remove_subclass}{Character vector of \code{subclass} levels to be removed
 from the analysis.}
 
+\item{dual_mean}{Logical whether to calculate arithmetic mean of counts as
+well as mean(log2(counts +1)). This is mainly useful for simulation.}
+
+\item{meanFUN}{Function for applying mean which is passed to \code{\link[=scmean]{scmean()}}. Options
+include \code{logmean} (the default) or \code{trimmean} which is a trimmed after
+excluding the top/bottom 5\% of values.}
+
+\item{postFUN}{Optional function applied to \code{genemeans} matrices after mean
+has been calculated. If \code{meanFUN} is set to \code{trimmean}, then \code{postFUN}
+needs to be set to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
+
 \item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
 
 \item{verbose}{Logical whether to show messages.}
@@ -107,6 +121,10 @@ subclass}
 quantile mapping from bulk to single-cell}
 \item{opt}{list storing options, namely arguments \code{nsubclass}, \code{ngroup},
 \code{expfilter}, \code{noisefilter}, \code{noisefraction}}
+\item{genemeans_ar}{if \code{dual_mean} is \code{TRUE}, optional matrix of arithmetic
+mean, i.e. log2(mean(counts)+1)}
+\item{genemeans_filtered_ar}{optional matrix of arithmetic mean
+following noise reduction}
 The 'cellMarkers' object is designed to be passed to \code{\link[=deconvolute]{deconvolute()}} to
 deconvolute bulk RNA-Seq data. It can be updated rapidly with different
 settings using \code{\link[=updateMarkers]{updateMarkers()}}. Ensembl gene ids can be substituted for

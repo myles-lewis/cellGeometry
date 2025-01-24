@@ -14,8 +14,10 @@ deconvolute(
   equal_weight = FALSE,
   adjust_comp = TRUE,
   use_filter = TRUE,
+  arith_mean = FALSE,
   convert_bulk = "ref",
-  plot_comp = FALSE
+  plot_comp = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -45,7 +47,10 @@ equalise the effects of each gene.}
 \item{adjust_comp}{logical, whether to optimise \code{comp_amount} to prevent
 negative cell proportion projections.}
 
-\item{use_filter}{logical, whether to use denoised signature matrix}
+\item{use_filter}{logical, whether to use denoised signature matrix.}
+
+\item{arith_mean}{logical, whether to use arithmetic means (if available) for
+signature matrix. Mainly useful with pseudo-bulk simulation.}
 
 \item{convert_bulk}{either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 using reference data or "qqmap" using quantile mapping of the bulk to
@@ -53,6 +58,8 @@ scRNA-Seq datasets, or "none" for no conversion.}
 
 \item{plot_comp}{logical, whether to analyse compensation values across
 subclasses.}
+
+\item{verbose}{logical, whether to show additional information.}
 }
 \value{
 A list object of S3 class 'deconv' containing:

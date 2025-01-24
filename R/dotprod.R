@@ -14,3 +14,13 @@ comp_metric <- function(m) {
   m2 <- m - diag(nrow(m))
   mean(abs(m2))
 }
+
+max_spill <- function(m) {
+  m2 <- m - diag(nrow(m))
+  max(m2)
+}
+
+max_abs <- function(m) {
+  if (abs(min(m)) > max(m)) return(min(m))
+  max(m)
+}

@@ -42,6 +42,6 @@ spillover_heatmap <- function(x, ...) {
                  heatmap_legend_param = list(title = "spillover",
                                              legend_width = unit(6, "cm"),
                                              direction = "horizontal"),
-                 ...)
+                 ...) |> suppressMessages()
   draw(hm1, heatmap_legend_side = "top")
 }

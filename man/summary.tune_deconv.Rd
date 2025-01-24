@@ -4,10 +4,18 @@
 \alias{summary.tune_deconv}
 \title{Summarising deconvolution tuning}
 \usage{
-\method{summary}{tune_deconv}(object, method = attr(object, "method"), ...)
+\method{summary}{tune_deconv}(
+  object,
+  metric = attr(object, "metric"),
+  method = attr(object, "method"),
+  ...
+)
 }
 \arguments{
 \item{object}{dataframe of class \code{'tune_deconv'}.}
+
+\item{metric}{Specifies tuning metric to choose optimal tune: either
+"pearson", "Rsq" or "RMSE".}
 
 \item{method}{Either "top" or "overall". Determines how best parameter values
 are chosen. With "top" the single top configuration is chosen. With

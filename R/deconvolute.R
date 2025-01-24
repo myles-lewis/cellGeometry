@@ -22,12 +22,15 @@
 #'   equalise the effects of each gene.
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
-#' @param use_filter logical, whether to use denoised signature matrix
+#' @param use_filter logical, whether to use denoised signature matrix.
+#' @param arith_mean logical, whether to use arithmetic means (if available) for
+#'   signature matrix. Mainly useful with pseudo-bulk simulation.
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" for no conversion.
 #' @param plot_comp logical, whether to analyse compensation values across
 #'   subclasses.
+#' @param verbose logical, whether to show additional information.
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
 #'   \item{mk}{the original 'cellMarkers' class object}
@@ -67,9 +70,11 @@ deconvolute <- function(mk, test, log = TRUE,
                         equal_weight = FALSE,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
+                        arith_mean = FALSE,
                         convert_bulk = "ref",
-                        plot_comp = FALSE) {
-  if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
+                        plot_comp = FALSE,
+                        verbose = FALSE) {
+  if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
   
   test <- as.matrix(test)
@@ -99,8 +104,14 @@ deconvolute <- function(mk, test, log = TRUE,
   }
   
   # cell subclasses
-  cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
-  } else mk$genemeans[mk$geneset, ]
+  if (arith_mean) {
+    cellmat <- if (use_filter) {mk$genemeans_filtered_ar[mk$geneset, ]
+    } else mk$genemeans_ar[mk$geneset, ]
+    if (is.null(cellmat)) stop("arithmetic mean not found")
+  } else {
+    cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
+    } else mk$genemeans[mk$geneset, ]
+  }
   # cellmat <- sc2bulk(cellmat)
   if (!all(mk$geneset %in% rownames(test)))
     stop("some signature genes not found in test")
@@ -109,6 +120,12 @@ deconvolute <- function(mk, test, log = TRUE,
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
                          adjust_comp, exp_signature)
+  
+  if (verbose) {
+    maxsp <- max_spill(atest$spillover)
+    message("Max spillover ", format(maxsp, digits = 3))
+    # message("Max/min compensation ", format(max_abs(atest$compensation), digits = 3))
+  }
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -152,9 +169,9 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
   atest <- deconv(test, cellmat, comp_amount, equal_weight, exp_signature)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
-      message("optimising compensation")
       minout <- colMins(atest$output)
       w <- which(minout < 0)
+      message("optimising compensation (", length(w), ")")
       newcomps <- vapply(w, function(i) {
         f <- function(x) {
           newcomp <- comp_amount
