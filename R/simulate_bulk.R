@@ -144,29 +144,44 @@ plot_set <- function(obs, pred, mfrow = NULL,
 }
 
 
-#' Calculate R squared on deconvoluted cell subclasses
+#' Calculate R-squared and metrics on deconvoluted cell subclasses
 #' 
-#' Calculates R squared comparing subclasses in each column of `obs` with
-#' matching columns in deconvoluted `pred`. Samples are in rows. For use if
-#' ground truth is available, e.g. simulated pseudo-bulk RNA-Seq data.
+#' Calculates Pearson r-squared, R-squared and RMSE comparing subclasses in each
+#' column of `obs` with matching columns in deconvoluted `pred`. Samples are in
+#' rows. For use if ground truth is available, e.g. simulated pseudo-bulk
+#' RNA-Seq data.
+#' 
+#' Pearson r-squared ranges from 0 to 1. R-squared, calculated as 1 - rss/tss,
+#' ranges from -Inf to 1.
 #' 
 #' @param obs Observed matrix of cell amounts with subclasses in columns and
 #'   samples in rows.
 #' @param pred Predicted (deconvoluted) matrix of cell amounts with rows and
 #'   columns matching `obs`.
-#' @param force_intercept Logical whether to force intercept through 0.
-#' @returns Vector of R squared values calculated using `lm()`.
+#' @returns Matrix containing Pearson r-squared, R-squared and RMSE values.
 #' @importFrom stats cor
 #' @export
-Rsq_set <- function(obs, pred,
-                    force_intercept = FALSE) {
+metric_set <- function(obs, pred) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
-  if (force_intercept) {
-    out <- vapply(colnames(obs), function(i) {
-      fit <- lm(pred[, i] ~ obs[, i] + 0)
-      summary(fit)$r.squared
-    }, numeric(1))
-    return(out)
-  }
-  diag(cor(obs, pred))^2 |> suppressWarnings()
+  
+  out <- t(vapply(colnames(obs), function(i) {
+    r1 <- Rsq(obs[, i], pred[, i])
+    r2 <- rmse(obs[, i], pred[, i])
+    c(r1, r2)
+  }, numeric(2)))
+  
+  cors <- diag(cor(obs, pred))^2 |> suppressWarnings()
+  out <- cbind(cors, out)
+  colnames(out) <- c("pearson.rsq", "Rsq", "RMSE")
+  out
+}
+
+rmse <- function(obs, pred) {
+  sqrt(mean((pred - obs)^2))
+}
+
+Rsq <- function(obs, pred) {
+  rss <- sum((pred - obs)^2)
+  tss <- sum((obs - mean(obs))^2)
+  1 - rss/tss
 }

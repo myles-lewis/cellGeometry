@@ -17,15 +17,17 @@
 #' @param output Character value, either `"output"` or `"percent"` specifying
 #'   which output from the subclass results element resulting from a call to
 #'   [deconvolute()]. This deconvolution result is compared against the actual
-#'   sample cell numbers in `samples`, using [Rsq_set()].
-#' @param force_intercept Logical whether to force intercept through 0. Affects
-#'   calculation of R-squared. See [Rsq_set()].
+#'   sample cell numbers in `samples`, using [metric_set()].
+#' @param metric Specifies tuning metric to choose optimal tune: either
+#'   "pearson", "Rsq" or "RMSE".
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
 #'   "overall", the average effect of varying each parameter is calculated using
 #'   the mean R-squared across all variations of other parameters. This can give
 #'   a more stable choice of final tuning.
 #' @param verbose Logical whether to show progress.
+#' @param cores Number of cores for parallelisation using
+#'   [mcprogress::pmclapply()]. Parallelisation is not available on windows.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
 #' @returns Dataframe with class `'tune_deconv'` whose columns include: the
@@ -40,13 +42,16 @@
 #' 
 #' @seealso [plot_tune()] [summary.tune_deconv()]
 #' @importFrom stats aggregate
+#' @importFrom mcprogress pmclapply
 #' @export
 tune_deconv <- function(mk, test, samples, grid,
                         output = "output",
-                        force_intercept = FALSE,
+                        metric = "pearson",
                         method = "top",
-                        verbose = TRUE, ...) {
+                        verbose = TRUE, cores = 1, ...) {
   method <- match.arg(method, c("top", "overall"))
+  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
+  
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
   arg_set2 <- names(formals(deconvolute))
@@ -61,34 +66,31 @@ tune_deconv <- function(mk, test, samples, grid,
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
-    if (verbose) pb <- txtProgressBar2()
-    res <- lapply(seq_len(nrow(grid1)), function(i) {
+    res <- pmclapply(seq_len(nrow(grid1)), function(i) {
       args <- list(object = mk)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
-      df2 <- tune_dec(mk_update, test, samples, grid2, output, force_intercept,
-                      ...)
-      if (verbose) setTxtProgressBar(pb, i / nrow(grid1))
+      df2 <- tune_dec(mk_update, test, samples, grid2, output, ...)
       data.frame(grid1_row, df2, row.names = NULL)
-    })
+    }, mc.cores = cores, progress = verbose)
     res <- do.call(rbind, res)
-    if (verbose) close(pb)
   } else {
     # null grid1
     if (is.null(grid2)) stop("No parameters to tune")
-    res <- tune_dec(mk, test, samples, grid2, output, force_intercept, ...)
+    res <- tune_dec(mk, test, samples, grid2, output, ...)
   }
   
   if (method == "top") {
-    mres <- aggregate(res$Rsq, by = res[, params, drop = FALSE], FUN = mean,
+    mres <- aggregate(res[, metric], by = res[, params, drop = FALSE], FUN = mean,
                       na.rm = TRUE)
-    colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
-    w <- which.max(mres$mean.Rsq)
+    w <- if (metric == "RMSE") {which.min(mres$x)
+    } else which.max(mres$x)
+    colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
     best_tune <- mres[w, ]
   } else {
     best_tune <- lapply(params, function(i) {
-      mres <- aggregate(res$Rsq, by = res[, i, drop = FALSE], FUN = mean,
+      mres <- aggregate(res[, metric], by = res[, i, drop = FALSE], FUN = mean,
                         na.rm = TRUE)
       w <- which.max(mres$x)
       mres[w, i]
@@ -110,12 +112,13 @@ tune_deconv <- function(mk, test, samples, grid,
 
 
 # tune inner grid of arguments for deconvolute()
-tune_dec <- function(mk, test, samples, grid2, output, force_intercept, ...) {
+tune_dec <- function(mk, test, samples, grid2, output, ...) {
   if (is.null(grid2)) {
     fit <- deconvolute(mk, test, ...) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
-    out <- Rsq_set(samples, fit_output, force_intercept)
-    df <- data.frame(subclass = names(out), Rsq = out, row.names = NULL)
+    out <- metric_set(samples, fit_output)
+    df <- data.frame(subclass = rownames(out), row.names = NULL)
+    df <- cbind(df, out)
     return(df)
   }
   # loop grid2
@@ -127,9 +130,9 @@ tune_dec <- function(mk, test, samples, grid2, output, force_intercept, ...) {
     if (length(dots)) args[names(dots)] <- dots
     fit <- do.call("deconvolute", args) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
-    out <- Rsq_set(samples, fit_output, force_intercept)
-    df <- data.frame(grid2_row, subclass = names(out), Rsq = out,
-                     row.names = NULL)
+    out <- metric_set(samples, fit_output)
+    df <- data.frame(grid2_row, subclass = rownames(out), row.names = NULL)
+    cbind(df, out)
   })
   do.call(rbind, res)
 }

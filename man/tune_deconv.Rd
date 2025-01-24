@@ -10,9 +10,10 @@ tune_deconv(
   samples,
   grid,
   output = "output",
-  force_intercept = FALSE,
+  metric = "pearson",
   method = "top",
   verbose = TRUE,
+  cores = 1,
   ...
 )
 }
@@ -33,10 +34,10 @@ each vector are the values to be tuned for each parameter.}
 \item{output}{Character value, either \code{"output"} or \code{"percent"} specifying
 which output from the subclass results element resulting from a call to
 \code{\link[=deconvolute]{deconvolute()}}. This deconvolution result is compared against the actual
-sample cell numbers in \code{samples}, using \code{\link[=Rsq_set]{Rsq_set()}}.}
+sample cell numbers in \code{samples}, using \code{\link[=metric_set]{metric_set()}}.}
 
-\item{force_intercept}{Logical whether to force intercept through 0. Affects
-calculation of R-squared. See \code{\link[=Rsq_set]{Rsq_set()}}.}
+\item{metric}{Specifies tuning metric to choose optimal tune: either
+"pearson", "Rsq" or "RMSE".}
 
 \item{method}{Either "top" or "overall". Determines how best parameter values
 are chosen. With "top" the single top configuration is chosen. With
@@ -45,6 +46,9 @@ the mean R-squared across all variations of other parameters. This can give
 a more stable choice of final tuning.}
 
 \item{verbose}{Logical whether to show progress.}
+
+\item{cores}{Number of cores for parallelisation using
+\code{\link[mcprogress:pmclapply]{mcprogress::pmclapply()}}. Parallelisation is not available on windows.}
 
 \item{...}{Optional arguments passed to \code{\link[=deconvolute]{deconvolute()}} to control fixed
 settings.}
