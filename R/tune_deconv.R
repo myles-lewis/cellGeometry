@@ -82,8 +82,8 @@ tune_deconv <- function(mk, test, samples, grid,
   }
   
   if (method == "top") {
-    mres <- aggregate(res[, metric], by = res[, params, drop = FALSE], FUN = mean,
-                      na.rm = TRUE)
+    mres <- aggregate(res[, metric], by = res[, params, drop = FALSE],
+                      FUN = mean, na.rm = TRUE)
     w <- if (metric == "RMSE") {which.min(mres$x)
     } else which.max(mres$x)
     colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
@@ -105,6 +105,7 @@ tune_deconv <- function(mk, test, samples, grid,
   }
   
   attr(res, "tune") <- best_tune
+  attr(res, "metric") <- metric
   attr(res, "method") <- method
   class(res) <- c("tune_deconv", class(res))
   res
@@ -157,32 +158,37 @@ tune_dec <- function(mk, test, samples, grid2, output, ...) {
 #'   values averaged over subclasses.
 #' @export
 summary.tune_deconv <- function(object,
+                                metric = attr(object, "metric"),
                                 method = attr(object, "method"),
                                 ...) {
-  params <- colnames(object)
-  params <- params[!params %in% c("subclass", "Rsq")]
-  mres <- aggregate(object$Rsq, by = object[, params, drop = FALSE], FUN = mean,
-                    na.rm = TRUE)
-  colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
   method <- match.arg(method, c("top", "overall"))
-  if (method == attr(object, "method")) {
+  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
+  
+  params <- colnames(object)
+  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
+  mres <- aggregate(object[, metric], by = object[, params, drop = FALSE],
+                    FUN = mean, na.rm = TRUE)
+  w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
+  colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
+  
+  if (method == attr(object, "method") && metric == attr(object, "metric")) {
     best_tune <- attr(object, "tune")
   } else if (method == "top") {
-    w <- which.max(mres$mean.Rsq)
     best_tune <- mres[w, ]
   } else {
     best_tune <- lapply(params, function(i) {
-      mres <- aggregate(object$Rsq, by = object[, i, drop = FALSE], FUN = mean,
-                        na.rm = TRUE)
-      w <- which.max(mres$x)
+      mres <- aggregate(object[, metric], by = object[, i, drop = FALSE],
+                        FUN = mean, na.rm = TRUE)
+      w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
       mres[w, i]
     })
     best_tune <- data.frame(best_tune)
     colnames(best_tune) <- params
   }
   
+  
   cat("Best tune:\n")
-  print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
+  print(best_tune, row.names = FALSE, digits = max(3, getOption("digits") -3),
         print.gap = 2L)
   invisible(mres)
 }
@@ -198,6 +204,8 @@ summary.tune_deconv <- function(object,
 #'   generalised mean effect of varying the parameter specified by `xvar`.
 #' @param xvar Character value specifying column in `result` to vary along the x
 #'   axis.
+#' @param metric Specifies tuning metric to choose optimal tune: either
+#'   "pearson", "Rsq" or "RMSE".
 #' @param title Character value for the plot title.
 #' @returns ggplot2 scatter plot.
 #' @details
@@ -218,10 +226,11 @@ summary.tune_deconv <- function(object,
 #' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
 #' @export
 plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
-                      title = NULL) {
+                      metric = "pearson", title = NULL) {
   params <- colnames(result)
-  params <- params[!params %in% c("subclass", "Rsq")]
+  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
   if (!xvar %in% params) stop("incorrect `xvar`")
+  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
@@ -239,10 +248,10 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   if (!group %in% colnames(result)) stop("incorrect `group`")
   by_params <- c(group, xvar)
   fix_params <- params[!params %in% by_params]
-  mres <- aggregate(result$Rsq, by = result[, params, drop = FALSE], FUN = mean,
-                    na.rm = TRUE)
-  colnames(mres)[which(colnames(mres) == "x")] <- "mean.Rsq"
-  w <- which.max(mres$mean.Rsq)
+  mres <- aggregate(result[, metric], by = result[, params, drop = FALSE],
+                    FUN = mean, na.rm = TRUE)
+  w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
+  colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
   best_tune <- mres[w, ]
   
   if (group == "subclass") {
@@ -262,7 +271,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
     }
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
     
-    ggplot(result, aes(x = .data[[xvar]], y = .data$Rsq,
+    ggplot(result, aes(x = .data[[xvar]], y = .data[[metric]],
                        color = .data[[group]])) +
       geom_line() +
       geom_point() +
@@ -289,7 +298,8 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       mres <- mres[fix, ]
     }
     mres[, group] <- factor(mres[, group])
-    ggplot(mres, aes(x = .data[[xvar]], y = .data$mean.Rsq,
+    metcol <- paste0("mean.", metric)
+    ggplot(mres, aes(x = .data[[xvar]], y = .data[[metcol]],
                        color = .data[[group]])) +
       geom_line() +
       geom_point() +
