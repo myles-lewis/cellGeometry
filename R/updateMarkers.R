@@ -147,6 +147,16 @@ updateMarkers <- function(object = NULL,
                          noisefraction = noisefraction))
   if (!is.null(object$symbol)) out$symbol <- object$symbol
   if (!is.null(object$qmap)) out$qmap <- object$qmap
+  
+  if (!is.null(object$genemeans_ar)) {
+    # dual mean
+    genemeans_ar <- object$genemeans_ar
+    highexp <- ok & rowMaxs(genemeans_ar) > expfilter |
+      rownames(genemeans_ar) %in% add_gene
+    out$genemeans_filtered_ar <- reduceNoise(genemeans_ar[highexp, ],
+                                             noisefilter, noisefraction)
+    out$genemeans_ar <- genemeans_ar
+  }
   class(out) <- "cellMarkers"
   out
 }
