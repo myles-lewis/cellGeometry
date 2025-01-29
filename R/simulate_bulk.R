@@ -114,7 +114,7 @@ simulate_bulk <- function(object, samples, subclass, times = 300) {
 #' @param cex.title Font size for title.
 #' @param ... Optional arguments passed to `plot()`.
 #' @returns No return value. Produces scatter plots using base graphics.
-#' @importFrom graphics abline mtext
+#' @importFrom graphics abline mtext plot.new
 #' @importFrom stats lm runif
 #' @export
 plot_set <- function(obs, pred, mfrow = NULL,
