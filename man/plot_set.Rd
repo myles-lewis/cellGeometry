@@ -31,7 +31,8 @@ columns matching \code{obs}.}
 \item{show_identity}{Logical whether to show the identity line.}
 
 \item{cols}{Optional vector of column indices to plot to show either a subset
-of columns or change the order in which columns are plotted.}
+of columns or change the order in which columns are plotted. \code{NA} skips a
+plot space to introduce a gap between plots.}
 
 \item{title}{Title for page of plots.}
 

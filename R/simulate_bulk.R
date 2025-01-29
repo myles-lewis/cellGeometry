@@ -108,7 +108,8 @@ simulate_bulk <- function(object, samples, subclass, times = 300) {
 #' @param force_intercept Logical whether to force intercept through 0.
 #' @param show_identity Logical whether to show the identity line.
 #' @param cols Optional vector of column indices to plot to show either a subset
-#'   of columns or change the order in which columns are plotted.
+#'   of columns or change the order in which columns are plotted. `NA` skips a
+#'   plot space to introduce a gap between plots.
 #' @param title Title for page of plots.
 #' @param cex.title Font size for title.
 #' @param ... Optional arguments passed to `plot()`.
@@ -134,6 +135,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
   on.exit(par(op))
   col <- if (force_intercept) "red" else "blue"
   for (i in subclasses) {
+    if (is.na(i)) {plot.new(); next}
     plot(obs[, i], pred[, i], cex = 0.8, pch = 16,
          xlab = i, ylab = "Predicted", ...)
     fit <- if (force_intercept) {
