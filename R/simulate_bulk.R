@@ -107,6 +107,8 @@ simulate_bulk <- function(object, samples, subclass, times = 300) {
 #'   `par()`.
 #' @param force_intercept Logical whether to force intercept through 0.
 #' @param show_identity Logical whether to show the identity line.
+#' @param cols Optional vector of column indices to plot to show either a subset
+#'   of columns or change the order in which columns are plotted.
 #' @param title Title for page of plots.
 #' @param cex.title Font size for title.
 #' @param ... Optional arguments passed to `plot()`.
@@ -117,9 +119,11 @@ simulate_bulk <- function(object, samples, subclass, times = 300) {
 plot_set <- function(obs, pred, mfrow = NULL,
                      force_intercept = FALSE,
                      show_identity = FALSE,
+                     cols = NULL,
                      title = "", cex.title = 1, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
-  subclasses <- colnames(obs)
+  if (is.null(cols)) cols <- TRUE
+  subclasses <- colnames(obs)[cols]
   nr1 <- ceiling(sqrt(length(subclasses)))
   nr2 <- ceiling(length(subclasses) / nr1)
   if (is.null(mfrow)) mfrow <- c(nr1, nr2)

@@ -10,6 +10,7 @@ plot_set(
   mfrow = NULL,
   force_intercept = FALSE,
   show_identity = FALSE,
+  cols = NULL,
   title = "",
   cex.title = 1,
   ...
@@ -28,6 +29,9 @@ columns matching \code{obs}.}
 \item{force_intercept}{Logical whether to force intercept through 0.}
 
 \item{show_identity}{Logical whether to show the identity line.}
+
+\item{cols}{Optional vector of column indices to plot to show either a subset
+of columns or change the order in which columns are plotted.}
 
 \item{title}{Title for page of plots.}
 
