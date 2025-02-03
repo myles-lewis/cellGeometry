@@ -135,7 +135,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
   op <- par(bty = "l", mgp = c(2.2, 0.6, 0), tcl = -0.3, oma = oma,
             mar = c(3.7, 3.7, 1.5, 1.1), mfrow = mfrow)
   on.exit(par(op))
-  scheme <- rev(hue_pal(h = c(0, 270), c = 120)(101))
+  scheme <- rev(hue_pal(h = c(0, 270), c = 120)(11))
   xlim <- ylim <- NULL
   for (i in subclasses) {
     if (is.na(i)) {plot.new(); next}
@@ -149,7 +149,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
          xlab = i, ylab = "Predicted", xlim = xlim, ylim = ylim, ...)
     fit <- lm(pred[, i] ~ obs[, i])
     rsq <- summary(fit)$r.squared
-    col <- if (colour == "rainbow") scheme[ceiling(rsq*100) +1] else colour
+    col <- if (colour == "rainbow") scheme[ceiling(rsq*10) +1] else colour
     abline(fit, col = col, lwd = 1.5)
     if (show_identity) abline(0, 1, col = "grey50", lty = 2)
     mtext(bquote(R^2 == .(format(rsq, digits = 3))), cex = par("cex"), adj = 0.04)
