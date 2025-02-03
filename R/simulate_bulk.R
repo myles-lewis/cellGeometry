@@ -105,11 +105,12 @@ simulate_bulk <- function(object, samples, subclass, times = 300) {
 #'   columns matching `obs`.
 #' @param mfrow Optional vector of length 2 for organising plot layout. See
 #'   `par()`.
-#' @param force_intercept Logical whether to force intercept through 0.
+#' @param show_zero Logical whether to force plot to include the origin.
 #' @param show_identity Logical whether to show the identity line.
 #' @param cols Optional vector of column indices to plot to show either a subset
 #'   of columns or change the order in which columns are plotted. `NA` skips a
 #'   plot space to introduce a gap between plots.
+#' @param colour Colour for the regression lines.
 #' @param title Title for page of plots.
 #' @param cex.title Font size for title.
 #' @param ... Optional arguments passed to `plot()`.
@@ -118,9 +119,10 @@ simulate_bulk <- function(object, samples, subclass, times = 300) {
 #' @importFrom stats lm runif
 #' @export
 plot_set <- function(obs, pred, mfrow = NULL,
-                     force_intercept = FALSE,
+                     show_zero = FALSE,
                      show_identity = FALSE,
                      cols = NULL,
+                     colour = "blue",
                      title = "", cex.title = 1, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (is.null(cols)) cols <- TRUE
@@ -133,18 +135,24 @@ plot_set <- function(obs, pred, mfrow = NULL,
   op <- par(bty = "l", mgp = c(2.2, 0.6, 0), tcl = -0.3, oma = oma,
             mar = c(3.7, 3.7, 1.5, 1.1), mfrow = mfrow)
   on.exit(par(op))
-  col <- if (force_intercept) "red" else "blue"
+  scheme <- rev(hue_pal(h = c(0, 270), c = 120)(101))
+  xlim <- ylim <- NULL
   for (i in subclasses) {
     if (is.na(i)) {plot.new(); next}
+    if (show_zero) {
+      xr <- range(obs[, i], na.rm = TRUE)
+      xlim <- c(min(xr[1], 0), xr[2])
+      yr <- range(pred[, i], na.rm = TRUE)
+      ylim <- c(min(yr[1], 0), yr[2])
+    }
     plot(obs[, i], pred[, i], cex = 0.8, pch = 16,
-         xlab = i, ylab = "Predicted", ...)
-    fit <- if (force_intercept) {
-      lm(pred[, i] ~ obs[, i] + 0)
-    } else lm(pred[, i] ~ obs[, i])
-    abline(fit, col = col)
+         xlab = i, ylab = "Predicted", xlim = xlim, ylim = ylim, ...)
+    fit <- lm(pred[, i] ~ obs[, i])
+    rsq <- summary(fit)$r.squared
+    col <- if (colour == "rainbow") scheme[ceiling(rsq*100) +1] else colour
+    abline(fit, col = col, lwd = 1.5)
     if (show_identity) abline(0, 1, col = "grey50", lty = 2)
-    rsq <- summary(fit)$r.squared |> format(digits = 3)
-    mtext(bquote(R^2 == .(rsq)), cex = par("cex"), adj = 0.04)
+    mtext(bquote(R^2 == .(format(rsq, digits = 3))), cex = par("cex"), adj = 0.04)
   }
   mtext(title, outer = TRUE, cex = cex.title * par("cex"), adj = 0.05, line = 0)
 }

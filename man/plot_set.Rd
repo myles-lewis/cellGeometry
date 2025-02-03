@@ -8,9 +8,10 @@ plot_set(
   obs,
   pred,
   mfrow = NULL,
-  force_intercept = FALSE,
+  show_zero = FALSE,
   show_identity = FALSE,
   cols = NULL,
+  colour = "blue",
   title = "",
   cex.title = 1,
   ...
@@ -26,13 +27,15 @@ columns matching \code{obs}.}
 \item{mfrow}{Optional vector of length 2 for organising plot layout. See
 \code{par()}.}
 
-\item{force_intercept}{Logical whether to force intercept through 0.}
+\item{show_zero}{Logical whether to force plot to include the origin.}
 
 \item{show_identity}{Logical whether to show the identity line.}
 
 \item{cols}{Optional vector of column indices to plot to show either a subset
 of columns or change the order in which columns are plotted. \code{NA} skips a
 plot space to introduce a gap between plots.}
+
+\item{colour}{Colour for the regression lines.}
 
 \item{title}{Title for page of plots.}
 
