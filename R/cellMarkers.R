@@ -113,7 +113,10 @@ cellMarkers <- function(scdata,
                         sliceSize = 5000L,
                         cores = 1L) {
   .call <- match.call()
-  if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat"))) scdata <- as.matrix(scdata)
+  if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
+    scdata <- as.matrix(scdata)
+  }
+  if (is.null(rownames(scdata))) stop("scdata is missing rownames/ gene ids")
   dimx <- dim(scdata)
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (!is.factor(subclass)) subclass <- factor(subclass)
