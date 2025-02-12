@@ -7,8 +7,8 @@
 #' large matrices are handled by slicing rows into blocks to avoid excess memory
 #' requirements.
 #' 
-#' @param x matrix or sparse matrix of raw counts with genes in rows and cells
-#'   in columns.
+#' @param x matrix, sparse matrix or DelayedMatrix of raw counts with genes in
+#'   rows and cells in columns.
 #' @param celltype a vector of cell subclasses or types whose length matches the
 #'   number of columns in `x`. It is coerced to a factor. `NA` are tolerated and
 #'   the matching columns in `x` are skipped.
@@ -94,6 +94,10 @@ scmean <- function(x, celltype,
   if (verbose) timer(start0, "Duration")
   genemeans
 }
+
+# xsub <- NULL is faster than rm(list="xsub")
+# ought to reduce memory usage by mclapply
+
 
 #' Mean Objects
 #'

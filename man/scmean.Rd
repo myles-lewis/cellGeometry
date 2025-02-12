@@ -16,8 +16,8 @@ scmean(
 )
 }
 \arguments{
-\item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
-in columns.}
+\item{x}{matrix, sparse matrix or DelayedMatrix of raw counts with genes in
+rows and cells in columns.}
 
 \item{celltype}{a vector of cell subclasses or types whose length matches the
 number of columns in \code{x}. It is coerced to a factor. \code{NA} are tolerated and

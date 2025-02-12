@@ -18,8 +18,8 @@ scapply(
 )
 }
 \arguments{
-\item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
-in columns.}
+\item{x}{matrix, sparse matrix or DelayedMatrix of raw counts with genes in
+rows and cells in columns.}
 
 \item{INDEX}{a factor whose length matches the number of columns in \code{x}. It
 is coerced to a factor. \code{NA} are tolerated and the matching columns in \code{x}

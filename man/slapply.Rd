@@ -16,8 +16,8 @@ slapply(
 )
 }
 \arguments{
-\item{x}{matrix or sparse matrix of raw counts with genes in rows and cells
-in columns.}
+\item{x}{matrix, sparse matrix or DelayedMatrix of raw counts with genes in
+rows and cells in columns.}
 
 \item{FUN}{Function to be applied to each subblock of the matrix.}
 

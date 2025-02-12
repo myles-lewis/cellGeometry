@@ -9,8 +9,8 @@
 #' [aggregate()]. Very large matrices are handled by slicing rows into blocks to
 #' avoid excess memory requirements.
 #' 
-#' @param x matrix or sparse matrix of raw counts with genes in rows and cells
-#'   in columns.
+#' @param x matrix, sparse matrix or DelayedMatrix of raw counts with genes in
+#'   rows and cells in columns.
 #' @param INDEX a factor whose length matches the number of columns in `x`. It
 #'   is coerced to a factor. `NA` are tolerated and the matching columns in `x`
 #'   are skipped.
@@ -75,8 +75,8 @@ scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
   if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   dimmax <- as.numeric(max(tab)) * sliceSize
   mem <- structure(dimmax * 8 * cores, class = "object_size")
-  if (verbose & mem > 1e9)
-    message("Absolute minimum memory headroom ", format(mem, units = "GB"))
+  if (verbose & mem > 8e9)
+    message("Minimum required memory ", format(mem, units = "GB"))
   
   if (verbose) pb <- txtProgressBar2()
   lev <- levels(INDEX)
@@ -118,8 +118,8 @@ scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
 #' the whole matrix. Very large matrices are handled by slicing rows into blocks
 #' to avoid excess memory requirements.
 #' 
-#' @param x matrix or sparse matrix of raw counts with genes in rows and cells
-#'   in columns.
+#' @param x matrix, sparse matrix or DelayedMatrix of raw counts with genes in
+#'   rows and cells in columns.
 #' @param FUN Function to be applied to each subblock of the matrix.
 #' @param combine A function or a name of a function to combine results after
 #'   slicing, i.e. only invoked if `big` is `TRUE`. As the function is usually
@@ -160,8 +160,8 @@ slapply <- function(x, FUN, combine = "c",
     message("Warning: >2^31 matrix elements anticipated. `sliceSize` is too large")
   dimmax <- dimx[2] * sliceSize
   mem <- structure(dimmax * 8 * cores, class = "object_size")
-  if (verbose & mem > 1e9)
-    message("Absolute minimum memory headroom ", format(mem, units = "GB"))
+  if (verbose & mem > 8e9)
+    message("Minimum required memory ", format(mem, units = "GB"))
   start <- Sys.time()
   
   if (is.null(big) || !big) {

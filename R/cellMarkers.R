@@ -5,10 +5,11 @@
 #' the best markers for individual cell types.
 #' 
 #' @param scdata Single-cell data matrix with genes in rows and cells in
-#'   columns.
+#'   columns. Can be sparse matrix or DelayedMatrix. Must have rownames 
+#'   representing gene IDs or gene symbols.
 #' @param bulkdata Optional data matrix containing bulk RNA-Seq data with genes
-#'   in rows. This matrix is only used for its rownames, to ensure that cell
-#'   markers are selected from genes in the bulk dataset.
+#'   in rows. This matrix is only used for its rownames (gene IDs), to ensure
+#'   that cell markers are selected from genes in the bulk dataset.
 #' @param subclass Vector of cell subclasses matching the columns in `scdata`
 #' @param cellgroup Optional grouping vector of major cell types matching the
 #'   columns in `scdata`. `subclass` is assumed to contain subclasses which are
@@ -132,6 +133,13 @@ cellMarkers <- function(scdata,
     subclass[subclass %in% remove_subclass] <- NA
     subclass <- factor(subclass)
   }
+  # check memory requirement
+  tab <- table(subclass)
+  tab2 <- table(cellgroup)
+  dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * sliceSize
+  mem <- structure(dimmax * 8 * cores, class = "object_size")
+  if (verbose & mem > 16e9)
+    message("Minimum required memory ", format(mem, units = "GB"))
   
   ok <- TRUE
   if (!is.null(bulkdata)) {
