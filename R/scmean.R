@@ -57,34 +57,40 @@
 
 scmean <- function(x, celltype,
                    FUN = logmean, postFUN = NULL,
-                   big = NULL, verbose = TRUE,
-                   sliceSize = 5000L, cores = 1L) {
+                   verbose = TRUE,
+                   sliceLim = 8, cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
-  if (any(table(celltype) * as.numeric(sliceSize) > 2^31))
-    message("Warning: >2^31 matrix elements anticipated. `sliceSize` is too large")
   ok <- !is.na(celltype)
-  dimx <- dim(x)
+  dimx <- as.numeric(dim(x))
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
-  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   
-  if (is.null(big) || !big) {
-    # small matrix
-    genemeans <- vapply(levels(celltype), function(i) {
-      FUN(as.matrix(x[, which(celltype==i & ok)])) |> suppressWarnings()
-    }, numeric(dimx[1]))
-    if (!is.null(postFUN)) genemeans <- postFUN(genemeans)
-    return(genemeans)
-  }
-  
-  # large matrix
-  s <- sliceIndex(dimx[1], sliceSize)
+  # dynamic slicing
   genemeans <- vapply(levels(celltype), function(i) {
     start <- Sys.time()
     c_index <- which(celltype == i & ok)
-    if (verbose) cat(length(c_index), i, " ")
+    if (verbose) cat(length(c_index), paste0(i, " "))
+    n <- length(c_index) * dimx[1]
+    bloc <- ceiling(n *8 / (sliceLim * 1e9))
+    
+    if (n < 2^31 & (cores * bloc) == 1) {
+      # unsliced
+      xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
+      ret <- FUN(xsub)
+      # xsub <- NULL
+      if (verbose) timer(start)
+      return(ret)
+    }
+    
+    # slice
+    cat("... ")
+    sliceSize <- ceiling(dimx[1] / (cores * bloc))
+    s <- sliceIndex(dimx[1], sliceSize)
     out <- parallel::mclapply(s, function(j) {
-      FUN(as.matrix(x[j, c_index])) |> suppressWarnings()
+      xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
+      ret <- FUN(xsub)
+      xsub <- NULL
+      ret
     }, mc.cores = cores)
     if (verbose) timer(start)
     unlist(out)

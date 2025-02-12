@@ -109,9 +109,8 @@ cellMarkers <- function(scdata,
                         dual_mean = FALSE,
                         meanFUN = logmean,
                         postFUN = NULL,
-                        big = NULL,
                         verbose = TRUE,
-                        sliceSize = 5000L,
+                        sliceLim = 8,
                         cores = 1L) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
@@ -119,7 +118,6 @@ cellMarkers <- function(scdata,
   }
   if (is.null(rownames(scdata))) stop("scdata is missing rownames/ gene ids")
   dimx <- dim(scdata)
-  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (!is.factor(subclass)) subclass <- factor(subclass)
   if (min_cells > 0) {
     tab <- table(subclass)
@@ -134,22 +132,22 @@ cellMarkers <- function(scdata,
     subclass <- factor(subclass)
   }
   # check memory requirement
-  tab <- table(subclass)
-  tab2 <- table(cellgroup)
-  dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * sliceSize
-  mem <- structure(dimmax * 8 * cores, class = "object_size")
-  if (verbose & mem > 16e9)
-    message("Minimum required memory ", format(mem, units = "GB"))
+  # tab <- table(subclass)
+  # tab2 <- table(cellgroup)
+  # dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * sliceSize
+  # mem <- structure(dimmax * 8 * cores, class = "object_size")
+  # if (verbose & mem > 1e9)
+  #   message("Minimum required memory ", format(mem, units = "GB"))
   
   ok <- TRUE
   if (!is.null(bulkdata)) {
     if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
     ok <- rownames(scdata) %in% rownames(bulkdata)
     if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
-    if (any(!ok) & (is.null(big) || !big)) {
-      scdata <- scdata[ok, ]
-      dimx <- dim(scdata)
-    }
+    # if (any(!ok) & (is.null(big) || !big)) {
+    #   scdata <- scdata[ok, ]
+    #   dimx <- dim(scdata)
+    # }
   }
   nsub <- nlevels(subclass)
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
@@ -159,16 +157,16 @@ cellMarkers <- function(scdata,
   nsubclass2 <- rep_len(nsubclass, nsub)
   
   if (dual_mean) {
-    gm <- scmean2(scdata, subclass, meanFUN, postFUN, big, verbose, sliceSize,
+    gm <- scmean2(scdata, subclass, meanFUN, postFUN, big = NULL, verbose, sliceSize = 5000L,
                   cores)
     genemeans <- gm[[1]]
     genemeans_ar <- gm[[2]]
   } else {
-    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, big, verbose,
-                        sliceSize, cores)
+    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, verbose,
+                        sliceLim, cores)
   }
   
-  if (isTRUE(big) && any(!ok)) {
+  if (any(!ok)) {
     genemeans <- genemeans[ok, ]
     if (dual_mean) genemeans_ar <- genemeans_ar[ok, ]
     dimx[1] <- nrow(genemeans)
@@ -201,9 +199,9 @@ cellMarkers <- function(scdata,
     
     # test nesting
     tab <- table(subclass, cellgroup)
-    groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, big, verbose,
-                         sliceSize, cores)
-    if (isTRUE(big) && any(!ok)) {
+    groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, verbose,
+                         sliceLim, cores)
+    if (any(!ok)) {
       groupmeans <- groupmeans[ok, ]
     }
     highexp <- rowMaxs(groupmeans) > expfilter
