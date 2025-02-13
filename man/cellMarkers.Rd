@@ -82,9 +82,9 @@ needs to be set to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
 matrix object. When \code{scdata} is subsetted by each cell subclass, if the
 amount of memory would be above \code{sliceMem} then slicing is activated and
 the subsetted count matrix is divided into chunks and processed separately.
-This is indicated by addition of '...' in the timings. The limit is just
-under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches the
-long vector limit (>2^31 elements).}
+This is indicated by addition of '...' in the printed timings. The limit is
+just under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches
+the long vector limit (>2^31 elements).}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
@@ -136,6 +136,13 @@ recognisable gene symbols by applying \code{\link[=gene2symbol]{gene2symbol()}}.
 \description{
 Uses geometric method based on vector dot product to identify genes which are
 the best markers for individual cell types.
+}
+\details{
+If \code{verbose = TRUE}, the function will display an estimate of the required
+memory. But importantly this estimate is only a guide. It is provided to help
+users choose the optimal number of cores during parallelisation. Real memory
+usage might well be more, theoretically up to double this amount, due to R's
+use of copy-on-modify.
 }
 \seealso{
 \code{\link[=deconvolute]{deconvolute()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=gene2symbol]{gene2symbol()}}

@@ -4,6 +4,12 @@
 #' Uses geometric method based on vector dot product to identify genes which are
 #' the best markers for individual cell types.
 #' 
+#' If `verbose = TRUE`, the function will display an estimate of the required
+#' memory. But importantly this estimate is only a guide. It is provided to help
+#' users choose the optimal number of cores during parallelisation. Real memory
+#' usage might well be more, theoretically up to double this amount, due to R's
+#' use of copy-on-modify.
+#' 
 #' @param scdata Single-cell data matrix with genes in rows and cells in
 #'   columns. Can be sparse matrix or DelayedMatrix. Must have rownames 
 #'   representing gene IDs or gene symbols.
@@ -46,9 +52,9 @@
 #'   matrix object. When `scdata` is subsetted by each cell subclass, if the
 #'   amount of memory would be above `sliceMem` then slicing is activated and
 #'   the subsetted count matrix is divided into chunks and processed separately.
-#'   This is indicated by addition of '...' in the timings. The limit is just
-#'   under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches the
-#'   long vector limit (>2^31 elements).
+#'   This is indicated by addition of '...' in the printed timings. The limit is
+#'   just under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches
+#'   the long vector limit (>2^31 elements).
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements. See [scmean()].
@@ -135,13 +141,7 @@ cellMarkers <- function(scdata,
     subclass[subclass %in% remove_subclass] <- NA
     subclass <- factor(subclass)
   }
-  # check memory requirement
-  tab <- table(subclass)
-  tab2 <- table(cellgroup)
-  dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * dimx[1]
-  mem <- structure(dimmax * 8, class = "object_size")
-  if (verbose & mem > 1e9)
-    message("Max subclass/group memory ", format(mem, units = "GB"))
+  if (verbose) mem_estimate(dimx, subclass, cellgroup, sliceMem, cores)
   
   ok <- TRUE
   if (!is.null(bulkdata)) {
@@ -280,4 +280,27 @@ summary.cellMarkers <- function(object, ...) {
   }
   cat("Subclass cell totals:\n")
   print(object$subclass_table)
+}
+
+
+# estimate memory requirement
+mem_estimate <- function(dimx, subclass, cellgroup, sliceMem, cores) {
+  tab <- table(subclass)
+  tab2 <- table(cellgroup)
+  dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * dimx[1]
+  mem <- structure(dimmax * 8, class = "object_size")
+  if (mem > 1e9)
+    message("Max subclass/group memory ", format(mem, units = "GB"))
+  if (mem > sliceMem * 1e9) {
+    message("Slicing above ", sliceMem, " Gb")
+  } else message("No slicing")
+  
+  nsubcl <- sort(tab, decreasing = TRUE)[1:cores]
+  ngroup <- sort(tab2, decreasing = TRUE)[1:cores]
+  msubcl <- nsubcl * as.numeric(dimx[1]) / 1.25e8
+  mgroup <- ngroup * as.numeric(dimx[1]) / 1.25e8
+  msubcl[msubcl > sliceMem] <- sliceMem
+  mgroup[mgroup > sliceMem] <- sliceMem
+  mem <- max(c(sum(msubcl), sum(mgroup)))
+  message("Estimated memory requirement ", format(mem, digits = 2), " Gb")
 }
