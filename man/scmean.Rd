@@ -9,9 +9,8 @@ scmean(
   celltype,
   FUN = logmean,
   postFUN = NULL,
-  big = NULL,
   verbose = TRUE,
-  sliceSize = 5000L,
+  sliceLim = 8,
   cores = 1L
 )
 }
@@ -30,17 +29,17 @@ default) or \code{trimmean}.}
 \item{postFUN}{Optional function to be applied to whole matrix after mean has
 been calculated, e.g. \code{log2s}.}
 
-\item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
-invoked automatically if \code{x} is a large matrix with >2^31 elements.}
-
 \item{verbose}{Logical, whether to print messages.}
-
-\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
-\code{big = TRUE}.}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation has increased memory requirements.}
+
+\item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
+invoked automatically if \code{x} is a large matrix with >2^31 elements.}
+
+\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
+\code{big = TRUE}.}
 }
 \value{
 a matrix of mean log2 gene expression across cell types with genes

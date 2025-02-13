@@ -19,9 +19,8 @@ cellMarkers(
   dual_mean = FALSE,
   meanFUN = logmean,
   postFUN = NULL,
-  big = NULL,
   verbose = TRUE,
-  sliceSize = 5000L,
+  sliceLim = 16,
   cores = 1L
 )
 }
@@ -77,16 +76,16 @@ excluding the top/bottom 5\% of values.}
 has been calculated. If \code{meanFUN} is set to \code{trimmean}, then \code{postFUN}
 needs to be set to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
 
-\item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
-
 \item{verbose}{Logical whether to show messages.}
-
-\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
-\code{big = TRUE}.}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation has increased memory requirements. See \code{\link[=scmean]{scmean()}}.}
+
+\item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
+
+\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
+\code{big = TRUE}.}
 }
 \value{
 A list object with S3 class 'cellMarkers' containing:

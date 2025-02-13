@@ -58,7 +58,7 @@
 scmean <- function(x, celltype,
                    FUN = logmean, postFUN = NULL,
                    verbose = TRUE,
-                   sliceLim = 8, cores = 1L) {
+                   sliceLim = 16, cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
@@ -66,36 +66,35 @@ scmean <- function(x, celltype,
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
   
   # dynamic slicing
-  genemeans <- vapply(levels(celltype), function(i) {
+  genemeans <- mclapply(levels(celltype), function(i) {
     start <- Sys.time()
     c_index <- which(celltype == i & ok)
-    if (verbose) cat(length(c_index), paste0(i, " "))
     n <- length(c_index) * dimx[1]
     bloc <- ceiling(n *8 / (sliceLim * 1e9))
     
-    # n < 2^31 &
     if (bloc == 1) {
       # unsliced
       xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
       ret <- FUN(xsub)
       # xsub <- NULL
-      if (verbose) cat(" "); timer(start);
+      if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
       return(ret)
     }
     
     # slice
     sliceSize <- ceiling(dimx[1] / bloc)
     s <- sliceIndex(dimx[1], sliceSize)
-    out <- parallel::mclapply(s, function(j) {
+    out <- lapply(s, function(j) {
       xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
       ret <- FUN(xsub)
       xsub <- NULL
-      mcprogress::cat_parallel(".")
       ret
-    }, mc.cores = cores)
-    if (verbose) cat(" "); timer(start);
+    })
+    if (verbose) timer(start, paste0(length(c_index), " ", i, " ... ("))
     unlist(out)
-  }, numeric(dimx[1]))
+  }, mc.cores = cores)
+  genemeans <- do.call("cbind", genemeans)
+  colnames(genemeans) <- levels(celltype)
   
   if (!is.null(postFUN)) genemeans <- postFUN(genemeans)
   if (verbose) timer(start0, "Duration")
@@ -145,11 +144,17 @@ sliceIndex <- function(nx, sliceSize = 2000) {
   })
 }
 
+#' @importFrom mcprogress cat_parallel
 timer <- function(start, msg = NULL) {
   end <- Sys.time()
+  tim <- format(end - start, digits = 3)
   if (is.null(msg)) {
-    cat(paste0("(", format(end - start, digits = 3), ")\n"))
+    cat_parallel("(", tim, ")\n")
   } else {
-    cat(msg, format(end - start, digits = 3), "\n")
+    if (substr(msg, nchar(msg), nchar(msg)) == "(") {
+      cat_parallel(msg, tim, ")\n")
+    } else {
+      cat_parallel(msg, " ", tim, "\n")
+    }
   }
 }
