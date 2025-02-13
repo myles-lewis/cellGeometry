@@ -17,25 +17,19 @@
 #'   default) or `trimmean`.
 #' @param postFUN Optional function to be applied to whole matrix after mean has
 #'   been calculated, e.g. `log2s`.
-#' @param big Logical, whether to invoke slicing of `x` into rows. This is
-#'   invoked automatically if `x` is a large matrix with >2^31 elements.
 #' @param verbose Logical, whether to print messages.
-#' @param sliceSize Integer, number of rows of `x` to use in each slice if 
-#'   `big = TRUE`.
+#' @param sliceMem Max amount of memory in GB to allow for each subsetted count
+#'   matrix object. When `x` is subsetted by each cell subclass, if the amount
+#'   of memory would be above `sliceMem` then slicing is activated and the
+#'   subsetted count matrix is divided into chunks and processed separately.
+#'   This is indicated by addition of '...' in the timings. The limit is just
+#'   under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
+#'   long vector limit (>2^31 elements).
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
-#'   parallelisation has increased memory requirements.
-#' @details
-#' We find a significant speed up with `cores = 2`, which is almost twice as
-#' fast as single core, but not much to be gained beyond this possibly due to
-#' limits on memory traffic. The main speed up is in assigning the decompression
-#' of a block from the sparse matrix to more than 1 core. Increasing `sliceSize`
-#' also gives a speed up, but the limit on `sliceSize` is that the number of
-#' elements manipulated in each block (i.e. `sliceSize` x number of cells in a
-#' given subclass/group) must be kept below the long vector limit of 2^31
-#' (around 2e9). Increasing `cores` and/or `sliceSize` requires substantial
-#' amounts of spare RAM.
-#' 
+#'   parallelisation increases the memory requirement by multiples of
+#'   `sliceMem`.
+#' @details 
 #' Mean functions which can be applied by setting `FUN` include `logmean` (the
 #' default) which applies row means to log2(counts+1), or `trimmean` which
 #' calculates the trimmed mean of the counts after top/bottom 5% of values have
@@ -44,6 +38,12 @@
 #' 
 #' If `FUN = trimmean` or `rowMeans`, `postFUN` needs to be set to `log2s` which
 #' is a simple function which applies log2(x+1).
+#' 
+#' `sliceMem` can be set lower on machines with less RAM, but this will slow the
+#' analysis down. `cores` increases the theoretical amount of memory required to
+#' around `cores * sliceMem` in GB. For example on a 64 GB machine, we find a
+#' significant speed increase with `cores = 3L`. Above this level, there is a
+#' risk that memory swap will slow down processing.
 #' 
 #' @returns a matrix of mean log2 gene expression across cell types with genes
 #'   in rows and cell types in columns.
@@ -58,19 +58,20 @@
 scmean <- function(x, celltype,
                    FUN = logmean, postFUN = NULL,
                    verbose = TRUE,
-                   sliceLim = 16, cores = 1L) {
+                   sliceMem = 16, cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
   dimx <- as.numeric(dim(x))
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
+  if (sliceMem > 2^34 / 1e9) message("`sliceMem` is above the long vector limit")
   
   # dynamic slicing
   genemeans <- mclapply(levels(celltype), function(i) {
     start <- Sys.time()
     c_index <- which(celltype == i & ok)
     n <- length(c_index) * dimx[1]
-    bloc <- ceiling(n *8 / (sliceLim * 1e9))
+    bloc <- ceiling(n *8 / (sliceMem * 1e9))
     
     if (bloc == 1) {
       # unsliced
@@ -133,7 +134,7 @@ trimmean <- function(x) {
 #' @rdname logmean
 log2s <- function(x) log2(x+1)
 
-sliceIndex <- function(nx, sliceSize = 2000) {
+sliceIndex <- function(nx, sliceSize) {
   if (is.null(sliceSize)) sliceSize <- nx
   sliceSize <- as.integer(sliceSize)
   s <- ceiling(nx / sliceSize)

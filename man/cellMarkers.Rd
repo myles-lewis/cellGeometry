@@ -20,7 +20,7 @@ cellMarkers(
   meanFUN = logmean,
   postFUN = NULL,
   verbose = TRUE,
-  sliceLim = 16,
+  sliceMem = 16,
   cores = 1L
 )
 }

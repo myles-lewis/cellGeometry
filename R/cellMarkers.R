@@ -41,10 +41,14 @@
 #' @param postFUN Optional function applied to `genemeans` matrices after mean
 #'   has been calculated. If `meanFUN` is set to `trimmean`, then `postFUN`
 #'   needs to be set to `log2s`. See [scmean()].
-#' @param big Logical whether to invoke matrix slicing to handle big matrices.
 #' @param verbose Logical whether to show messages.
-#' @param sliceSize Integer, number of rows of `x` to use in each slice if 
-#'   `big = TRUE`.
+#' @param sliceMem Max amount of memory in GB to allow for each subsetted count
+#'   matrix object. When `scdata` is subsetted by each cell subclass, if the
+#'   amount of memory would be above `sliceMem` then slicing is activated and
+#'   the subsetted count matrix is divided into chunks and processed separately.
+#'   This is indicated by addition of '...' in the timings. The limit is just
+#'   under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches the
+#'   long vector limit (>2^31 elements).
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements. See [scmean()].
@@ -110,7 +114,7 @@ cellMarkers <- function(scdata,
                         meanFUN = logmean,
                         postFUN = NULL,
                         verbose = TRUE,
-                        sliceLim = 16,
+                        sliceMem = 16,
                         cores = 1L) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
@@ -159,7 +163,7 @@ cellMarkers <- function(scdata,
     genemeans_ar <- gm[[2]]
   } else {
     genemeans <- scmean(scdata, subclass, meanFUN, postFUN, verbose,
-                        sliceLim, cores)
+                        sliceMem, cores)
   }
   
   if (any(!ok)) {
@@ -196,7 +200,7 @@ cellMarkers <- function(scdata,
     # test nesting
     tab <- table(subclass, cellgroup)
     groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, verbose,
-                         sliceLim, cores)
+                         sliceMem, cores)
     if (any(!ok)) {
       groupmeans <- groupmeans[ok, ]
     }
