@@ -157,13 +157,12 @@ cellMarkers <- function(scdata,
   nsubclass2 <- rep_len(nsubclass, nsub)
   
   if (dual_mean) {
-    gm <- scmean2(scdata, subclass, meanFUN, postFUN, big = NULL, verbose, sliceSize = 5000L,
-                  cores)
+    gm <- scmean2(scdata, subclass, meanFUN, postFUN, verbose, sliceMem, cores)
     genemeans <- gm[[1]]
     genemeans_ar <- gm[[2]]
   } else {
-    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, verbose,
-                        sliceMem, cores)
+    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, verbose, sliceMem,
+                        cores)
   }
   
   if (any(!ok)) {

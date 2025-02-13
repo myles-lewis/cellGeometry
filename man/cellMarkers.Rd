@@ -78,14 +78,17 @@ needs to be set to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
 
 \item{verbose}{Logical whether to show messages.}
 
+\item{sliceMem}{Max amount of memory in GB to allow for each subsetted count
+matrix object. When \code{scdata} is subsetted by each cell subclass, if the
+amount of memory would be above \code{sliceMem} then slicing is activated and
+the subsetted count matrix is divided into chunks and processed separately.
+This is indicated by addition of '...' in the timings. The limit is just
+under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches the
+long vector limit (>2^31 elements).}
+
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation has increased memory requirements. See \code{\link[=scmean]{scmean()}}.}
-
-\item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
-
-\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
-\code{big = TRUE}.}
 }
 \value{
 A list object with S3 class 'cellMarkers' containing:
