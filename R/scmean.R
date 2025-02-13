@@ -93,7 +93,7 @@ scmean <- function(x, celltype,
     })
     if (verbose) timer(start, paste0(length(c_index), " ", i, " ... ("))
     unlist(out)
-  }, mc.cores = cores)
+  }, mc.cores = cores, mc.preschedule = FALSE)
   genemeans <- do.call("cbind", genemeans)
   colnames(genemeans) <- levels(celltype)
   
