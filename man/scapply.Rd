@@ -31,12 +31,11 @@ output to bind the final results together, e.g. 'cbind' or 'rbind' to
 return a matrix, or 'unlist' to return a vector.}
 
 \item{combine2}{A function or a name of a function to combine results after
-slicing, i.e. only invoked if \code{big} is \code{TRUE}. As the function is usually
-applied to blocks of 5000 genes or so, the result is usually a vector wih
-an element per gene. Hence 'c' is the default function for combining
-vectors into a single longer vector. However if each gene returns a number
-of results (e.g. a vector or dataframe), then \code{combine2} could be set to
-'rbind'.}
+slicing. As the function is usually applied to blocks of 30000 genes or so,
+the result is usually a vector with an element per gene. Hence 'c' is the
+default function for combining vectors into a single longer vector. However
+if each gene returns a number of results (e.g. a vector or dataframe), then
+\code{combine2} could be set to 'rbind'.}
 
 \item{progress}{Logical, whether to show progress.}
 
@@ -44,9 +43,8 @@ of results (e.g. a vector or dataframe), then \code{combine2} could be set to
 matrix object. When \code{x} is subsetted by each cell subclass, if the amount
 of memory would be above \code{sliceMem} then slicing is activated and the
 subsetted count matrix is divided into chunks and processed separately.
-This is indicated by addition of '...' in the timings. The limit is just
-under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
-long vector limit (>2^31 elements).}
+The limit is just under 17.2 GB (2^34 / 1e9). At this level the subsetted
+matrix breaches the long vector limit (>2^31 elements).}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:

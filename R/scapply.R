@@ -19,20 +19,18 @@
 #'   output to bind the final results together, e.g. 'cbind' or 'rbind' to
 #'   return a matrix, or 'unlist' to return a vector.
 #' @param combine2 A function or a name of a function to combine results after
-#'   slicing, i.e. only invoked if `big` is `TRUE`. As the function is usually
-#'   applied to blocks of 5000 genes or so, the result is usually a vector wih
-#'   an element per gene. Hence 'c' is the default function for combining
-#'   vectors into a single longer vector. However if each gene returns a number
-#'   of results (e.g. a vector or dataframe), then `combine2` could be set to
-#'   'rbind'.
+#'   slicing. As the function is usually applied to blocks of 30000 genes or so,
+#'   the result is usually a vector with an element per gene. Hence 'c' is the
+#'   default function for combining vectors into a single longer vector. However
+#'   if each gene returns a number of results (e.g. a vector or dataframe), then
+#'   `combine2` could be set to 'rbind'.
 #' @param progress Logical, whether to show progress.
 #' @param sliceMem Max amount of memory in GB to allow for each subsetted count
 #'   matrix object. When `x` is subsetted by each cell subclass, if the amount
 #'   of memory would be above `sliceMem` then slicing is activated and the
 #'   subsetted count matrix is divided into chunks and processed separately.
-#'   This is indicated by addition of '...' in the timings. The limit is just
-#'   under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
-#'   long vector limit (>2^31 elements).
+#'   The limit is just under 17.2 GB (2^34 / 1e9). At this level the subsetted
+#'   matrix breaches the long vector limit (>2^31 elements).
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation increases the memory requirement by multiples of
@@ -130,9 +128,8 @@ scapply <- function(x, INDEX, FUN, combine = NULL, combine2 = "c",
 #'   matrix object. When `x` is subsetted by each cell subclass, if the amount
 #'   of memory would be above `sliceMem` then slicing is activated and the
 #'   subsetted count matrix is divided into chunks and processed separately.
-#'   This is indicated by addition of '...' in the timings. The limit is just
-#'   under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
-#'   long vector limit (>2^31 elements).
+#'   The limit is just under 17.2 GB (2^34 / 1e9). At this level the subsetted
+#'   matrix breaches the long vector limit (>2^31 elements).
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements.

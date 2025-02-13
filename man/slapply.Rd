@@ -25,9 +25,8 @@ then \code{combine} could be set to 'rbind'.}
 matrix object. When \code{x} is subsetted by each cell subclass, if the amount
 of memory would be above \code{sliceMem} then slicing is activated and the
 subsetted count matrix is divided into chunks and processed separately.
-This is indicated by addition of '...' in the timings. The limit is just
-under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
-long vector limit (>2^31 elements).}
+The limit is just under 17.2 GB (2^34 / 1e9). At this level the subsetted
+matrix breaches the long vector limit (>2^31 elements).}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
