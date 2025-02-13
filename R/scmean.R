@@ -77,7 +77,7 @@ scmean <- function(x, celltype,
       # unsliced
       xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
       ret <- FUN(xsub)
-      # xsub <- NULL
+      xsub <- NULL
       if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
       return(ret)
     }

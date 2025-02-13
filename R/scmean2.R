@@ -25,6 +25,7 @@ scmean2 <- function(x, celltype,
       xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
       m1 <- FUN(xsub) |> suppressWarnings()
       m2 <- rowMeans(xsub)
+      xsub <- NULL
       if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
       return(cbind(m1, m2))
     }
