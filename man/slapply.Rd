@@ -4,16 +4,7 @@
 \alias{slapply}
 \title{Apply a function to a big matrix by slicing}
 \usage{
-slapply(
-  x,
-  FUN,
-  combine = "c",
-  big = NULL,
-  verbose = TRUE,
-  sliceSize = 1000L,
-  cores = 1L,
-  ...
-)
+slapply(x, FUN, combine = "c", progress = TRUE, sliceMem = 16, cores = 1L, ...)
 }
 \arguments{
 \item{x}{matrix, sparse matrix or DelayedMatrix of raw counts with genes in
@@ -22,20 +13,21 @@ rows and cells in columns.}
 \item{FUN}{Function to be applied to each subblock of the matrix.}
 
 \item{combine}{A function or a name of a function to combine results after
-slicing, i.e. only invoked if \code{big} is \code{TRUE}. As the function is usually
-applied to blocks of 1000 genes or so, the result is usually a vector wih
-an element per gene. Hence 'c' is the default function for combining
-vectors into a single longer vector. However if each gene row returns a
-number of results (e.g. a vector or dataframe), then \code{combine} could be set
-to 'rbind'.}
+slicing. As the function is usually applied to blocks of 30000 genes or so,
+the result is usually a vector with an element per gene. Hence 'c' is the
+default function for combining vectors into a single longer vector. However
+if each gene row returns a number of results (e.g. a vector or dataframe),
+then \code{combine} could be set to 'rbind'.}
 
-\item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
-invoked automatically if \code{x} is a large matrix with >2^31 elements.}
+\item{progress}{Logical, whether to show progress.}
 
-\item{verbose}{Logical, whether to show progress.}
-
-\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
-\code{big = TRUE}.}
+\item{sliceMem}{Max amount of memory in GB to allow for each subsetted count
+matrix object. When \code{x} is subsetted by each cell subclass, if the amount
+of memory would be above \code{sliceMem} then slicing is activated and the
+subsetted count matrix is divided into chunks and processed separately.
+This is indicated by addition of '...' in the timings. The limit is just
+under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
+long vector limit (>2^31 elements).}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
@@ -54,12 +46,11 @@ the whole matrix. Very large matrices are handled by slicing rows into blocks
 to avoid excess memory requirements.
 }
 \details{
-The limit on \code{sliceSize} is that the number of elements manipulated in each
-block (i.e. \code{sliceSize} x number of cells in a given subclass/group) must be
-kept below the long vector limit of 2^31 (around 2e9). Increasing \code{cores}
-and/or \code{sliceSize} requires substantial amounts of spare RAM. \code{combine} works
-in a similar way to \code{.combine} in \code{foreach()} across slices of genes; it
-is only invoked if \code{big} is \code{TRUE}.
+The limit on \code{sliceMem} is that the number of elements manipulated in each
+block must be kept below the long vector limit of 2^31 (around 2e9).
+Increasing \code{cores} requires substantial amounts of spare RAM. \code{combine} works
+in a similar way to \code{.combine} in \code{foreach()} across slices of genes; it is
+only invoked if slicing occurs.
 }
 \seealso{
 \code{\link[=scapply]{scapply()}}

@@ -10,9 +10,8 @@ scapply(
   FUN,
   combine = NULL,
   combine2 = "c",
-  big = NULL,
-  verbose = TRUE,
-  sliceSize = 5000L,
+  progress = TRUE,
+  sliceMem = 16,
   cores = 1L,
   ...
 )
@@ -39,17 +38,20 @@ vectors into a single longer vector. However if each gene returns a number
 of results (e.g. a vector or dataframe), then \code{combine2} could be set to
 'rbind'.}
 
-\item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
-invoked automatically if \code{x} is a large matrix with >2^31 elements.}
+\item{progress}{Logical, whether to show progress.}
 
-\item{verbose}{Logical, whether to show progress.}
-
-\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
-\code{big = TRUE}.}
+\item{sliceMem}{Max amount of memory in GB to allow for each subsetted count
+matrix object. When \code{x} is subsetted by each cell subclass, if the amount
+of memory would be above \code{sliceMem} then slicing is activated and the
+subsetted count matrix is divided into chunks and processed separately.
+This is indicated by addition of '...' in the timings. The limit is just
+under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
+long vector limit (>2^31 elements).}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
-parallelisation has increased memory requirements.}
+parallelisation increases the memory requirement by multiples of
+\code{sliceMem}.}
 
 \item{...}{Optional arguments passed to \code{FUN}.}
 }
@@ -68,13 +70,14 @@ these represent cells in the single-cell format, rather than rows as in
 avoid excess memory requirements.
 }
 \details{
-The limit on \code{sliceSize} is that the number of elements manipulated in each
-block (i.e. \code{sliceSize} x number of cells in a given subclass/group) must be
+The limit on \code{sliceMem} is that the number of elements manipulated in each
+block must be
 kept below the long vector limit of 2^31 (around 2e9). Increasing \code{cores}
-and/or \code{sliceSize} requires substantial amounts of spare RAM. \code{combine} works
+requires substantial amounts of spare RAM. \code{combine} works
 in a similar way to \code{.combine} in \code{foreach()}; it works across the levels in
 \code{INDEX}. \code{combine2} is nested and works across slices of genes (an inner
-loop), so it is only invoked if \code{big} is \code{TRUE}.
+loop), so it is only invoked if slicing occurs which is when a matrix has a
+larger memory footprint than \code{sliceMem}.
 }
 \examples{
 # equivalent
