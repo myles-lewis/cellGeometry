@@ -110,7 +110,7 @@ cellMarkers <- function(scdata,
                         meanFUN = logmean,
                         postFUN = NULL,
                         verbose = TRUE,
-                        sliceLim = 8,
+                        sliceLim = 16,
                         cores = 1L) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
@@ -132,12 +132,12 @@ cellMarkers <- function(scdata,
     subclass <- factor(subclass)
   }
   # check memory requirement
-  # tab <- table(subclass)
-  # tab2 <- table(cellgroup)
-  # dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * sliceSize
-  # mem <- structure(dimmax * 8 * cores, class = "object_size")
-  # if (verbose & mem > 1e9)
-  #   message("Minimum required memory ", format(mem, units = "GB"))
+  tab <- table(subclass)
+  tab2 <- table(cellgroup)
+  dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * dimx[1]
+  mem <- structure(dimmax * 8, class = "object_size")
+  if (verbose & mem > 1e9)
+    message("Max subclass/group memory ", format(mem, units = "GB"))
   
   ok <- TRUE
   if (!is.null(bulkdata)) {
