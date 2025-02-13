@@ -74,17 +74,17 @@ scmean <- function(x, celltype,
     bloc <- ceiling(n *8 / (sliceLim * 1e9))
     
     # n < 2^31 &
-    if ((cores * bloc) == 1) {
+    if (bloc == 1) {
       # unsliced
       xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
       ret <- FUN(xsub)
       # xsub <- NULL
-      if (verbose) timer(start)
+      if (verbose) cat(" "); timer(start);
       return(ret)
     }
     
     # slice
-    sliceSize <- ceiling(dimx[1] / (cores * bloc))
+    sliceSize <- ceiling(dimx[1] / bloc)
     s <- sliceIndex(dimx[1], sliceSize)
     out <- parallel::mclapply(s, function(j) {
       xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
@@ -93,8 +93,7 @@ scmean <- function(x, celltype,
       mcprogress::cat_parallel(".")
       ret
     }, mc.cores = cores)
-    cat(" ")
-    if (verbose) timer(start)
+    if (verbose) cat(" "); timer(start);
     unlist(out)
   }, numeric(dimx[1]))
   
