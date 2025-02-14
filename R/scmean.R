@@ -58,7 +58,7 @@
 scmean <- function(x, celltype,
                    FUN = logmean, postFUN = NULL,
                    verbose = TRUE,
-                   sliceMem = 16, cores = 1L) {
+                   sliceMem = 16, cores = 1L, load_balance = T) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
@@ -66,41 +66,53 @@ scmean <- function(x, celltype,
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
   if (sliceMem > 2^34 / 1e9) message("`sliceMem` is above the long vector limit")
   
+  # load balance schedule
+  if (load_balance) {
+    core_set <- balance_cores(table(celltype), cores)
+    ro <- order(core_set)
+  } else ro <- core_set <- TRUE
+  
   # dynamic slicing
-  genemeans <- mclapply(levels(celltype), function(i) {
-    start <- Sys.time()
-    c_index <- which(celltype == i & ok)
-    n <- length(c_index) * dimx[1]
-    bloc <- ceiling(n *8 / (sliceMem * 1e9))
-    
-    if (bloc == 1) {
-      # unsliced
-      xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
-      ret <- FUN(xsub)
-      xsub <- NULL
-      if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
-      return(ret)
-    }
-    
-    # slice
-    sliceSize <- ceiling(dimx[1] / bloc)
-    s <- sliceIndex(dimx[1], sliceSize)
-    out <- lapply(s, function(j) {
-      xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
-      ret <- FUN(xsub)
-      xsub <- NULL
-      ret
-    })
-    if (verbose) timer(start, paste0(length(c_index), " ", i, " ... ("))
-    unlist(out)
-  }, mc.cores = cores, mc.preschedule = FALSE)
-  genemeans <- do.call("cbind", genemeans)
+  genemeans <- mclapply(levels(celltype)[core_set], function(i) {
+    scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
+  }, mc.cores = cores, mc.preschedule = load_balance)
+  genemeans <- do.call("cbind", genemeans[ro])
   colnames(genemeans) <- levels(celltype)
   
   if (!is.null(postFUN)) genemeans <- postFUN(genemeans)
   if (verbose) timer(start0, "Duration")
   genemeans
 }
+
+
+scmeanCore <- function(i, x, celltype, FUN, ok, dimx, sliceMem, verbose) {
+  start <- Sys.time()
+  c_index <- which(celltype == i & ok)
+  n <- length(c_index) * dimx[1]
+  bloc <- ceiling(n *8 / (sliceMem * 1e9))
+  
+  if (bloc == 1) {
+    # unsliced
+    xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
+    ret <- FUN(xsub)
+    xsub <- NULL
+    if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
+    return(ret)
+  }
+  
+  # slice
+  sliceSize <- ceiling(dimx[1] / bloc)
+  s <- sliceIndex(dimx[1], sliceSize)
+  out <- lapply(s, function(j) {
+    xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
+    ret <- FUN(xsub)
+    xsub <- NULL
+    ret
+  })
+  if (verbose) timer(start, paste0(length(c_index), " ", i, " ... ("))
+  unlist(out)
+}
+
 
 # xsub <- NULL is faster than rm(list="xsub")
 # ought to reduce memory usage by mclapply
@@ -158,4 +170,21 @@ timer <- function(start, msg = NULL) {
       cat_parallel(msg, " ", tim, "\n")
     }
   }
+}
+
+
+balance_cores <- function(tab, cores) {
+  o <- order(tab, decreasing = TRUE)
+  le <- length(tab)
+  nc <- ceiling(le / cores)
+  m <- matrix(1:(nc * cores), nrow = cores)
+  for (i in seq(2, cores, 2)) {
+    m1 <- m[i, ]
+    if (any(m1 > le)) m1 <- c(NA, m1[-nc]) 
+    m[i, ] <- rev(m1)
+  }
+  m[m > le] <- NA
+  core_set <- as.vector(m)
+  core_set <- core_set[!is.na(core_set)]
+  o[core_set]
 }
