@@ -28,9 +28,13 @@
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation increases the memory requirement by multiples of
-#'   `sliceMem`.
+#'   `sliceMem`. `cores` is ignored if `use_future = TRUE`.
 #' @param load_balance Logical, whether to load balance memory requirements
 #'   across cores (experimental).
+#' @param use_future Logical, whether to use the future backend for
+#'   parallelisation via `future_lapply()` instead of the default which is
+#'   `mclapply()`.
+#' @param ... Additional arguments passed to `future_lapply()`.
 #' @details 
 #' Mean functions which can be applied by setting `FUN` include `logmean` (the
 #' default) which applies row means to log2(counts+1), or `trimmean` which
@@ -55,12 +59,14 @@
 #'   mean applied.
 #' @author Myles Lewis
 #' @importFrom parallel mclapply
+#' @importFrom future.apply future_lapply
 #' @export
 
 scmean <- function(x, celltype,
                    FUN = logmean, postFUN = NULL,
                    verbose = TRUE,
-                   sliceMem = 16, cores = 1L, load_balance = FALSE) {
+                   sliceMem = 16, cores = 1L, load_balance = FALSE,
+                   use_future = FALSE, ...) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
@@ -68,16 +74,23 @@ scmean <- function(x, celltype,
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
   if (sliceMem > 2^34 / 1e9) message("`sliceMem` is above the long vector limit")
   
-  # load balance schedule
-  if (load_balance & cores > 1) {
-    core_set <- balance_cores(table(celltype), cores)
-    ro <- order(core_set)
-  } else ro <- core_set <- TRUE
-  
-  # dynamic slicing
-  genemeans <- mclapply(levels(celltype)[core_set], function(i) {
-    scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
-  }, mc.cores = cores, mc.preschedule = load_balance)
+  ro <- core_set <- TRUE
+  if (!use_future) {
+    # load balance schedule
+    if (load_balance & cores > 1) {
+      core_set <- balance_cores(table(celltype), cores)
+      ro <- order(core_set)
+    }
+    
+    # dynamic slicing
+    genemeans <- mclapply(levels(celltype)[core_set], function(i) {
+      scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
+    }, mc.cores = cores, mc.preschedule = load_balance)
+  } else {
+    genemeans <- future_lapply(levels(celltype), function(i) {
+      scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
+    }, ...)
+  }
   genemeans <- do.call("cbind", genemeans[ro])
   colnames(genemeans) <- levels(celltype)
   

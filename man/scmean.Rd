@@ -12,7 +12,9 @@ scmean(
   verbose = TRUE,
   sliceMem = 16,
   cores = 1L,
-  load_balance = FALSE
+  load_balance = FALSE,
+  use_future = FALSE,
+  ...
 )
 }
 \arguments{
@@ -43,10 +45,16 @@ long vector limit (>2^31 elements).}
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation increases the memory requirement by multiples of
-\code{sliceMem}.}
+\code{sliceMem}. \code{cores} is ignored if \code{use_future = TRUE}.}
 
 \item{load_balance}{Logical, whether to load balance memory requirements
 across cores (experimental).}
+
+\item{use_future}{Logical, whether to use the future backend for
+parallelisation via \code{future_lapply()} instead of the default which is
+\code{mclapply()}.}
+
+\item{...}{Additional arguments passed to \code{future_lapply()}.}
 }
 \value{
 a matrix of mean log2 gene expression across cell types with genes
