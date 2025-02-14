@@ -69,7 +69,7 @@ scmean <- function(x, celltype,
   if (sliceMem > 2^34 / 1e9) message("`sliceMem` is above the long vector limit")
   
   # load balance schedule
-  if (load_balance) {
+  if (load_balance & cores > 1) {
     core_set <- balance_cores(table(celltype), cores)
     ro <- order(core_set)
   } else ro <- core_set <- TRUE
