@@ -58,6 +58,7 @@
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements. See [scmean()].
+#' @param ... Additional arguments passed to [scmean()].
 #' @returns 
 #' A list object with S3 class 'cellMarkers' containing:
 #'   \item{call}{the matched call}
@@ -121,7 +122,7 @@ cellMarkers <- function(scdata,
                         postFUN = NULL,
                         verbose = TRUE,
                         sliceMem = 16,
-                        cores = 1L) {
+                        cores = 1L, ...) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
     scdata <- as.matrix(scdata)
@@ -162,7 +163,7 @@ cellMarkers <- function(scdata,
     genemeans_ar <- gm[[2]]
   } else {
     genemeans <- scmean(scdata, subclass, meanFUN, postFUN, verbose, sliceMem,
-                        cores)
+                        cores, ...)
   }
   
   if (any(!ok)) {
@@ -199,7 +200,7 @@ cellMarkers <- function(scdata,
     # test nesting
     tab <- table(subclass, cellgroup)
     groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, verbose,
-                         sliceMem, cores)
+                         sliceMem, cores, ...)
     if (any(!ok)) {
       groupmeans <- groupmeans[ok, ]
     }

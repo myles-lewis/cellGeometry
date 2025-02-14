@@ -29,6 +29,8 @@
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation increases the memory requirement by multiples of
 #'   `sliceMem`.
+#' @param load_balance Logical, whether to load balance memory requirements
+#'   across cores (experimental).
 #' @details 
 #' Mean functions which can be applied by setting `FUN` include `logmean` (the
 #' default) which applies row means to log2(counts+1), or `trimmean` which
@@ -58,7 +60,7 @@
 scmean <- function(x, celltype,
                    FUN = logmean, postFUN = NULL,
                    verbose = TRUE,
-                   sliceMem = 16, cores = 1L, load_balance = T) {
+                   sliceMem = 16, cores = 1L, load_balance = FALSE) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)

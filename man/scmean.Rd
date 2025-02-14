@@ -11,7 +11,8 @@ scmean(
   postFUN = NULL,
   verbose = TRUE,
   sliceMem = 16,
-  cores = 1L
+  cores = 1L,
+  load_balance = FALSE
 )
 }
 \arguments{
@@ -43,6 +44,9 @@ long vector limit (>2^31 elements).}
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation increases the memory requirement by multiples of
 \code{sliceMem}.}
+
+\item{load_balance}{Logical, whether to load balance memory requirements
+across cores (experimental).}
 }
 \value{
 a matrix of mean log2 gene expression across cell types with genes

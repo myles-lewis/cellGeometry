@@ -21,7 +21,8 @@ cellMarkers(
   postFUN = NULL,
   verbose = TRUE,
   sliceMem = 16,
-  cores = 1L
+  cores = 1L,
+  ...
 )
 }
 \arguments{
@@ -89,6 +90,8 @@ the long vector limit (>2^31 elements).}
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation has increased memory requirements. See \code{\link[=scmean]{scmean()}}.}
+
+\item{...}{Additional arguments passed to \code{\link[=scmean]{scmean()}}.}
 }
 \value{
 A list object with S3 class 'cellMarkers' containing:
