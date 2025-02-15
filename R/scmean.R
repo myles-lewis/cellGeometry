@@ -81,16 +81,17 @@ scmean <- function(x, celltype,
       core_set <- balance_cores(table(celltype), cores)
       ro <- order(core_set)
     }
-    
     # dynamic slicing
     genemeans <- mclapply(levels(celltype)[core_set], function(i) {
       scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
-    }, mc.cores = cores, mc.preschedule = load_balance)
+    }, mc.cores = cores, mc.preschedule = FALSE)
   } else {
+    # future
     genemeans <- future_lapply(levels(celltype), function(i) {
       scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
     }, ...)
   }
+  
   genemeans <- do.call("cbind", genemeans[ro])
   colnames(genemeans) <- levels(celltype)
   
@@ -106,11 +107,18 @@ scmeanCore <- function(i, x, celltype, FUN, ok, dimx, sliceMem, verbose) {
   n <- length(c_index) * dimx[1]
   bloc <- ceiling(n *8 / (sliceMem * 1e9))
   
+  if (inherits(mat, "DelayedMatrix")) {
+    xsub <- x[, c_index]
+    # ret <- DelayedArray::rowMeans(log2(xsub + 1))
+    ret <- FUN(xsub)
+    if (verbose) timer(start, paste0(length(c_index), " ", i, " ("))
+    return(ret)
+  }
+  
   if (bloc == 1) {
     # unsliced
     xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
     ret <- FUN(xsub)
-    xsub <- NULL
     if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
     return(ret)
   }
@@ -121,7 +129,8 @@ scmeanCore <- function(i, x, celltype, FUN, ok, dimx, sliceMem, verbose) {
   out <- lapply(s, function(j) {
     xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
     ret <- FUN(xsub)
-    xsub <- NULL
+    rm(list = "xsub")
+    gc()
     ret
   })
   if (verbose) timer(start, paste0(length(c_index), " ", i, " ... ("))
@@ -132,34 +141,6 @@ scmeanCore <- function(i, x, celltype, FUN, ok, dimx, sliceMem, verbose) {
 # xsub <- NULL is faster than rm(list="xsub")
 # ought to reduce memory usage by mclapply
 
-
-#' Mean Objects
-#'
-#' Functions designed for use with [scmean()] to calculate mean gene expression
-#' in each cell cluster.
-#'
-#' @param x A count matrix
-#' @returns Numeric vector of mean values.
-#'
-#'   `logmean` applies `log2(x+1)` then calculates `rowMeans`.
-#'
-#'   `trimmean` applies a trimmed mean to each row of gene counts, excluding the
-#'   top and bottom 5% of values which helps to exclude outliers. When `trimmean` is used with
-#'   [scmean()], it is important to set `postFUN = log2s`. This simply applies
-#'   log2(x+1) after the trimmed mean of counts has been calculated.
-#' @export
-
-logmean <- function(x) rowMeans(log2(x +1))
-
-#' @rdname logmean
-trimmean <- function(x) {
-  tm <- Rfast2::rowTrimMean(x)
-  names(tm) <- rownames(x)
-  tm
-}
-
-#' @rdname logmean
-log2s <- function(x) log2(x+1)
 
 sliceIndex <- function(nx, sliceSize) {
   if (is.null(sliceSize)) sliceSize <- nx
@@ -188,18 +169,25 @@ timer <- function(start, msg = NULL) {
 }
 
 
+# balance_cores <- function(tab, cores) {
+#   o <- order(tab, decreasing = TRUE)
+#   le <- length(tab)
+#   nc <- ceiling(le / cores)
+#   m <- matrix(1:(nc * cores), nrow = cores)
+#   for (i in seq(2, cores, 2)) {
+#     m1 <- m[i, ]
+#     if (any(m1 > le)) m1 <- c(NA, m1[-nc]) 
+#     m[i, ] <- rev(m1)
+#   }
+#   m[m > le] <- NA
+#   core_set <- as.vector(m)
+#   core_set <- core_set[!is.na(core_set)]
+#   o[core_set]
+# }
+
+
 balance_cores <- function(tab, cores) {
   o <- order(tab, decreasing = TRUE)
-  le <- length(tab)
-  nc <- ceiling(le / cores)
-  m <- matrix(1:(nc * cores), nrow = cores)
-  for (i in seq(2, cores, 2)) {
-    m1 <- m[i, ]
-    if (any(m1 > le)) m1 <- c(NA, m1[-nc]) 
-    m[i, ] <- rev(m1)
-  }
-  m[m > le] <- NA
-  core_set <- as.vector(m)
-  core_set <- core_set[!is.na(core_set)]
-  o[core_set]
+  s <- c(1:(cores -1), length(o):cores)
+  o[s]
 }

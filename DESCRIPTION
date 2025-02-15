@@ -12,6 +12,7 @@ Encoding: UTF-8
 biocViews:
 Imports:
     ComplexHeatmap,
+    DelayedArray,
     dplyr,
     ensembldb,
     future.apply,
