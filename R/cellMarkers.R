@@ -41,12 +41,13 @@
 #'   from the analysis.
 #' @param dual_mean Logical whether to calculate arithmetic mean of counts as
 #'   well as mean(log2(counts +1)). This is mainly useful for simulation.
-#' @param meanFUN Function for applying mean which is passed to [scmean()]. Options
-#'   include `logmean` (the default) or `trimmean` which is a trimmed after
-#'   excluding the top/bottom 5% of values.
+#' @param meanFUN Either a character value or function for applying mean which
+#'   is passed to [scmean()]. Options include `"logmean"` (the default) or
+#'   `"trimmean"` which is a trimmed after excluding the top/bottom 5% of
+#'   values.
 #' @param postFUN Optional function applied to `genemeans` matrices after mean
-#'   has been calculated. If `meanFUN` is set to `trimmean`, then `postFUN`
-#'   needs to be set to `log2s`. See [scmean()].
+#'   has been calculated. If `meanFUN` is set to `"trimmean"`, then `postFUN`
+#'   is set to `log2s`. See [scmean()].
 #' @param verbose Logical whether to show messages.
 #' @param sliceMem Max amount of memory in GB to allow for each subsetted count
 #'   matrix object. When `scdata` is subsetted by each cell subclass, if the
@@ -118,7 +119,7 @@ cellMarkers <- function(scdata,
                         min_cells = 10,
                         remove_subclass = NULL,
                         dual_mean = FALSE,
-                        meanFUN = logmean,
+                        meanFUN = "logmean",
                         postFUN = NULL,
                         verbose = TRUE,
                         sliceMem = 16,
@@ -157,6 +158,9 @@ cellMarkers <- function(scdata,
   
   nsubclass2 <- rep_len(nsubclass, nsub)
   
+  if (is.character(meanFUN) && meanFUN == "trimmean" && is.null(postFUN)) {
+    postFUN <- log2s
+  }
   if (dual_mean) {
     gm <- scmean2(scdata, subclass, meanFUN, postFUN, verbose, sliceMem, cores)
     genemeans <- gm[[1]]

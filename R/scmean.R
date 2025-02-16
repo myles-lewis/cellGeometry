@@ -12,9 +12,9 @@
 #' @param celltype a vector of cell subclasses or types whose length matches the
 #'   number of columns in `x`. It is coerced to a factor. `NA` are tolerated and
 #'   the matching columns in `x` are skipped.
-#' @param FUN Function for applying mean. When applied to a matrix of count
-#'   values, this must return a vector. Recommended options are `logmean` (the
-#'   default) or `trimmean`.
+#' @param FUN Character value or function for applying mean. When applied to a
+#'   matrix of count values, this must return a vector. Recommended options are
+#'   `"logmean"` (the default) or `"trimmean"`.
 #' @param postFUN Optional function to be applied to whole matrix after mean has
 #'   been calculated, e.g. `log2s`.
 #' @param verbose Logical, whether to print messages.
@@ -63,7 +63,7 @@
 #' @export
 
 scmean <- function(x, celltype,
-                   FUN = logmean, postFUN = NULL,
+                   FUN = "logmean", postFUN = NULL,
                    verbose = TRUE,
                    sliceMem = 16, cores = 1L, load_balance = FALSE,
                    use_future = FALSE, ...) {
@@ -107,13 +107,14 @@ scmeanCore <- function(i, x, celltype, FUN, ok, dimx, sliceMem, verbose) {
   n <- length(c_index) * dimx[1]
   bloc <- ceiling(n *8 / (sliceMem * 1e9))
   
-  if (inherits(mat, "DelayedMatrix")) {
+  if (inherits(x, "DelayedMatrix") && !is.function(FUN) && FUN == "logmean") {
     xsub <- x[, c_index]
-    # ret <- DelayedArray::rowMeans(log2(xsub + 1))
-    ret <- FUN(xsub)
+    ret <- logmean(xsub)
     if (verbose) timer(start, paste0(length(c_index), " ", i, " ("))
     return(ret)
   }
+  
+  if (is.character(FUN)) FUN <- eval(parse(text = FUN))
   
   if (bloc == 1) {
     # unsliced

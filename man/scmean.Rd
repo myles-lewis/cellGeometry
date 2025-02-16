@@ -7,7 +7,7 @@
 scmean(
   x,
   celltype,
-  FUN = logmean,
+  FUN = "logmean",
   postFUN = NULL,
   verbose = TRUE,
   sliceMem = 16,
@@ -25,9 +25,9 @@ rows and cells in columns.}
 number of columns in \code{x}. It is coerced to a factor. \code{NA} are tolerated and
 the matching columns in \code{x} are skipped.}
 
-\item{FUN}{Function for applying mean. When applied to a matrix of count
-values, this must return a vector. Recommended options are \code{logmean} (the
-default) or \code{trimmean}.}
+\item{FUN}{Character value or function for applying mean. When applied to a
+matrix of count values, this must return a vector. Recommended options are
+\code{"logmean"} (the default) or \code{"trimmean"}.}
 
 \item{postFUN}{Optional function to be applied to whole matrix after mean has
 been calculated, e.g. \code{log2s}.}
