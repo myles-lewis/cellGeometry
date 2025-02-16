@@ -143,7 +143,9 @@ cellMarkers <- function(scdata,
     subclass[subclass %in% remove_subclass] <- NA
     subclass <- factor(subclass)
   }
-  if (verbose) mem_estimate(dimx, subclass, cellgroup, sliceMem, cores)
+  if (verbose & !inherits(scdata, "DelayedMatrix")) {
+    mem_estimate(dimx, subclass, cellgroup, sliceMem, cores)
+  }
   
   ok <- TRUE
   if (!is.null(bulkdata)) {
