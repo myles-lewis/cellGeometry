@@ -169,10 +169,18 @@ The signature gene matrix can be displayed as follows.
 signature_heatmap(mk)
 ```
 
+```{r, out.width='90%', echo=FALSE}
+knitr::include_graphics("typist_sig.png")
+```
+
 The spillover heatmap between cell clusters can also be visualised.
 
 ```{r eval = FALSE}
 spillover_heatmap(mk)
+```
+
+```{r, out.width='80%', echo=FALSE}
+knitr::include_graphics("typist_spillover.png")
 ```
 
 This heatmap as well as the signature heatmap reveals that some cell subclasses
@@ -249,6 +257,10 @@ plot_set(sim_counts, fit2$subclass$output / 3)  # adjust for 3x oversampling
 plot_set(sim_percent, fit2$subclass$percent)
 
 metric_set(sim_percent, fit2$subclass$percent)
+```
+
+```{r, out.width='90%', echo=FALSE}
+knitr::include_graphics("typist_sim.png")
 ```
 
 Note that these settings are mathematically ideal for simulated bulk data. In
