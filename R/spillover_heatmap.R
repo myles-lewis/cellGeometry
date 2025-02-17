@@ -32,7 +32,8 @@ spillover_heatmap <- function(x, ...) {
                  cluster_row_slices = FALSE, row_title = NULL,
                  cluster_columns = FALSE, column_split = cell_table,
                  cluster_column_slices = FALSE, column_title = NULL,
-                 column_names_rot = 75, column_names_gp = gpar(fontsize = 8),
+                 # column_names_rot = 75,
+                 column_names_gp = gpar(fontsize = 8),
                  row_names_gp = gpar(fontsize = 8),
                  cell_fun = function(j, i, x, y, width, height, fill) {
                    grid.text(ifelse(m_itself[i, j] > 0.5 & i!=j,
