@@ -127,8 +127,8 @@ mk <- cellMarkers(mat, subclass = subcl, cellgroup = cellgrp,
 
 The `dual_mean` argument only needs to be set for the purpose of the simulation
 later. Most users do not need to set this. It calculates both the standard mean
-gene expression, which is mean(log2(counts +1)), as well as the arithmetic mean
-of the (unlogged) counts.
+gene expression, which is mean(log<sub>2</sub>(counts +1)), as well as the
+arithmetic mean of the (unlogged) counts.
 
 The derivation of mean gene expression for each cluster and cell group is the
 slowest part. If you are on linux or mac, this can be sped up using
@@ -272,18 +272,18 @@ in `fit$group$output` and `fit$group$percent`.
 
 With a real bulk RNA-Seq dataset the first step is to ensure that only genes
 which are present in the bulk data are used for the gene signatures. This is
-achieved using the function `updateMarkers()`. Or bulk data can be supplied with
-the first call to `cellMarkers()`.
+achieved using the function `updateMarkers()`.
 
 ```{r eval = FALSE}
 mk <- updateMarkers(mk, bulkdata = my_bulk_matrix)
 ```
 
+Alternatively bulk data can be supplied with the first call to `cellMarkers()`.
 `updateMarkers()` can also be used to rapidly update the marker object `mk` with
-new settings, e.g. to alter the number of genes used per subclass or edit
-(add/remove) the marker genes. If some signature genes are missing from the bulk
-data, `deconvolute()` will stop with an error message that some signature genes
-are missing.
+new settings, e.g. to alter the number of genes used per subclass or manually
+edit (add/remove) the marker genes. Note that if some signature genes are
+missing from the bulk data, `deconvolute()` will stop with an error message that
+some signature genes are missing.
 
 Note that the settings shown above are mathematically ideal for simulated bulk
 data. In reality, we expect the scRNA-Seq signature to differ from real-world
@@ -300,7 +300,7 @@ bulk data when calling `deconvolute()`. The main settings to choose here are:
                         were performed simultaneously.
                       
 `exp_signature = FALSE` This toggles whether the deconvolution is performed in 
-                        count space (exponential space) or in log2 space.
+                        count space (exponential space) or in log<sub>2</sub> space.
 ----------------------  --------------------------------------------------------
 
 We recommend `use_filter` is always on for real-world bulk analysis as it reduces
