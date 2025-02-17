@@ -139,6 +139,8 @@ plot_set <- function(obs, pred, mfrow = NULL,
   on.exit(par(op))
   scheme <- rev(hue_pal(h = c(0, 270), c = 120)(11))
   xlim <- ylim <- NULL
+  new.args <- list(...)
+  
   for (i in subclasses) {
     if (is.na(i)) {plot.new(); next}
     if (show_zero) {
@@ -147,8 +149,10 @@ plot_set <- function(obs, pred, mfrow = NULL,
       yr <- range(pred[, i], na.rm = TRUE)
       ylim <- c(min(yr[1], 0), yr[2])
     }
-    plot(obs[, i], pred[, i], cex = 0.8, pch = 16,
-         xlab = i, ylab = "Predicted", xlim = xlim, ylim = ylim, ...)
+    args <- list(x = obs[, i], y = pred[, i], cex = 0.8, pch = 16, las = 1,
+                 xlab = i, ylab = "Predicted", xlim = xlim, ylim = ylim)
+    if (length(new.args)) args[names(new.args)] <- new.args
+    do.call(plot, args)
     fit <- lm(pred[, i] ~ obs[, i])
     rsq <- summary(fit)$r.squared
     col <- if (colour == "rainbow") scheme[ceiling(rsq*10) +1] else colour
