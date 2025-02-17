@@ -263,18 +263,51 @@ metric_set(sim_percent, fit2$subclass$percent)
 knitr::include_graphics("typist_sim.png")
 ```
 
-Note that these settings are mathematically ideal for simulated bulk data. In
-reality, we expect the scRNA-Seq signature to differ from real-world bulk
-RNA-Seq due to differences in chemistry and the amplification step required by
-single-cell sequencing. So we recommend the default settings for real-world
-bulk data.
+Results are returned in `fit$subclass$output` for standard output (theoretically
+in numbers of cells), `fit$subclass$percent` for output converted to percentage
+of total cells for each sample. The group analysis is returned in a similar vein
+in `fit$group$output` and `fit$group$percent`.
 
-The marker object `mk` can be rapidly updated with new settings, e.g. to alter
-the number of genes used per subclass, using the function `updateMarkers()`. If
-some signature genes are missing from the bulk data, `deconvolute()` will stop
-and warn you these genes are missing. `updateMarkers()` can then be used to
-refine the gene signatures using only genes which are also found in the bulk
-RNA-Seq dataset.
+# Settings for real bulk RNA-Seq
+
+With a real bulk RNA-Seq dataset the first step is to ensure that only genes
+which are present in the bulk data are used for the gene signatures. This is
+achieved using the function `updateMarkers()`. Or bulk data can be supplied with
+the first call to `cellMarkers()`.
+
+```{r eval = FALSE}
+mk <- updateMarkers(mk, bulkdata = my_bulk_matrix)
+```
+
+`updateMarkers()` can also be used to rapidly update the marker object `mk` with
+new settings, e.g. to alter the number of genes used per subclass or edit
+(add/remove) the marker genes. If some signature genes are missing from the bulk
+data, `deconvolute()` will stop with an error message that some signature genes
+are missing.
+
+Note that the settings shown above are mathematically ideal for simulated bulk
+data. In reality, we expect the scRNA-Seq signature to differ from real-world
+bulk RNA-Seq due to differences in chemistry and the amplification step required
+by single-cell sequencing. So we recommend the default settings for real-world
+bulk data when calling `deconvolute()`. The main settings to choose here are:
+
+----------------------  --------------------------------------------------------
+`use_filter = TRUE`     This reduces the overall amount of spillover by reducing 
+                        apparent noise in the gene signatures.
+
+`convert_bulk = TRUE`   This converts the bulk RNA-Seq onto scRNA-Seq data based 
+                        on a reference dataset in which both bulk and scRNA-Seq 
+                        were performed simultaneously.
+                      
+`exp_signature = FALSE` This toggles whether the deconvolution is performed in 
+                        count space (exponential space) or in log2 space.
+----------------------  --------------------------------------------------------
+
+We recommend `use_filter` is always on for real-world bulk analysis as it reduces
+the need for compensation particularly for genes where non-specific low level
+expression is present in some cell clusters which can occur even for good
+markers. We suggest `deconvolute()` is used in one of 2 modes: either
+`convert_bulk = TRUE` or `exp_signature = TRUE`, but not both.
 
 There is also a powerful function `tune_deconv()` which allows users to tune any
 of the parameters available in `updateMarkers()` based on a bulk reference
