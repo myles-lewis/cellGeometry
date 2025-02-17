@@ -97,8 +97,6 @@ cell group gene markers are identified.
 
 ```
 mk <- cellMarkers(mat, subclass = subcl, cellgroup = cellgrp,
-                  remove_subclass = c("Helper T cells", "Cytotoxic T cells",
-                                      "Cycling T cells"),
                   dual_mean = TRUE, cores = 2)
 ```
 
@@ -152,12 +150,14 @@ spillover_heatmap(mk)
 
 This heatmap as well as the signature heatmap reveals that some cell subclasses
 'spillover' too strongly into other cell subclasses. In other words some cell
-types are too similar - one might be a subset of the other. Here we see that
-Helper T cells are the most affected and their signature is similar to Tcm/Naive
-helper T cells.
+types are too similar - perhaps one is really a closely related subset of the
+other. Here we see that Helper T cells are the most affected and their signature
+is similar to Tcm/Naive helper T cells.
 
-We update the cellMarker object to remove 2 cell clusters which overlap
-with other cell clusters and are therefore difficult to deconvolute.
+Below we update the cellMarkers object to remove 2 cell clusters which overlap
+with other cell clusters and are therefore likely to be difficult to deconvolute
+well if applied to real world bulk RNA-Seq. For the simulation it does not
+matter whether these are removed or not.
 
 ```
 mk <- updateMarkers(mk,
@@ -179,9 +179,6 @@ set.seed(3)
 sim_counts <- generate_samples(mk, 25)
 sim_percent <- sim_counts / rowSums(sim_counts) * 100
 sim_pseudo <- simulate_bulk(mk, sim_counts)
-
-# fix rownames
-rownames(sim_pseudo) <- gene2symbol(rownames(sim_pseudo), ensDb_v110)
 ```
 
 Deconvolution itself is performed as a 2nd function `deconvolute()`. The
