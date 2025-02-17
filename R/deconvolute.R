@@ -27,7 +27,7 @@
 #'   signature matrix. Mainly useful with pseudo-bulk simulation.
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
-#'   scRNA-Seq datasets, or "none" for no conversion.
+#'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param plot_comp logical, whether to analyse compensation values across
 #'   subclasses.
 #' @param verbose logical, whether to show additional information.

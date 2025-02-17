@@ -163,6 +163,9 @@ set.seed(3)
 sim_counts <- generate_samples(mk, 25)
 sim_percent <- sim_counts / rowSums(sim_counts) * 100
 sim_pseudo <- simulate_bulk(mk, sim_counts)
+
+# fix rownames
+rownames(sim_pseudo) <- gene2symbol(rownames(sim_pseudo), ensDb_v110)
 ```
 
 Deconvolution itself is performed as a 2nd function `deconvolute()`. The
@@ -180,39 +183,46 @@ metric_set(sim_percent, fit$subclass$percent)  # table of results
 ```
 
 In the 2nd mode, the original scRNA-Seq count dataset is sampled. Here we
-oversample the actual cell counts in `sim_counts` by 30x. Users can see that if
+oversample the actual cell counts in `sim_counts` by 3x. Users can see that if
 times is varied from 1 to 30 or more that the deconvolution improves as the
 sampling approaches the arithmetic mean of the counts for each cluster.
 
 ```
 # mode 2: sample from original sc count matrix
-sim_sampled <- simulate_bulk(mat, sim_counts, subcl, times = 30)
+sim_sampled <- simulate_bulk(mat, sim_counts, subcl, times = 3)
 
 # fix rownames
 rownames(sim_sampled) <- gene2symbol(rownames(sim_sampled), ensDb_v110)
 
 # near optimal deconvolution of counts sampled from the original scRNA-Seq
 fit2 <- deconvolute(mk, sim_sampled,
-                    exp_signature = TRUE, convert_bulk = FALSE, arith_mean = TRUE)
+                    exp_signature = TRUE, convert_bulk = FALSE, use_filter = FALSE,
+                    arith_mean = TRUE)
 
 # plot results
-plot_set(sim_counts, fit2$subclass$output)
+plot_set(sim_counts, fit2$subclass$output / 3)  # adjust for 3x oversampling
 plot_set(sim_percent, fit2$subclass$percent)
 
 metric_set(sim_percent, fit2$subclass$percent)
 ```
 
-The marker object mk can be rapidly updated with new settings, e.g. to alter the
-number of genes used per subclass, using the function `updateMarkers()`. If some
-signature genes are missing from the bulk data, `deconvolute()` will stop and
-warn you these genes are missing. `updateMarkers()` can then be used to refine
-the gene signatures using only genes which are also found in the bulk RNA-Seq
-dataset.
+Note that these settings are mathematically ideal for simulated bulk data. In
+reality, we expect the scRNA-Seq signature to differ from real-world bulk
+RNA-Seq due to differences in chemistry and the amplification step required by
+single-cell sequencing. So we recommend the default settings for real-world
+bulk data.
+
+The marker object `mk` can be rapidly updated with new settings, e.g. to alter
+the number of genes used per subclass, using the function `updateMarkers()`. If
+some signature genes are missing from the bulk data, `deconvolute()` will stop
+and warn you these genes are missing. `updateMarkers()` can then be used to
+refine the gene signatures using only genes which are also found in the bulk
+RNA-Seq dataset.
 
 There is also a powerful function `tune_deconv()` which allows users to tune any
 of the parameters available in `updateMarkers()` based on a bulk reference
 dataset. The simulated pseudo-bulk data can be used for this purpose, but real
-bulk RNA-Seq would be better (more realistic).
+bulk RNA-Seq would be better (more realistic and better for tuning).
 
 Also, 2 scRNA-Seq datasets can be merged using the function `mergeMarkers()`.
 This merges the `cellMarkers` objects derived from each single cell dataset. One

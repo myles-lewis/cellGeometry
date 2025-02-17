@@ -54,7 +54,7 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 
 \item{convert_bulk}{either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 using reference data or "qqmap" using quantile mapping of the bulk to
-scRNA-Seq datasets, or "none" for no conversion.}
+scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
 \item{plot_comp}{logical, whether to analyse compensation values across
 subclasses.}
