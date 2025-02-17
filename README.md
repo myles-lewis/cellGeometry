@@ -183,9 +183,12 @@ metric_set(sim_percent, fit$subclass$percent)  # table of results
 ```
 
 In the 2nd mode, the original scRNA-Seq count dataset is sampled. Here we
-oversample the actual cell counts in `sim_counts` by 3x. Users can see that if
-times is varied from 1 to 30 or more that the deconvolution improves as the
-sampling approaches the arithmetic mean of the counts for each cluster.
+oversample the actual cell counts in `sim_counts` by 3x by setting `times = 3`.
+Cells are sampled with replacement. The desired cell counts are simply
+multiplied by `times` prior to sampling. Users will find that increasing `times`
+from 1 to 30 or more improves the deconvolution as the sum of the gene counts
+per sampled cell approaches the arithmetic mean of gene counts for each cell
+cluster.
 
 ```
 # mode 2: sample from original sc count matrix
