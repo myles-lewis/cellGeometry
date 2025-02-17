@@ -51,3 +51,4 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .Rproj.user
+inst/doc
