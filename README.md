@@ -99,7 +99,7 @@ cell group gene markers are identified.
 mk <- cellMarkers(mat, subclass = subcl, cellgroup = cellgrp,
                   remove_subclass = c("Helper T cells", "Cytotoxic T cells",
                                       "Cycling T cells"),
-                  dual_mean = TRUE)
+                  dual_mean = TRUE, cores = 2)
 ```
 
 Here we have removed 3 cell clusters which overlap too much with other cell
@@ -113,8 +113,13 @@ of the (unlogged) counts.
 The derivation of mean gene expression for each cluster and cell group is the
 slowest part. If you are on linux or mac, this can be sped up using
 parallelisation by setting `cores = 2` or more. Note that this can increase
-memory requirements dramatically. We typically use 3 cores on a 64 Gb machine,
-but the limit on cores depends on the size of the single-cell data.
+memory requirements dramatically unless HFD5 is used. For this particular
+dataset which is moderate in size, we find significant speed up with 4-8 cores
+(64 Gb machine). For very large datasets (>1M cells) if the sc data is kept on
+disc via HFD5 then many cores can be used. But if the data or subsets of it have
+to be loaded into memory then we typically apportion around 16 Gb per core (e.g.
+3 cores on a 64 Gb machine). So the limit on cores depends on the size of the
+single-cell data, available RAM and whether HFD5 is used.
 
 Windows users can invoke parallelisation using the future backend and setting up
 a multisession plan.
