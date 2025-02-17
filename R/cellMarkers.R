@@ -4,6 +4,12 @@
 #' Uses geometric method based on vector dot product to identify genes which are
 #' the best markers for individual cell types.
 #' 
+#' If `verbose = TRUE`, the function will display an estimate of the required
+#' memory. But importantly this estimate is only a guide. It is provided to help
+#' users choose the optimal number of cores during parallelisation. Real memory
+#' usage might well be more, theoretically up to double this amount, due to R's
+#' use of copy-on-modify.
+#' 
 #' @param scdata Single-cell data matrix with genes in rows and cells in
 #'   columns. Can be sparse matrix or DelayedMatrix. Must have rownames 
 #'   representing gene IDs or gene symbols.
@@ -35,19 +41,25 @@
 #'   from the analysis.
 #' @param dual_mean Logical whether to calculate arithmetic mean of counts as
 #'   well as mean(log2(counts +1)). This is mainly useful for simulation.
-#' @param meanFUN Function for applying mean which is passed to [scmean()]. Options
-#'   include `logmean` (the default) or `trimmean` which is a trimmed after
-#'   excluding the top/bottom 5% of values.
+#' @param meanFUN Either a character value or function for applying mean which
+#'   is passed to [scmean()]. Options include `"logmean"` (the default) or
+#'   `"trimmean"` which is a trimmed after excluding the top/bottom 5% of
+#'   values.
 #' @param postFUN Optional function applied to `genemeans` matrices after mean
-#'   has been calculated. If `meanFUN` is set to `trimmean`, then `postFUN`
-#'   needs to be set to `log2s`. See [scmean()].
-#' @param big Logical whether to invoke matrix slicing to handle big matrices.
+#'   has been calculated. If `meanFUN` is set to `"trimmean"`, then `postFUN`
+#'   is set to `log2s`. See [scmean()].
 #' @param verbose Logical whether to show messages.
-#' @param sliceSize Integer, number of rows of `x` to use in each slice if 
-#'   `big = TRUE`.
+#' @param sliceMem Max amount of memory in GB to allow for each subsetted count
+#'   matrix object. When `scdata` is subsetted by each cell subclass, if the
+#'   amount of memory would be above `sliceMem` then slicing is activated and
+#'   the subsetted count matrix is divided into chunks and processed separately.
+#'   This is indicated by addition of '...' in the printed timings. The limit is
+#'   just under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches
+#'   the long vector limit (>2^31 elements).
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements. See [scmean()].
+#' @param ... Additional arguments passed to [scmean()].
 #' @returns 
 #' A list object with S3 class 'cellMarkers' containing:
 #'   \item{call}{the matched call}
@@ -107,19 +119,17 @@ cellMarkers <- function(scdata,
                         min_cells = 10,
                         remove_subclass = NULL,
                         dual_mean = FALSE,
-                        meanFUN = logmean,
+                        meanFUN = "logmean",
                         postFUN = NULL,
-                        big = NULL,
                         verbose = TRUE,
-                        sliceSize = 5000L,
-                        cores = 1L) {
+                        sliceMem = 16,
+                        cores = 1L, ...) {
   .call <- match.call()
   if (!inherits(scdata, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
     scdata <- as.matrix(scdata)
   }
   if (is.null(rownames(scdata))) stop("scdata is missing rownames/ gene ids")
   dimx <- dim(scdata)
-  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
   if (!is.factor(subclass)) subclass <- factor(subclass)
   if (min_cells > 0) {
     tab <- table(subclass)
@@ -133,23 +143,15 @@ cellMarkers <- function(scdata,
     subclass[subclass %in% remove_subclass] <- NA
     subclass <- factor(subclass)
   }
-  # check memory requirement
-  tab <- table(subclass)
-  tab2 <- table(cellgroup)
-  dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * sliceSize
-  mem <- structure(dimmax * 8 * cores, class = "object_size")
-  if (verbose & mem > 16e9)
-    message("Minimum required memory ", format(mem, units = "GB"))
+  if (verbose & !inherits(scdata, "DelayedMatrix")) {
+    mem_estimate(dimx, subclass, cellgroup, sliceMem, cores)
+  }
   
   ok <- TRUE
   if (!is.null(bulkdata)) {
     if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
     ok <- rownames(scdata) %in% rownames(bulkdata)
     if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
-    if (any(!ok) & (is.null(big) || !big)) {
-      scdata <- scdata[ok, ]
-      dimx <- dim(scdata)
-    }
   }
   nsub <- nlevels(subclass)
   if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
@@ -158,17 +160,19 @@ cellMarkers <- function(scdata,
   
   nsubclass2 <- rep_len(nsubclass, nsub)
   
+  if (is.character(meanFUN) && meanFUN == "trimmean" && is.null(postFUN)) {
+    postFUN <- log2s
+  }
   if (dual_mean) {
-    gm <- scmean2(scdata, subclass, meanFUN, postFUN, big, verbose, sliceSize,
-                  cores)
+    gm <- scmean2(scdata, subclass, meanFUN, postFUN, verbose, sliceMem, cores)
     genemeans <- gm[[1]]
     genemeans_ar <- gm[[2]]
   } else {
-    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, big, verbose,
-                        sliceSize, cores)
+    genemeans <- scmean(scdata, subclass, meanFUN, postFUN, verbose, sliceMem,
+                        cores, ...)
   }
   
-  if (isTRUE(big) && any(!ok)) {
+  if (any(!ok)) {
     genemeans <- genemeans[ok, ]
     if (dual_mean) genemeans_ar <- genemeans_ar[ok, ]
     dimx[1] <- nrow(genemeans)
@@ -201,9 +205,9 @@ cellMarkers <- function(scdata,
     
     # test nesting
     tab <- table(subclass, cellgroup)
-    groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, big, verbose,
-                         sliceSize, cores)
-    if (isTRUE(big) && any(!ok)) {
+    groupmeans <- scmean(scdata, cellgroup, meanFUN, postFUN, verbose,
+                         sliceMem, cores, ...)
+    if (any(!ok)) {
       groupmeans <- groupmeans[ok, ]
     }
     highexp <- rowMaxs(groupmeans) > expfilter
@@ -283,4 +287,27 @@ summary.cellMarkers <- function(object, ...) {
   }
   cat("Subclass cell totals:\n")
   print(object$subclass_table)
+}
+
+
+# estimate memory requirement
+mem_estimate <- function(dimx, subclass, cellgroup, sliceMem, cores) {
+  tab <- table(subclass)
+  tab2 <- table(cellgroup)
+  dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * dimx[1]
+  mem <- structure(dimmax * 8, class = "object_size")
+  if (mem > 1e9)
+    message("Max subclass/group memory ", format(mem, units = "GB"))
+  if (mem > sliceMem * 1e9) {
+    message("Slicing above ", sliceMem, " Gb")
+  } else message("No slicing")
+  
+  nsubcl <- sort(tab, decreasing = TRUE)[1:cores]
+  ngroup <- sort(tab2, decreasing = TRUE)[1:cores]
+  msubcl <- nsubcl * as.numeric(dimx[1]) / 1.25e8
+  mgroup <- ngroup * as.numeric(dimx[1]) / 1.25e8
+  msubcl[msubcl > sliceMem] <- sliceMem
+  mgroup[mgroup > sliceMem] <- sliceMem
+  mem <- max(c(sum(msubcl), sum(mgroup)))
+  message("Estimated memory requirement ", format(mem, digits = 2), " Gb")
 }

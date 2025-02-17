@@ -1,6 +1,6 @@
 Package: cellGeometry
 Title: Geometric Single Cell Deconvolution
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
     c(person(given = "Myles",family = "Lewis",
     role = c("aut", "cre"),
@@ -12,8 +12,10 @@ Encoding: UTF-8
 biocViews:
 Imports:
     ComplexHeatmap,
+    DelayedArray,
     dplyr,
     ensembldb,
+    future.apply,
     ggplot2,
     ggrepel,
     grid,

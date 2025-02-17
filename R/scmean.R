@@ -12,30 +12,30 @@
 #' @param celltype a vector of cell subclasses or types whose length matches the
 #'   number of columns in `x`. It is coerced to a factor. `NA` are tolerated and
 #'   the matching columns in `x` are skipped.
-#' @param FUN Function for applying mean. When applied to a matrix of count
-#'   values, this must return a vector. Recommended options are `logmean` (the
-#'   default) or `trimmean`.
+#' @param FUN Character value or function for applying mean. When applied to a
+#'   matrix of count values, this must return a vector. Recommended options are
+#'   `"logmean"` (the default) or `"trimmean"`.
 #' @param postFUN Optional function to be applied to whole matrix after mean has
 #'   been calculated, e.g. `log2s`.
-#' @param big Logical, whether to invoke slicing of `x` into rows. This is
-#'   invoked automatically if `x` is a large matrix with >2^31 elements.
 #' @param verbose Logical, whether to print messages.
-#' @param sliceSize Integer, number of rows of `x` to use in each slice if 
-#'   `big = TRUE`.
+#' @param sliceMem Max amount of memory in GB to allow for each subsetted count
+#'   matrix object. When `x` is subsetted by each cell subclass, if the amount
+#'   of memory would be above `sliceMem` then slicing is activated and the
+#'   subsetted count matrix is divided into chunks and processed separately.
+#'   This is indicated by addition of '...' in the timings. The limit is just
+#'   under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
+#'   long vector limit (>2^31 elements).
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
-#'   parallelisation has increased memory requirements.
-#' @details
-#' We find a significant speed up with `cores = 2`, which is almost twice as
-#' fast as single core, but not much to be gained beyond this possibly due to
-#' limits on memory traffic. The main speed up is in assigning the decompression
-#' of a block from the sparse matrix to more than 1 core. Increasing `sliceSize`
-#' also gives a speed up, but the limit on `sliceSize` is that the number of
-#' elements manipulated in each block (i.e. `sliceSize` x number of cells in a
-#' given subclass/group) must be kept below the long vector limit of 2^31
-#' (around 2e9). Increasing `cores` and/or `sliceSize` requires substantial
-#' amounts of spare RAM.
-#' 
+#'   parallelisation increases the memory requirement by multiples of
+#'   `sliceMem`. `cores` is ignored if `use_future = TRUE`.
+#' @param load_balance Logical, whether to load balance memory requirements
+#'   across cores (experimental).
+#' @param use_future Logical, whether to use the future backend for
+#'   parallelisation via `future_lapply()` instead of the default which is
+#'   `mclapply()`.
+#' @param ... Additional arguments passed to `future_lapply()`.
+#' @details 
 #' Mean functions which can be applied by setting `FUN` include `logmean` (the
 #' default) which applies row means to log2(counts+1), or `trimmean` which
 #' calculates the trimmed mean of the counts after top/bottom 5% of values have
@@ -45,6 +45,12 @@
 #' If `FUN = trimmean` or `rowMeans`, `postFUN` needs to be set to `log2s` which
 #' is a simple function which applies log2(x+1).
 #' 
+#' `sliceMem` can be set lower on machines with less RAM, but this will slow the
+#' analysis down. `cores` increases the theoretical amount of memory required to
+#' around `cores * sliceMem` in GB. For example on a 64 GB machine, we find a
+#' significant speed increase with `cores = 3L`. Above this level, there is a
+#' risk that memory swap will slow down processing.
+#' 
 #' @returns a matrix of mean log2 gene expression across cell types with genes
 #'   in rows and cell types in columns.
 #' @seealso [scapply()] which is a more general version which can apply any
@@ -53,81 +59,91 @@
 #'   mean applied.
 #' @author Myles Lewis
 #' @importFrom parallel mclapply
+#' @importFrom future.apply future_lapply
 #' @export
 
 scmean <- function(x, celltype,
-                   FUN = logmean, postFUN = NULL,
-                   big = NULL, verbose = TRUE,
-                   sliceSize = 5000L, cores = 1L) {
+                   FUN = "logmean", postFUN = NULL,
+                   verbose = TRUE,
+                   sliceMem = 16, cores = 1L, load_balance = FALSE,
+                   use_future = FALSE, ...) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
-  if (any(table(celltype) * as.numeric(sliceSize) > 2^31))
-    message("Warning: >2^31 matrix elements anticipated. `sliceSize` is too large")
   ok <- !is.na(celltype)
-  dimx <- dim(x)
+  dimx <- as.numeric(dim(x))
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
-  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
+  if (sliceMem > 2^34 / 1e9) message("`sliceMem` is above the long vector limit")
   
-  if (is.null(big) || !big) {
-    # small matrix
-    genemeans <- vapply(levels(celltype), function(i) {
-      FUN(as.matrix(x[, which(celltype==i & ok)])) |> suppressWarnings()
-    }, numeric(dimx[1]))
-    if (!is.null(postFUN)) genemeans <- postFUN(genemeans)
-    return(genemeans)
+  ro <- core_set <- TRUE
+  if (!use_future) {
+    # load balance schedule
+    if (load_balance & cores > 1) {
+      core_set <- balance_cores(table(celltype), cores)
+      ro <- order(core_set)
+    }
+    # dynamic slicing
+    genemeans <- mclapply(levels(celltype)[core_set], function(i) {
+      scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
+    }, mc.cores = cores, mc.preschedule = FALSE)
+  } else {
+    # future
+    genemeans <- future_lapply(levels(celltype), function(i) {
+      scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
+    }, ...)
   }
   
-  # large matrix
-  s <- sliceIndex(dimx[1], sliceSize)
-  genemeans <- vapply(levels(celltype), function(i) {
-    start <- Sys.time()
-    c_index <- which(celltype == i & ok)
-    if (verbose) cat(length(c_index), i, " ")
-    out <- parallel::mclapply(s, function(j) {
-      FUN(as.matrix(x[j, c_index])) |> suppressWarnings()
-    }, mc.cores = cores)
-    if (verbose) timer(start)
-    unlist(out)
-  }, numeric(dimx[1]))
+  genemeans <- do.call("cbind", genemeans[ro])
+  colnames(genemeans) <- levels(celltype)
   
   if (!is.null(postFUN)) genemeans <- postFUN(genemeans)
   if (verbose) timer(start0, "Duration")
   genemeans
 }
 
+
+scmeanCore <- function(i, x, celltype, FUN, ok, dimx, sliceMem, verbose) {
+  start <- Sys.time()
+  c_index <- which(celltype == i & ok)
+  n <- length(c_index) * dimx[1]
+  bloc <- ceiling(n *8 / (sliceMem * 1e9))
+  
+  if (inherits(x, "DelayedMatrix") && !is.function(FUN) && FUN == "logmean") {
+    xsub <- x[, c_index]
+    ret <- logmean(xsub)
+    if (verbose) timer(start, paste0(length(c_index), " ", i, " ("))
+    return(ret)
+  }
+  
+  if (is.character(FUN)) FUN <- eval(parse(text = FUN))
+  
+  if (bloc == 1) {
+    # unsliced
+    xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
+    ret <- FUN(xsub)
+    if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
+    return(ret)
+  }
+  
+  # slice
+  sliceSize <- ceiling(dimx[1] / bloc)
+  s <- sliceIndex(dimx[1], sliceSize)
+  out <- lapply(s, function(j) {
+    xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
+    ret <- FUN(xsub)
+    rm(list = "xsub")
+    gc()
+    ret
+  })
+  if (verbose) timer(start, paste0(length(c_index), " ", i, " ... ("))
+  unlist(out)
+}
+
+
 # xsub <- NULL is faster than rm(list="xsub")
 # ought to reduce memory usage by mclapply
 
 
-#' Mean Objects
-#'
-#' Functions designed for use with [scmean()] to calculate mean gene expression
-#' in each cell cluster.
-#'
-#' @param x A count matrix
-#' @returns Numeric vector of mean values.
-#'
-#'   `logmean` applies `log2(x+1)` then calculates `rowMeans`.
-#'
-#'   `trimmean` applies a trimmed mean to each row of gene counts, excluding the
-#'   top and bottom 5% of values which helps to exclude outliers. When `trimmean` is used with
-#'   [scmean()], it is important to set `postFUN = log2s`. This simply applies
-#'   log2(x+1) after the trimmed mean of counts has been calculated.
-#' @export
-
-logmean <- function(x) rowMeans(log2(x +1))
-
-#' @rdname logmean
-trimmean <- function(x) {
-  tm <- Rfast2::rowTrimMean(x)
-  names(tm) <- rownames(x)
-  tm
-}
-
-#' @rdname logmean
-log2s <- function(x) log2(x+1)
-
-sliceIndex <- function(nx, sliceSize = 2000) {
+sliceIndex <- function(nx, sliceSize) {
   if (is.null(sliceSize)) sliceSize <- nx
   sliceSize <- as.integer(sliceSize)
   s <- ceiling(nx / sliceSize)
@@ -138,11 +154,41 @@ sliceIndex <- function(nx, sliceSize = 2000) {
   })
 }
 
+#' @importFrom mcprogress cat_parallel
 timer <- function(start, msg = NULL) {
   end <- Sys.time()
+  tim <- format(end - start, digits = 3)
   if (is.null(msg)) {
-    cat(paste0("(", format(end - start, digits = 3), ")\n"))
+    cat_parallel("(", tim, ")\n")
   } else {
-    cat(msg, format(end - start, digits = 3), "\n")
+    if (substr(msg, nchar(msg), nchar(msg)) == "(") {
+      cat_parallel(msg, tim, ")\n")
+    } else {
+      cat_parallel(msg, " ", tim, "\n")
+    }
   }
+}
+
+
+# balance_cores <- function(tab, cores) {
+#   o <- order(tab, decreasing = TRUE)
+#   le <- length(tab)
+#   nc <- ceiling(le / cores)
+#   m <- matrix(1:(nc * cores), nrow = cores)
+#   for (i in seq(2, cores, 2)) {
+#     m1 <- m[i, ]
+#     if (any(m1 > le)) m1 <- c(NA, m1[-nc]) 
+#     m[i, ] <- rev(m1)
+#   }
+#   m[m > le] <- NA
+#   core_set <- as.vector(m)
+#   core_set <- core_set[!is.na(core_set)]
+#   o[core_set]
+# }
+
+
+balance_cores <- function(tab, cores) {
+  o <- order(tab, decreasing = TRUE)
+  s <- c(1:(cores -1), length(o):cores)
+  o[s]
 }

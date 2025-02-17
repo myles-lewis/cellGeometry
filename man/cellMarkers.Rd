@@ -17,12 +17,12 @@ cellMarkers(
   min_cells = 10,
   remove_subclass = NULL,
   dual_mean = FALSE,
-  meanFUN = logmean,
+  meanFUN = "logmean",
   postFUN = NULL,
-  big = NULL,
   verbose = TRUE,
-  sliceSize = 5000L,
-  cores = 1L
+  sliceMem = 16,
+  cores = 1L,
+  ...
 )
 }
 \arguments{
@@ -69,24 +69,30 @@ from the analysis.}
 \item{dual_mean}{Logical whether to calculate arithmetic mean of counts as
 well as mean(log2(counts +1)). This is mainly useful for simulation.}
 
-\item{meanFUN}{Function for applying mean which is passed to \code{\link[=scmean]{scmean()}}. Options
-include \code{logmean} (the default) or \code{trimmean} which is a trimmed after
-excluding the top/bottom 5\% of values.}
+\item{meanFUN}{Either a character value or function for applying mean which
+is passed to \code{\link[=scmean]{scmean()}}. Options include \code{"logmean"} (the default) or
+\code{"trimmean"} which is a trimmed after excluding the top/bottom 5\% of
+values.}
 
 \item{postFUN}{Optional function applied to \code{genemeans} matrices after mean
-has been calculated. If \code{meanFUN} is set to \code{trimmean}, then \code{postFUN}
-needs to be set to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
-
-\item{big}{Logical whether to invoke matrix slicing to handle big matrices.}
+has been calculated. If \code{meanFUN} is set to \code{"trimmean"}, then \code{postFUN}
+is set to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
 
 \item{verbose}{Logical whether to show messages.}
 
-\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
-\code{big = TRUE}.}
+\item{sliceMem}{Max amount of memory in GB to allow for each subsetted count
+matrix object. When \code{scdata} is subsetted by each cell subclass, if the
+amount of memory would be above \code{sliceMem} then slicing is activated and
+the subsetted count matrix is divided into chunks and processed separately.
+This is indicated by addition of '...' in the printed timings. The limit is
+just under 17.2 GB (2^34 / 1e9). Above this the subsetted matrix breaches
+the long vector limit (>2^31 elements).}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation has increased memory requirements. See \code{\link[=scmean]{scmean()}}.}
+
+\item{...}{Additional arguments passed to \code{\link[=scmean]{scmean()}}.}
 }
 \value{
 A list object with S3 class 'cellMarkers' containing:
@@ -134,6 +140,13 @@ recognisable gene symbols by applying \code{\link[=gene2symbol]{gene2symbol()}}.
 \description{
 Uses geometric method based on vector dot product to identify genes which are
 the best markers for individual cell types.
+}
+\details{
+If \code{verbose = TRUE}, the function will display an estimate of the required
+memory. But importantly this estimate is only a guide. It is provided to help
+users choose the optimal number of cores during parallelisation. Real memory
+usage might well be more, theoretically up to double this amount, due to R's
+use of copy-on-modify.
 }
 \seealso{
 \code{\link[=deconvolute]{deconvolute()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=gene2symbol]{gene2symbol()}}

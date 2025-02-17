@@ -7,12 +7,14 @@
 scmean(
   x,
   celltype,
-  FUN = logmean,
+  FUN = "logmean",
   postFUN = NULL,
-  big = NULL,
   verbose = TRUE,
-  sliceSize = 5000L,
-  cores = 1L
+  sliceMem = 16,
+  cores = 1L,
+  load_balance = FALSE,
+  use_future = FALSE,
+  ...
 )
 }
 \arguments{
@@ -23,24 +25,36 @@ rows and cells in columns.}
 number of columns in \code{x}. It is coerced to a factor. \code{NA} are tolerated and
 the matching columns in \code{x} are skipped.}
 
-\item{FUN}{Function for applying mean. When applied to a matrix of count
-values, this must return a vector. Recommended options are \code{logmean} (the
-default) or \code{trimmean}.}
+\item{FUN}{Character value or function for applying mean. When applied to a
+matrix of count values, this must return a vector. Recommended options are
+\code{"logmean"} (the default) or \code{"trimmean"}.}
 
 \item{postFUN}{Optional function to be applied to whole matrix after mean has
 been calculated, e.g. \code{log2s}.}
 
-\item{big}{Logical, whether to invoke slicing of \code{x} into rows. This is
-invoked automatically if \code{x} is a large matrix with >2^31 elements.}
-
 \item{verbose}{Logical, whether to print messages.}
 
-\item{sliceSize}{Integer, number of rows of \code{x} to use in each slice if
-\code{big = TRUE}.}
+\item{sliceMem}{Max amount of memory in GB to allow for each subsetted count
+matrix object. When \code{x} is subsetted by each cell subclass, if the amount
+of memory would be above \code{sliceMem} then slicing is activated and the
+subsetted count matrix is divided into chunks and processed separately.
+This is indicated by addition of '...' in the timings. The limit is just
+under 17.2 GB (2^34 / 1e9). At this level the subsetted matrix breaches the
+long vector limit (>2^31 elements).}
 
 \item{cores}{Integer, number of cores to use for parallelisation using
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
-parallelisation has increased memory requirements.}
+parallelisation increases the memory requirement by multiples of
+\code{sliceMem}. \code{cores} is ignored if \code{use_future = TRUE}.}
+
+\item{load_balance}{Logical, whether to load balance memory requirements
+across cores (experimental).}
+
+\item{use_future}{Logical, whether to use the future backend for
+parallelisation via \code{future_lapply()} instead of the default which is
+\code{mclapply()}.}
+
+\item{...}{Additional arguments passed to \code{future_lapply()}.}
 }
 \value{
 a matrix of mean log2 gene expression across cell types with genes
@@ -54,16 +68,6 @@ large matrices are handled by slicing rows into blocks to avoid excess memory
 requirements.
 }
 \details{
-We find a significant speed up with \code{cores = 2}, which is almost twice as
-fast as single core, but not much to be gained beyond this possibly due to
-limits on memory traffic. The main speed up is in assigning the decompression
-of a block from the sparse matrix to more than 1 core. Increasing \code{sliceSize}
-also gives a speed up, but the limit on \code{sliceSize} is that the number of
-elements manipulated in each block (i.e. \code{sliceSize} x number of cells in a
-given subclass/group) must be kept below the long vector limit of 2^31
-(around 2e9). Increasing \code{cores} and/or \code{sliceSize} requires substantial
-amounts of spare RAM.
-
 Mean functions which can be applied by setting \code{FUN} include \code{logmean} (the
 default) which applies row means to log2(counts+1), or \code{trimmean} which
 calculates the trimmed mean of the counts after top/bottom 5\% of values have
@@ -72,6 +76,12 @@ of counts.
 
 If \code{FUN = trimmean} or \code{rowMeans}, \code{postFUN} needs to be set to \code{log2s} which
 is a simple function which applies log2(x+1).
+
+\code{sliceMem} can be set lower on machines with less RAM, but this will slow the
+analysis down. \code{cores} increases the theoretical amount of memory required to
+around \code{cores * sliceMem} in GB. For example on a 64 GB machine, we find a
+significant speed increase with \code{cores = 3L}. Above this level, there is a
+risk that memory swap will slow down processing.
 }
 \seealso{
 \code{\link[=scapply]{scapply()}} which is a more general version which can apply any

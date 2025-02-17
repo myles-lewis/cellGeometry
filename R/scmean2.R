@@ -3,49 +3,65 @@
 # returns list of 2 matrices
 
 scmean2 <- function(x, celltype,
-                    FUN = logmean, postFUN = NULL,
-                    big = NULL, verbose = TRUE,
-                    sliceSize = 5000L, cores = 1L) {
+                    FUN = "logmean", postFUN = NULL,
+                    verbose = TRUE,
+                    sliceMem = 16, cores = 1L) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
-  if (any(table(celltype) * as.numeric(sliceSize) > 2^31))
-    message("Warning: >2^31 matrix elements anticipated. `sliceSize` is too large")
   ok <- !is.na(celltype)
-  dimx <- dim(x)
+  dimx <- as.numeric(dim(x))
   if (dimx[2] != length(celltype)) stop("Incompatible dimensions")
-  if (as.numeric(dimx[1]) * as.numeric(dimx[2]) > 2^31) big <- TRUE
+  if (sliceMem > 2^34 / 1e9) message("`sliceMem` is above the long vector limit")
   
-  if (is.null(big) || !big) {
-    # small matrix
-    gm <- lapply(levels(celltype), function(i) {
-      xsub <- as.matrix(x[, which(celltype==i & ok)])
-      m1 <- FUN(xsub) |> suppressWarnings()
-      m2 <- rowMeans(xsub) |> suppressWarnings()
-      cbind(m1, m2)
-    })
-    names(gm) <- levels(celltype)
-    return(cols2mats(gm, postFUN))
-  }
-  
-  # large matrix
-  s <- sliceIndex(dimx[1], sliceSize)
-  gm <- lapply(levels(celltype), function(i) {
-    start <- Sys.time()
-    c_index <- which(celltype == i & ok)
-    if (verbose) cat(length(c_index), i, " ")
-    out <- parallel::mclapply(s, function(j) {
-      xsub <- as.matrix(x[j, c_index])
-      m1 <- FUN(xsub) |> suppressWarnings()
-      m2 <- rowMeans(xsub) |> suppressWarnings()
-      cbind(m1, m2)
-    }, mc.cores = cores)
-    if (verbose) timer(start)
-    do.call(rbind, out)
-  })
+  # dynamic slicing
+  gm <- mclapply(levels(celltype), function(i) {
+    scmeanCore2(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
+  }, mc.cores = cores, mc.preschedule = FALSE)
   names(gm) <- levels(celltype)
   if (verbose) timer(start0, "Duration")
   cols2mats(gm, postFUN)
 }
+
+scmeanCore2 <- function(i, x, celltype, FUN, ok, dimx, sliceMem, verbose) {
+  start <- Sys.time()
+  c_index <- which(celltype == i & ok)
+  n <- length(c_index) * dimx[1]
+  bloc <- ceiling(n *8 / (sliceMem * 1e9))
+  
+  if (inherits(x, "DelayedMatrix") && !is.function(FUN) && FUN == "logmean") {
+    xsub <- x[, c_index]
+    m1 <- logmean(xsub)
+    m2 <- rowMeans(xsub)
+    if (verbose) timer(start, paste0(length(c_index), " ", i, " ("))
+    return(cbind(m1, m2))
+  }
+  
+  if (is.character(FUN)) FUN <- eval(parse(text = FUN))
+  
+  if (bloc == 1) {
+    # unsliced
+    xsub <- as.matrix(x[, c_index]) |> suppressWarnings()
+    m1 <- FUN(xsub)
+    m2 <- rowMeans(xsub)
+    if (verbose) timer(start, paste0(length(c_index), " ", i, "  ("))
+    return(cbind(m1, m2))
+  }
+  
+  # slice
+  sliceSize <- ceiling(dimx[1] / bloc)
+  s <- sliceIndex(dimx[1], sliceSize)
+  out <- lapply(s, function(j) {
+    xsub <- as.matrix(x[j, c_index]) |> suppressWarnings()
+    m1 <- FUN(xsub) |> suppressWarnings()
+    m2 <- rowMeans(xsub)
+    rm(list = "xsub")
+    gc()
+    cbind(m1, m2)
+  })
+  if (verbose) timer(start, paste0(length(c_index), " ", i, " ... ("))
+  do.call(rbind, out)
+}
+
 
 # separate log means and arith means
 cols2mats <- function(gm, postFUN) {
