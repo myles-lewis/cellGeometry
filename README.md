@@ -102,9 +102,6 @@ mk <- cellMarkers(mat, subclass = subcl, cellgroup = cellgrp,
                   dual_mean = TRUE, cores = 2)
 ```
 
-Here we have removed 3 cell clusters which overlap too much with other cell
-clusters and are therefore difficult to deconvolute.
-
 The `dual_mean` argument only needs to be set for the purpose of the simulation
 later. Most users do not need to set this. It calculates both the standard mean
 gene expression, which is mean(log2(counts +1)), as well as the arithmetic mean
@@ -151,6 +148,20 @@ The spillover heatmap between cell clusters can also be visualised.
 
 ```
 spillover_heatmap(mk)
+```
+
+This heatmap as well as the signature heatmap reveals that some cell subclasses
+'spillover' too strongly into other cell subclasses. In other words some cell
+types are too similar - one might be a subset of the other. Here we see that
+Helper T cells are the most affected and their signature is similar to Tcm/Naive
+helper T cells.
+
+We update the cellMarker object to remove 2 cell clusters which overlap
+with other cell clusters and are therefore difficult to deconvolute.
+
+```
+mk <- updateMarkers(mk,
+                    remove_subclass = c("Helper T cells", "Cytotoxic T cells"))
 ```
 
 ### Simulated pseudo-bulk RNA-Seq

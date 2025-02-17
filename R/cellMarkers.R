@@ -230,6 +230,7 @@ cellMarkers <- function(scdata,
     cell_table <- apply(tab, 1, function(i) names(which.max(i)))
     cell_table <- factor(cell_table, levels = unique(cell_table))
   } else {
+    # no cell groups
     group_geneset <- group_angle <- groupmeans <- groupmeans_filtered <- NULL
     cell_table <- NULL
   }

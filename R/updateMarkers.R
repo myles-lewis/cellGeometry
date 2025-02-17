@@ -18,6 +18,7 @@
 #'   the cell subclass gene signature.
 #' @param remove_groupgene Character vector of gene markers to manually remove
 #'   to the cell group gene signature.
+#' @param remove_subclass Character vector of cell subclasses to remove.
 #' @param bulkdata Optional data matrix containing bulk RNA-Seq data with genes
 #'   in rows. This matrix is only used for its rownames, to ensure that cell
 #'   markers are selected from genes in the bulk dataset.
@@ -51,6 +52,7 @@ updateMarkers <- function(object = NULL,
                           add_groupgene = NULL,
                           remove_gene = NULL,
                           remove_groupgene = NULL,
+                          remove_subclass = NULL,
                           bulkdata = NULL,
                           nsubclass = object$opt$nsubclass,
                           ngroup = object$opt$ngroup,
@@ -64,6 +66,7 @@ updateMarkers <- function(object = NULL,
     stop("Either a cellMarkers object or genemeans must be supplied")
   
   if (is.null(genemeans)) genemeans <- object$genemeans
+  if (is.null(groupmeans)) groupmeans <- object$groupmeans
   if (any(duplicated(rownames(genemeans))))
     stop("Duplicated rownames in genemeans")
   
@@ -74,7 +77,22 @@ updateMarkers <- function(object = NULL,
       if (verbose) message(sum(ok), " genes overlap with bulkdata")
     }
   }
-      
+  
+  # remove subclass
+  if (!is.null(remove_subclass)) {
+    if (any(!remove_subclass %in% colnames(genemeans))) stop("cannot remove subclass")
+    subcl <- !colnames(genemeans) %in% remove_subclass
+    genemeans <- genemeans[, subcl]
+    reduced_tab <- object$cell_table[subcl]
+    object$cell_table <- droplevels(reduced_tab)
+    object$subclass_table <- object$subclass_table[subcl]
+    remove_group <- levels(reduced_tab)[which(table(reduced_tab) == 0)]
+    grp <- !colnames(object$groupmeans) %in% remove_group
+    groupmeans <- groupmeans[, grp]
+    object$genemeans_ar <- object$genemeans_ar[, subcl]
+  }
+  
+  # subclass analysis
   if (verbose) message("Subclass analysis")
   nsub <- length(object$subclass_table)
   nsubclass2 <- rep_len(nsubclass, nsub)
@@ -89,8 +107,7 @@ updateMarkers <- function(object = NULL,
   geneset <- unique(c(unlist(geneset), add_gene))
   if (!is.null(remove_gene)) geneset <- geneset[!geneset %in% remove_gene]
   
-  if (is.null(groupmeans)) groupmeans <- object$groupmeans
-  
+  # group analysis
   if (!is.null(groupmeans)) {
     if (any(duplicated(rownames(groupmeans))))
       stop("Duplicated rownames in groupmeans")
