@@ -11,6 +11,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 biocViews:
 Imports:
+    circlize,
     ComplexHeatmap,
     DelayedArray,
     dplyr,

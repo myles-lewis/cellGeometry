@@ -178,6 +178,10 @@ signature_heatmap(mk)
 knitr::include_graphics("typist_sig.png")
 ```
 
+The default signature heatmap shows the gene signature after the noise filter
+has been applied. To see the raw gene expression heatmap call
+`signature_heatmap()` with `use_filter = FALSE`.
+
 The spillover heatmap between cell clusters can also be visualised.
 
 ```{r eval = FALSE}

@@ -10,13 +10,19 @@
 #' 
 #' @param x Either a 'cellMarkers' or 'deconv' class object or a spillover
 #'   matrix.
+#' @param col Vector of colours or colour mapping function passed to
+#'   `ComplexHeatmap::Heatmap()`.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns No return value. Draws a heatmap using ComplexHeatmap.
 #' @importFrom grid grid.text unit
 #' @importFrom ComplexHeatmap draw
+#' @importFrom circlize colorRamp2
 #' @export
 
-spillover_heatmap <- function(x, ...) {
+spillover_heatmap <- function(x,
+                              col = colorRamp2(c(0, 0.5, 0.8, 1),
+                                               c("#F4FAFF", "steelblue2", "purple", "red")),
+                              ...) {
   cell_table <- NULL
   if (inherits(x, "deconv")) {
     cell_table <- x$mk$cell_table
@@ -27,7 +33,7 @@ spillover_heatmap <- function(x, ...) {
     m_itself <- x$spillover
   } else m_itself <- x
   
-  hm1 <- Heatmap(m_itself,
+  hm1 <- Heatmap(m_itself, col = col,
                  cluster_rows = FALSE, row_split = cell_table,
                  cluster_row_slices = FALSE, row_title = NULL,
                  cluster_columns = FALSE, column_split = cell_table,
