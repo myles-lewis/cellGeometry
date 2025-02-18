@@ -29,17 +29,21 @@ gene2symbol <- function(x, ensdb, dups = c("omit", "pass")) {
   if (inherits(x, "cellMarkers")) {
     old_rn <- rownames(x$genemeans)
     rn <- rownames(x$genemeans) <- convertsymbol(old_rn, ensdb, dups)
+    names(rn) <- old_rn
     rownames(x$groupmeans) <- rn
-    rownames(x$genemeans_filtered) <- convertsymbol(rownames(x$genemeans_filtered),
-                                                    ensdb, dups)
-    rownames(x$groupmeans_filtered) <- convertsymbol(rownames(x$groupmeans_filtered),
-                                                     ensdb, dups)
+    rownames(x$genemeans_filtered) <- rn[rownames(x$genemeans_filtered)]
+    rownames(x$groupmeans_filtered) <- rn[rownames(x$groupmeans_filtered)]
+    for (i in seq_along(x$best_angle)) {
+      rownames(x$best_angle[[i]]) <- rn[rownames(x$best_angle[[i]])]
+    }
+    for (i in seq_along(x$group_angle)) {
+      rownames(x$group_angle[[i]]) <- rn[rownames(x$group_angle[[i]])]
+    }
     if (!is.null(x$genemeans_ar)) {
       rownames(x$genemeans_ar) <- rn
-      rownames(x$genemeans_filtered_ar) <- convertsymbol(rownames(x$genemeans_filtered_ar),
-                                                         ensdb, dups)
+      rownames(x$genemeans_filtered_ar) <- rn[rownames(x$genemeans_filtered_ar)]
     }
-    names(rn) <- old_rn
+    
     x$geneset <- rn[x$geneset]
     x$group_geneset<- rn[x$group_geneset]
     x$symbol <- rn
