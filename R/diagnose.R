@@ -38,8 +38,9 @@ diagnose <- function(mk) {
     
     cat("Subclass signatures with fewer than", nsubclass,
         "first rank markers:\n")
-    cat(paste(paste0(format(colnames(mk$genemeans)[w], justify = "left"),
-                     "  ", no1[w], "/", nsubclass),
+    cat(paste(paste0(format(colnames(mk$genemeans)[w]), "   ",
+                     format(as.vector(mk$subclass_table[w])),
+                     "   ", no1[w], "/", nsubclass),
               collapse = "\n"))
     cat("\n\n")
     
