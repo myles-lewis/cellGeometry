@@ -45,7 +45,7 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' sampling is scaled up by the factor `times`.
 #'
 #' The first method can give perfect deconvolution if the following settings are
-#' used with [deconvolute()]: `exp_signature = TRUE`, `convert_bulk = FALSE`,
+#' used with [deconvolute()]: `count_space = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
 #' @param object Either a 'cellMarkers' class object or a single cell count

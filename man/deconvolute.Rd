@@ -8,7 +8,7 @@ deconvolute(
   mk,
   test,
   log = TRUE,
-  exp_signature = FALSE,
+  count_space = FALSE,
   comp_amount = 1,
   group_comp_amount = 0,
   equal_weight = FALSE,
@@ -30,8 +30,9 @@ counts as input, but normalised data can be provided, in which case set
 \item{log}{Logical, whether to apply log2 +1 to count data in \code{test}. Set to
 \code{FALSE} if prenormalised bulk RNA-Seq data is provided.}
 
-\item{exp_signature}{Logical, whether signature and test revert to count
-scale by 2^ exponentiation.}
+\item{count_space}{Logical, whether deconvolution is performed in count
+space (as opposed to log2 space). Signature and test revert to count scale
+by 2^ exponentiation during deconvolution.}
 
 \item{comp_amount}{either a single value from 0-1 for the amount of
 compensation or a numeric vector with the same length as the number of cell

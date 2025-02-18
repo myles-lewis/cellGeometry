@@ -37,7 +37,7 @@ sampling is scaled up by the factor \code{times}.
 }
 \details{
 The first method can give perfect deconvolution if the following settings are
-used with \code{\link[=deconvolute]{deconvolute()}}: \code{exp_signature = TRUE}, \code{convert_bulk = FALSE},
+used with \code{\link[=deconvolute]{deconvolute()}}: \code{count_space = TRUE}, \code{convert_bulk = FALSE},
 \code{use_filter = FALSE} and \code{comp_amount = 1}.
 }
 \seealso{

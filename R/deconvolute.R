@@ -10,8 +10,9 @@
 #'   `log = FALSE`.
 #' @param log Logical, whether to apply log2 +1 to count data in `test`. Set to
 #'   `FALSE` if prenormalised bulk RNA-Seq data is provided.
-#' @param exp_signature Logical, whether signature and test revert to count
-#'   scale by 2^ exponentiation.
+#' @param count_space Logical, whether deconvolution is performed in count
+#'   space (as opposed to log2 space). Signature and test revert to count scale
+#'   by 2^ exponentiation during deconvolution.
 #' @param comp_amount either a single value from 0-1 for the amount of
 #'   compensation or a numeric vector with the same length as the number of cell
 #'   subclasses to deconvolute.
@@ -64,7 +65,7 @@
 #' @export
 #'
 deconvolute <- function(mk, test, log = TRUE,
-                        exp_signature = FALSE,
+                        count_space = FALSE,
                         comp_amount = 1,
                         group_comp_amount = 0,
                         equal_weight = FALSE,
@@ -98,7 +99,7 @@ deconvolute <- function(mk, test, log = TRUE,
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, equal_weight,
-                           adjust_comp, exp_signature)
+                           adjust_comp, count_space)
   } else {
     gtest <- NULL
   }
@@ -119,7 +120,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
-                         adjust_comp, exp_signature)
+                         adjust_comp, count_space)
   
   if (verbose) {
     maxsp <- max_spill(atest$spillover)
@@ -155,18 +156,18 @@ deconvolute <- function(mk, test, log = TRUE,
   if (plot_comp) {
     message("analysing compensation")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
-                                 equal_weight, exp_signature)
+                                 equal_weight, count_space)
   }
   class(out) <- "deconv"
   out
 }
 
 deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
-                          adjust_comp = TRUE, exp_signature = FALSE) {
+                          adjust_comp = TRUE, count_space = FALSE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   
-  atest <- deconv(test, cellmat, comp_amount, equal_weight, exp_signature)
+  atest <- deconv(test, cellmat, comp_amount, equal_weight, count_space)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
@@ -177,7 +178,7 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
           newcomp <- comp_amount
           newcomp[i] <- x
           ntest <- deconv(test, cellmat, comp_amount = newcomp, equal_weight,
-                          exp_signature)
+                          count_space)
           min(ntest$output[, i], na.rm = TRUE)^2
         }
         if (comp_amount[i] == 0) return(0)
@@ -186,7 +187,7 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
       }, numeric(1))
       comp_amount[w] <- newcomps
       atest <- deconv(test, cellmat, comp_amount = comp_amount, equal_weight,
-                      exp_signature)
+                      count_space)
       atest$output[atest$output < 0] <- 0
     } else message("negative cell proportion projection detected")
   }
@@ -194,12 +195,12 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
 }
 
 deconv <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
-                   exp_signature = FALSE) {
+                   count_space = FALSE) {
   if (!(length(comp_amount) %in% c(1, ncol(cellmat))))
     stop('comp_amount must be either single number or vector of length matching cellmat cols')
   if (!identical(rownames(test), rownames(cellmat)))
     stop('test and cell matrices must have same genes (rownames)')
-  if (exp_signature) {
+  if (count_space) {
     test <- 2^test -1
     cellmat <- 2^cellmat -1
   }
@@ -208,7 +209,7 @@ deconv <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   output <- dotprod(test, cellmat, equal_weight) %*% mixcomp
   percent <- output / rowSums(output) * 100
-  # if (!exp_signature) {
+  # if (!count_space) {
   # cell_count <- 2^output -1
   # cell_percent <- cell_count / rowSums(cell_count) * 100
   # } else cell_count <- cell_percent <- NULL
@@ -246,7 +247,7 @@ bulk2sc <- function(x) {
 
 
 comp_check <- function(test, cellmat, comp_amount, equal_weight,
-                       exp_signature) {
+                       count_space) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   px <- seq(0, 1, 0.05)
@@ -255,7 +256,7 @@ comp_check <- function(test, cellmat, comp_amount, equal_weight,
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- deconv(test, cellmat, newcomp, equal_weight, exp_signature)
+      ntest <- deconv(test, cellmat, newcomp, equal_weight, count_space)
       min(ntest$output[, i], na.rm = TRUE)
     }, numeric(1))
   })

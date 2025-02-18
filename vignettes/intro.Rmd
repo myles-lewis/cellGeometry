@@ -234,7 +234,7 @@ function generates a table of results.
 ```{r eval = FALSE}
 # mode 1: (perfect deconvolution)
 fit <- deconvolute(mk, sim_pseudo,
-                   exp_signature = TRUE, convert_bulk = FALSE, use_filter = FALSE)
+                   count_space = TRUE, convert_bulk = FALSE, use_filter = FALSE)
 plot_set(sim_counts, fit$subclass$output)
 plot_set(sim_percent, fit$subclass$percent)
 
@@ -258,7 +258,7 @@ rownames(sim_sampled) <- gene2symbol(rownames(sim_sampled), ensDb_v110)
 
 # near optimal deconvolution of counts sampled from the original scRNA-Seq
 fit2 <- deconvolute(mk, sim_sampled,
-                    exp_signature = TRUE, convert_bulk = FALSE, use_filter = FALSE,
+                    count_space = TRUE, convert_bulk = FALSE, use_filter = FALSE,
                     arith_mean = TRUE)
 
 # plot results
@@ -308,7 +308,7 @@ bulk data when calling `deconvolute()`. The main settings to choose here are:
                         on a reference dataset in which both bulk and scRNA-Seq 
                         were performed simultaneously.
                       
-`exp_signature = FALSE` This toggles whether the deconvolution is performed in 
+`count_space = FALSE`   This toggles whether the deconvolution is performed in 
                         count space (exponential space) or in log<sub>2</sub> space.
 ----------------------  --------------------------------------------------------
 
@@ -316,7 +316,7 @@ We recommend `use_filter` is always on for real-world bulk analysis as it reduce
 the need for compensation particularly for genes where non-specific low level
 expression is present in some cell clusters which can occur even for good
 markers. We suggest `deconvolute()` is used in one of 2 modes: either
-`convert_bulk = TRUE` or `exp_signature = TRUE`, but not both.
+`convert_bulk = TRUE` or `count_space = TRUE`, but not both.
 
 There is also a powerful function `tune_deconv()` which allows users to tune any
 of the parameters available in `updateMarkers()` based on a bulk reference
