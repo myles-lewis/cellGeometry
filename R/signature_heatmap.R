@@ -62,11 +62,8 @@ signature_heatmap <- function(x,
     gset <- if (type == "subclass") x$geneset else x$group_geneset
     if (type != "group") cell_table <- x$cell_table
     if (arith_mean) {
-      gmat <- if (type == "group") {
-        stop("arithmetic mean not available for group means")
-      } else {
-        if (use_filter) x$genemeans_filtered_ar else x$genemeans_ar
-      }
+      if (type == "group") stop("arithmetic mean not available for group means")
+      gmat <- if (use_filter) x$genemeans_filtered_ar else x$genemeans_ar
       if (is.null(gmat)) stop("arithmetic mean not available")
     } else {
       gmat <- if (type == "group") {
@@ -80,6 +77,7 @@ signature_heatmap <- function(x,
     gene_signature <- x
   }
   if (!is.null(subset)) {
+    if (type != "subclass") stop("subset can only be used with subclass heatmaps")
     s <- which(x$cell_table %in% subset)
     if (length(s) == 0) stop("no such subgroup")
     genes <- lapply(x$best_angle[s], function(i) rownames(i)[1:x$opt$nsubclass])
