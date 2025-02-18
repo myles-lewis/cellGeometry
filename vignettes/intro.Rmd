@@ -149,6 +149,15 @@ single-cell data, available RAM and whether HFD5 is used.
 Windows users can invoke parallelisation using the future backend and setting up
 a multisession plan.
 
+```{r eval = FALSE}
+# example code using future for parallelisation on windows
+library(future)
+plan(multisession, workers = 4)
+
+mk <- cellMarkers(mat, subclass = subcl, cellgroup = cellgrp,
+                  use_future = TRUE)
+```
+
 We have not specified a bulk RNA-Seq dataset at this stage as this example is
 based on simulation alone. However, if you have a bulk RNA-Seq dataset it is
 helpful to specify it during the first call to `cellMarkers()`. It is only used
