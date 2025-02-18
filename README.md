@@ -86,8 +86,10 @@ RNA-Seq data later (this is optional).
 table(meta$Majority_voting_CellTypist)
 
 subcl <- meta$Majority_voting_CellTypist
-subcl[meta$tissue != "blood"] <- NA
 cellgrp <- meta$Majority_voting_CellTypist_high
+
+# reduce dataset to only blood (optional)
+subcl[meta$tissue != "blood"] <- NA
 cellgrp[meta$tissue != "blood"] <- NA
 ```
 

@@ -102,15 +102,20 @@ meta <- typist_h5@colData@listData
 
 We first check cell cluster subclasses. Then we extract a vector which contains
 the subclass cluster for each cell and a 2nd vector for broader cell groups. We
-restrict the dataset to blood so that we can deconvolute blood bulk
-RNA-Seq data later (this is optional).
+restrict the dataset to blood so that we can deconvolute blood bulk RNA-Seq data
+later (since tissue-based cells should not be found in peripheral blood
+samples). This reduces the analysis to 27,602 cells out of the total 329,762
+cells and reduces the number of subclasses from 43 to 27. This is entirely
+optional and the algorithm can easily run the full analysis.
 
 ```{r eval = FALSE}
 table(meta$Majority_voting_CellTypist)
 
 subcl <- meta$Majority_voting_CellTypist
-subcl[meta$tissue != "blood"] <- NA
 cellgrp <- meta$Majority_voting_CellTypist_high
+
+# reduce dataset to only blood (optional)
+subcl[meta$tissue != "blood"] <- NA
 cellgrp[meta$tissue != "blood"] <- NA
 ```
 
