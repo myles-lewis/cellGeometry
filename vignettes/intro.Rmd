@@ -301,14 +301,14 @@ by single-cell sequencing. So we recommend the default settings for real-world
 bulk data when calling `deconvolute()`. The main settings to choose here are:
 
 ----------------------  --------------------------------------------------------
-`use_filter = TRUE`     This reduces the overall amount of spillover by reducing 
-                        apparent noise in the gene signatures.
+`use_filter = TRUE`     Reduces the overall amount of spillover & compensation 
+                        by denoising the gene signatures.
 
-`convert_bulk = TRUE`   This converts the bulk RNA-Seq onto scRNA-Seq data based 
-                        on a reference dataset in which both bulk and scRNA-Seq 
-                        were performed simultaneously.
+`convert_bulk = TRUE`   Converts the bulk RNA-Seq onto scRNA-Seq data scale 
+                        based on a reference dataset in which both bulk and 
+                        scRNA-Seq were performed simultaneously.
                       
-`count_space = FALSE`   This toggles whether the deconvolution is performed in 
+`count_space = FALSE`   Toggles whether the deconvolution is performed in 
                         count space (exponential space) or in log<sub>2</sub> space.
 ----------------------  --------------------------------------------------------
 
@@ -316,7 +316,7 @@ We recommend `use_filter` is always on for real-world bulk analysis as it reduce
 the need for compensation particularly for genes where non-specific low level
 expression is present in some cell clusters which can occur even for good
 markers. We suggest `deconvolute()` is used in one of 2 modes: either
-`convert_bulk = TRUE` or `count_space = TRUE`, but not both.
+`convert_bulk = TRUE` or `count_space = TRUE`, but **not both**.
 
 There is also a powerful function `tune_deconv()` which allows users to tune any
 of the parameters available in `updateMarkers()` based on a bulk reference
