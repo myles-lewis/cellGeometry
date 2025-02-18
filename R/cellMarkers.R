@@ -143,8 +143,11 @@ cellMarkers <- function(scdata,
     subclass[subclass %in% remove_subclass] <- NA
     subclass <- factor(subclass)
   }
-  if (verbose & !inherits(scdata, "DelayedMatrix")) {
-    mem_estimate(dimx, subclass, cellgroup, sliceMem, cores)
+  if (verbose) {
+    message("Dataset: ", dimx[2], " cells, ", dimx[1], " genes")
+    if (!inherits(scdata, "DelayedMatrix")) {
+      mem_estimate(dimx, subclass, cellgroup, sliceMem, cores)
+    }
   }
   
   ok <- TRUE
@@ -154,10 +157,12 @@ cellMarkers <- function(scdata,
     if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
   }
   nsub <- nlevels(subclass)
-  if (verbose) message(dimx[1], " genes, ", dimx[2], " cells, ",
-                       nsub, " cell subclasses")
-  if (verbose) message("Subclass analysis")
-  
+  if (verbose) {
+    if (dimx[2] != sum(!is.na(subclass))) {
+      message("Analysing ", sum(!is.na(subclass)), " cells, ", appendLF = FALSE)
+    }
+    message(nsub, " cell subclasses\nSubclass analysis")
+  }
   nsubclass2 <- rep_len(nsubclass, nsub)
   
   if (is.character(meanFUN) && meanFUN == "trimmean" && is.null(postFUN)) {
