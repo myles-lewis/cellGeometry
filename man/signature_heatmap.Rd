@@ -16,6 +16,7 @@ signature_heatmap(
   fontsize = 6.5,
   outlines = FALSE,
   outline_col = "black",
+  subset = NULL,
   ...
 )
 }
@@ -54,6 +55,8 @@ where cell subclasses or groups are dimensions.}
 row. This supercedes \code{text}.}
 
 \item{outline_col}{Colour for the outline boxes when \code{outlines = TRUE}.}
+
+\item{subset}{Character vector of groups to be subsetted.}
 
 \item{...}{Optional arguments passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 }

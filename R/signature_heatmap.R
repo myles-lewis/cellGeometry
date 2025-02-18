@@ -28,6 +28,7 @@
 #' @param outlines Logical whether to outline boxes with maximum values in each
 #'   row. This supercedes `text`.
 #' @param outline_col Colour for the outline boxes when `outlines = TRUE`.
+#' @param subset Character vector of groups to be subsetted.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns A 'Heatmap' class object.
 #' @importFrom grDevices hcl.colors
@@ -46,6 +47,7 @@ signature_heatmap <- function(x,
                               fontsize = 6.5,
                               outlines = FALSE,
                               outline_col = "black",
+                              subset = NULL,
                               ...) {
   type <- match.arg(type)
   rank <- match.arg(rank)
@@ -77,6 +79,18 @@ signature_heatmap <- function(x,
   } else {
     gene_signature <- x
   }
+  if (!is.null(subset)) {
+    s <- which(x$cell_table %in% subset)
+    if (length(s) == 0) stop("no such subgroup")
+    genes <- lapply(x$best_angle[s], function(i) rownames(i)[1:x$opt$nsubclass])
+    genes <- unique(unlist(genes))
+    gs <- gene_signature[genes, s]
+    return(signature_heatmap(x = gs, rank = rank, scale = scale, col = col,
+                             text = text, fontsize = fontsize,
+                             outlines = outlines, outline_col = outline_col,
+                             ...))
+  }
+  
   whmax <- max.col(gene_signature)
   rmax <- rowMaxs(gene_signature)
   if (rank == "max") {
