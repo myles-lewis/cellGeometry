@@ -144,7 +144,6 @@ updateMarkers <- function(object = NULL,
   m_itself <- dotprod(gene_sig, gene_sig, equal_weight = FALSE)
   
   out <- list(call = object$call,
-              update = .call,
               best_angle = best_angle,
               group_angle = group_angle,
               geneset = geneset,
@@ -161,7 +160,8 @@ updateMarkers <- function(object = NULL,
                          ngroup = ngroup,
                          expfilter = expfilter,
                          noisefilter = noisefilter,
-                         noisefraction = noisefraction))
+                         noisefraction = noisefraction),
+              update = .call)
   if (!is.null(object$symbol)) out$symbol <- object$symbol
   if (!is.null(object$qmap)) out$qmap <- object$qmap
   
