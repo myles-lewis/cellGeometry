@@ -58,20 +58,20 @@ mergeMarkers <- function(mk1, mk2,
   gm1 <- mk1$genemeans[common, ]
   gm2 <- mk2$genemeans[common, ]
   genemeans <- cbind(gm1, gm2)
-  if (any(remove_subclass %in% colnames(genemeans))) {
-    genemeans <- genemeans[, !colnames(genemeans) %in% remove_subclass]
-  }
-  
-  cell_table <- c(mk1$cell_table, mk2$cell_table)
-  cell_table <- cell_table[!names(cell_table) %in% remove_subclass]
-  old_levels <- levels(cell_table)
-  cell_table <- droplevels(cell_table)
-  gone <- setdiff(old_levels, levels(cell_table))
-  if (is.null(remove_group)) remove_group <- gone
-  
   gp1 <- mk1$groupmeans[common, ]
   gp2 <- mk2$groupmeans[common, ]
   groupmeans <- cbind(gp1, gp2)
+  
+  # remove subclass or group
+  cell_table <- c(mk1$cell_table, mk2$cell_table)
+  rem_subcl <- colnames(genemeans) %in% remove_subclass |
+    cell_table %in% remove_group
+  if (any(rem_subcl)) genemeans <- genemeans[, !rem_subcl]
+  cell_table <- cell_table[!rem_subcl]
+  old_levels <- levels(cell_table)
+  cell_table <- droplevels(cell_table)
+  gone <- setdiff(old_levels, levels(cell_table))
+  remove_group <- c(remove_group, gone)
   if (any(remove_group %in% colnames(groupmeans))) {
     groupmeans <- groupmeans[, !colnames(groupmeans) %in% remove_group]
   }
