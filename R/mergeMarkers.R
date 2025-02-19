@@ -80,7 +80,7 @@ mergeMarkers <- function(mk1, mk2,
   mk1$groupmeans <- groupmeans
   mk1$cell_table <- cell_table
   subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
-  subclass_table <- subclass_table[!names(subclass_table) %in% remove_subclass]
+  subclass_table <- subclass_table[!rem_subcl]
   mk1$subclass_table <- subclass_table
   if (!is.null(qfun)) mk1$qqmerge <- qfun
   
