@@ -38,7 +38,7 @@ mergeMarkers <- function(mk1, mk2,
   qfun <- NULL
   if (transform == "qq") {
     message("Quantile transforming '", xlab, "'")
-    qfun <- quantile_map(mk2, mk1) |> suppressMessages()
+    qfun <- quantile_map(mk2, mk1, respace = TRUE) |> suppressMessages()
     mk2$genemeans <- qfun$map(mk2$genemeans)
     mk2$groupmeans <- qfun$map(mk2$groupmeans)
     qfun$xlab <- xlab

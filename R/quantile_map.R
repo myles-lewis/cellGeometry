@@ -71,7 +71,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   qy <- quantile(y, qi)
   df <- data.frame(qx, qy)
   if (respace) {
-    xseq <- seq(qx[1], qx[length(qx)], length.out = 100)
+    xseq <- seq(qx[1], qx[length(qx)], length.out = 1000)
     ind <- vapply(xseq, function(xi) {
       which(qx >= xi)[1]
     }, integer(1L))
