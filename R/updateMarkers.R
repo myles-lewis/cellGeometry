@@ -19,6 +19,7 @@
 #' @param remove_groupgene Character vector of gene markers to manually remove
 #'   to the cell group gene signature.
 #' @param remove_subclass Character vector of cell subclasses to remove.
+#' @param remove_group Optional character vector of cell groups to remove.
 #' @param bulkdata Optional data matrix containing bulk RNA-Seq data with genes
 #'   in rows. This matrix is only used for its rownames, to ensure that cell
 #'   markers are selected from genes in the bulk dataset.
@@ -53,6 +54,7 @@ updateMarkers <- function(object = NULL,
                           remove_gene = NULL,
                           remove_groupgene = NULL,
                           remove_subclass = NULL,
+                          remove_group = NULL,
                           bulkdata = NULL,
                           nsubclass = object$opt$nsubclass,
                           ngroup = object$opt$ngroup,
@@ -78,15 +80,20 @@ updateMarkers <- function(object = NULL,
     }
   }
   
-  # remove subclass
-  if (!is.null(remove_subclass)) {
+  # remove subclass or group
+  if (!is.null(remove_subclass) | !is.null(remove_group)) {
     if (any(!remove_subclass %in% colnames(genemeans))) stop("cannot remove subclass")
-    subcl <- !colnames(genemeans) %in% remove_subclass
+    if (any(!remove_group %in% colnames(groupmeans))) stop("cannot remove group")
+    
+    subcl <- !colnames(genemeans) %in% remove_subclass &
+      !object$cell_table %in% remove_group
     genemeans <- genemeans[, subcl]
     reduced_tab <- object$cell_table[subcl]
+    old_levels <- levels(object$cell_table)
     object$cell_table <- droplevels(reduced_tab)
     object$subclass_table <- object$subclass_table[subcl]
-    remove_group <- levels(reduced_tab)[which(table(reduced_tab) == 0)]
+    gone <- setdiff(old_levels, levels(object$cell_table))
+    remove_group <- c(remove_group, gone)
     grp <- !colnames(object$groupmeans) %in% remove_group
     groupmeans <- groupmeans[, grp]
     object$genemeans_ar <- object$genemeans_ar[, subcl]
