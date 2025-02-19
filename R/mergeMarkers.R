@@ -20,7 +20,8 @@
 #'   `transform` is set to "scale".
 #' @param ... Optional arguments and settings passed to [updateMarkers()].
 #' @returns A list object of S3 class 'cellMarkers'. See [cellMarkers()] for
-#'   details.
+#'   details. If `transform = "qq"` then an additional element `qqmerge` is
+#'   returned containing the quantile mapping function between the 2 datasets.
 #' @seealso [cellMarkers()] [updateMarkers()] [quantile_map()]
 #' @export
 mergeMarkers <- function(mk1, mk2,
