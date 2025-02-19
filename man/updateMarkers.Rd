@@ -13,6 +13,7 @@ updateMarkers(
   remove_gene = NULL,
   remove_groupgene = NULL,
   remove_subclass = NULL,
+  remove_group = NULL,
   bulkdata = NULL,
   nsubclass = object$opt$nsubclass,
   ngroup = object$opt$ngroup,
@@ -45,6 +46,8 @@ the cell subclass gene signature.}
 to the cell group gene signature.}
 
 \item{remove_subclass}{Character vector of cell subclasses to remove.}
+
+\item{remove_group}{Optional character vector of cell groups to remove.}
 
 \item{bulkdata}{Optional data matrix containing bulk RNA-Seq data with genes
 in rows. This matrix is only used for its rownames, to ensure that cell
