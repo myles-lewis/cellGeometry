@@ -82,19 +82,18 @@ deconvolute <- function(mk, test, log = TRUE,
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
-  if (convert_bulk == "qqmap" & is.null(mk$qqmap)) {
+  if (convert_bulk == "qqmap") {
     message("Quantile map bulk to sc, ", appendLF = FALSE)
-    mk$qqmap <- quantile_map(log2(test +1), mk$genemeans, remove_zeros = TRUE)
+    qqmap <- quantile_map(log2(test +1), mk$genemeans, remove_zeros = TRUE)
   }
-  bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = mk$qqmap$map)
+  bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = qqmap$map)
   
   # group first
   if (!is.null(mk$group_geneset)) {
     cellmat <- if (use_filter) {mk$groupmeans_filtered[mk$group_geneset, ]
     } else mk$groupmeans[mk$group_geneset, ]
-    # cellmat <- sc2bulk(cellmat)
     if (!all(mk$group_geneset %in% rownames(test)))
-      stop("some group signature genes not found in test")
+      stop("test is missing some group signature genes")
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
@@ -115,7 +114,7 @@ deconvolute <- function(mk, test, log = TRUE,
   }
   # cellmat <- sc2bulk(cellmat)
   if (!all(mk$geneset %in% rownames(test)))
-    stop("some signature genes not found in test")
+    stop("test is missing some signature genes")
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
@@ -153,6 +152,7 @@ deconvolute <- function(mk, test, log = TRUE,
   out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
               nest_output = nest_output, nest_percent = nest_percent,
               comp_amount = comp_amount)
+  if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (plot_comp) {
     message("analysing compensation")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,

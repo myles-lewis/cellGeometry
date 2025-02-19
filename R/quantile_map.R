@@ -19,13 +19,12 @@
 #'   genes, or "." which are either pseudogenes or ribosomal genes.
 #' @param remove_zeros Logical, whether to remove zeros from both datasets.
 #'   This shifts the quantile relationships.
-#' @param smooth Either "loess" which applies [loess()] to smooth the QQ
+#' @param smooth Either "lowess" which applies [lowess()] to smooth the QQ
 #'   fitted line, or "ns" which uses natural splines via [ns()]. With any other
 #'   value no smoothing is applied. With no smoothing or "lowess", interpolation
 #'   is limited to the original range of `x`, i.e. it will clip for values >
 #'   `max(x)`.
-#' @param span the parameter alpha which controls the degree of smoothing in
-#'   [loess()].
+#' @param f controls the degree of smoothing in [lowess()].
 #' @param knots Vector of quantile points for knots for fitting natural splines.
 #' @param respace Logical whether to respace quantile points so their x axis
 #'   density is more even. Can help spline fitting.
@@ -46,8 +45,8 @@
 
 quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
                          remove_zeros = FALSE,
-                         smooth = "loess",
-                         span = 0.1,
+                         smooth = "lowess",
+                         f = 0.01,
                          knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
                          respace = FALSE) {
   xlab <- deparse(substitute(x))
@@ -81,11 +80,14 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
     qy <- qy[ind]
     df <- data.frame(qx, qy)
   }
-  if (smooth == "loess") {
-    fit <- loess(qy ~ qx, span = span) |> suppressWarnings()
-    qx <- seq(0, qx[length(qx)], length.out = 1000)
-    qy <- predict(fit, data.frame(qx))
-    qy[qy < 0] <- 0
+  if (smooth == "lowess") {
+    # fit <- loess(qy ~ qx, span = span) |> suppressWarnings()
+    # qx <- seq(0, qx[length(qx)], length.out = 1000)
+    # qy <- predict(fit, data.frame(qx))
+    # qy[qy < 0] <- 0
+    fit <- lowess(qx, qy, f = span)
+    qx <- fit$x
+    qy <- fit$y
   } else if (smooth == "ns") {
     kn <- quantile(qx, knots)
     fit <- lm(qy ~ ns(qx, knots = kn), df)
