@@ -19,12 +19,12 @@
 #'   genes, or "." which are either pseudogenes or ribosomal genes.
 #' @param remove_zeros Logical, whether to remove zeros from both datasets.
 #'   This shifts the quantile relationships.
-#' @param smooth Either "lowess" which applies [lowess()] to smooth the QQ
-#'   fitted line, or "ns" which uses natural splines via [ns()]. With any other
-#'   value no smoothing is applied. With no smoothing or "lowess", interpolation
-#'   is limited to the original range of `x`, i.e. it will clip for values >
-#'   `max(x)`.
-#' @param f controls the degree of smoothing in [lowess()].
+#' @param smooth Either "loess" or "lowess" which apply [loess()] or [lowess()]
+#'   to smooth the QQ fitted line, or "ns" which uses natural splines via
+#'   [ns()]. With any other value no smoothing is applied. With no smoothing or
+#'   "loess/lowess", interpolation is limited to the original range of `x`, i.e.
+#'   it will clip for values > `max(x)`.
+#' @param span controls the degree of smoothing in [loess()] and [lowess()].
 #' @param knots Vector of quantile points for knots for fitting natural splines.
 #' @param respace Logical whether to respace quantile points so their x axis
 #'   density is more even. Can help spline fitting.
@@ -39,14 +39,14 @@
 #' individual datapoint.
 #' 
 #' @seealso [approxfun()]
-#' @importFrom stats quantile predict lowess
+#' @importFrom stats quantile predict loess lowess
 #' @importFrom splines ns
 #' @export
 
 quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
                          remove_zeros = FALSE,
-                         smooth = "lowess",
-                         f = 0.01,
+                         smooth = "loess",
+                         span = 0.15,
                          knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
                          respace = FALSE) {
   xlab <- deparse(substitute(x))
@@ -80,12 +80,20 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
     qy <- qy[ind]
     df <- data.frame(qx, qy)
   }
+  if (smooth == "loess") {
+    fit <- loess(qy ~ qx, span = span) |> suppressWarnings()
+    qx <- seq(0, qx[length(qx)], length.out = 1000)
+    qy <- try(predict(fit, data.frame(qx)), silent = TRUE)
+    if (!inherits(qy, "try-error")) {
+      qy[qy < 0] <- 0
+    } else {
+      # loess error
+      message("Error in loess. Switching to lowess.")
+      smooth <- "lowess"
+    }
+  }
   if (smooth == "lowess") {
-    # fit <- loess(qy ~ qx, span = span) |> suppressWarnings()
-    # qx <- seq(0, qx[length(qx)], length.out = 1000)
-    # qy <- predict(fit, data.frame(qx))
-    # qy[qy < 0] <- 0
-    fit <- lowess(qx, qy, f)
+    fit <- lowess(df$qx, df$qy, f = span)
     qx <- fit$x
     qy <- fit$y
   } else if (smooth == "ns") {
