@@ -136,9 +136,9 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
 #' @importFrom graphics lines
 #' @export
 plot.qqmap <- function(x, points = TRUE, ...) {
+  new.args <- list(...)
   if (points) {
-    new.args <- list(...)
-    args <- list(x = x$quantiles$qx, y = x$quantiles$qy, cex = 0.5,
+    args <- list(x = x$quantiles$qx, y = x$quantiles$qy, cex = 0.5, las = 1,
                  xlab = x$xlab, ylab = x$ylab)
     if (length(new.args)) args[names(new.args)] <- new.args
     do.call("plot", args)
@@ -150,8 +150,10 @@ plot.qqmap <- function(x, points = TRUE, ...) {
   } else {
     xr <- c(x$quantiles$qx[1], x$quantiles$qx[nrow(x$quantiles)])
     px <- seq(xr[1], xr[2], length.out = 1000)
-    plot(px, x$map(px), col = "red", type = "l",
-         xlab = x$xlab, ylab = x$ylab, ...)
+    args = list(x = px, y = x$map(px), col = "red", type = "l", las = 1,
+                lwd = 1.5, xlab = x$xlab, ylab = x$ylab)
+    if (length(new.args)) args[names(new.args)] <- new.args
+    do.call("plot", args)
   }
 }
 
