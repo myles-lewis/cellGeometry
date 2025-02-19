@@ -162,7 +162,7 @@ updateMarkers <- function(object = NULL,
                          noisefraction = noisefraction),
               update = .call)
   if (!is.null(object$symbol)) out$symbol <- object$symbol
-  if (!is.null(object$qmap)) out$qmap <- object$qmap
+  if (!is.null(object$qqmerge)) out$qqmerge <- object$qqmerge
   
   if (!is.null(object$genemeans_ar)) {
     # dual mean
