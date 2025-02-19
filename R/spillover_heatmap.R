@@ -13,6 +13,7 @@
 #' @param col Vector of colours or colour mapping function passed to
 #'   `ComplexHeatmap::Heatmap()`.
 #' @param text Logical whether to show values of the maximum cell in each row.
+#'   By default only shown for smaller matrices.
 #' @param fontsize Numeric value for font size for cell values when
 #'   `text = TRUE`.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
