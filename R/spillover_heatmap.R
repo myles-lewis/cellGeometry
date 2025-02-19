@@ -20,8 +20,7 @@
 #' @export
 
 spillover_heatmap <- function(x,
-                              col = colorRamp2(c(0, 0.5, 0.8, 1),
-                                               c("#F4FAFF", "steelblue2", "purple", "red")),
+                              col = NULL,
                               ...) {
   cell_table <- NULL
   if (inherits(x, "deconv")) {
@@ -33,6 +32,16 @@ spillover_heatmap <- function(x,
     m_itself <- x$spillover
   } else m_itself <- x
   
+  if (is.null(col)) {
+    mx <- max(m_itself)
+    col <- if (mx > 1) {
+      colorRamp2(c(0, 0.5, 0.8, 1, mx),
+                 c("#F4FAFF", "steelblue2", "purple", "red", "red3"))
+    } else {
+      colorRamp2(c(0, 0.5, 0.8, 1),
+                 c("#F4FAFF", "steelblue2", "purple", "red"))
+    }
+  }
   hm1 <- Heatmap(m_itself, col = col,
                  cluster_rows = FALSE, row_split = cell_table,
                  cluster_row_slices = FALSE, row_title = NULL,

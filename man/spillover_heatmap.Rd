@@ -4,11 +4,7 @@
 \alias{spillover_heatmap}
 \title{Spillover heatmap}
 \usage{
-spillover_heatmap(
-  x,
-  col = colorRamp2(c(0, 0.5, 0.8, 1), c("#F4FAFF", "steelblue2", "purple", "red")),
-  ...
-)
+spillover_heatmap(x, col = NULL, ...)
 }
 \arguments{
 \item{x}{Either a 'cellMarkers' or 'deconv' class object or a spillover
