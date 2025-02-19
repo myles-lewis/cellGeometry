@@ -12,6 +12,9 @@
 #'   matrix.
 #' @param col Vector of colours or colour mapping function passed to
 #'   `ComplexHeatmap::Heatmap()`.
+#' @param text Logical whether to show values of the maximum cell in each row.
+#' @param fontsize Numeric value for font size for cell values when
+#'   `text = TRUE`.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns No return value. Draws a heatmap using ComplexHeatmap.
 #' @importFrom grid grid.text unit
@@ -21,6 +24,8 @@
 
 spillover_heatmap <- function(x,
                               col = NULL,
+                              text = NULL,
+                              fontsize = 8,
                               ...) {
   cell_table <- NULL
   if (inherits(x, "deconv")) {
@@ -42,6 +47,18 @@ spillover_heatmap <- function(x,
                  c("#F4FAFF", "steelblue2", "purple", "red"))
     }
   }
+  if (is.null(text)) text <- dim(m_itself)[1] <= 50
+  layer_fun <- NULL
+  if (text) {
+    layer_fun <- function(j, i, x, y, width, height, fill) {
+      v <- pindex(m_itself, i, j)
+      l <- v > 0.5 & i != j
+      if (any(l)) {
+        grid.text(sprintf("%.1f", v[l]), x[l], y[l],
+                  gp = gpar(fontsize = fontsize))
+      }
+    }
+  }
   hm1 <- Heatmap(m_itself, col = col,
                  cluster_rows = FALSE, row_split = cell_table,
                  cluster_row_slices = FALSE, row_title = NULL,
@@ -50,11 +67,7 @@ spillover_heatmap <- function(x,
                  # column_names_rot = 75,
                  column_names_gp = gpar(fontsize = 8),
                  row_names_gp = gpar(fontsize = 8),
-                 cell_fun = function(j, i, x, y, width, height, fill) {
-                   grid.text(ifelse(m_itself[i, j] > 0.5 & i!=j,
-                                    sprintf("%.1f",  m_itself[i, j]), ""),
-                             x, y, gp = gpar(fontsize = 8))
-                 },
+                 layer_fun = layer_fun,
                  heatmap_legend_param = list(title = "spillover",
                                              legend_width = unit(6, "cm"),
                                              direction = "horizontal"),
