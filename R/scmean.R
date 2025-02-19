@@ -77,8 +77,9 @@ scmean <- function(x, celltype,
   ro <- core_set <- TRUE
   if (!use_future) {
     # load balance schedule
-    if (load_balance & cores > 1) {
-      core_set <- balance_cores(table(celltype), cores)
+    tab <- table(celltype)
+    if (cores > 1 && load_balance && length(tab) > cores) {
+      core_set <- balance_cores(tab, cores)
       ro <- order(core_set)
     }
     # dynamic slicing

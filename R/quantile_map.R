@@ -39,7 +39,7 @@
 #' individual datapoint.
 #' 
 #' @seealso [approxfun()]
-#' @importFrom stats quantile predict loess
+#' @importFrom stats quantile predict lowess
 #' @importFrom splines ns
 #' @export
 
@@ -85,7 +85,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
     # qx <- seq(0, qx[length(qx)], length.out = 1000)
     # qy <- predict(fit, data.frame(qx))
     # qy[qy < 0] <- 0
-    fit <- lowess(qx, qy, f = span)
+    fit <- lowess(qx, qy, f)
     qx <- fit$x
     qy <- fit$y
   } else if (smooth == "ns") {
