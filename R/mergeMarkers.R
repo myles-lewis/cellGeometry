@@ -81,7 +81,7 @@ mergeMarkers <- function(mk1, mk2,
   subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
   subclass_table <- subclass_table[!names(subclass_table) %in% remove_subclass]
   mk1$subclass_table <- subclass_table
-  if (!is.null(qfun)) mk1$qmap <- qfun
+  if (!is.null(qfun)) mk1$qqmerge <- qfun
   
   updateMarkers(mk1, ...)
 }
