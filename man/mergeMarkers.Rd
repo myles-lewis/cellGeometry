@@ -39,7 +39,8 @@ gene expression by the value \code{scale}, or "none" for no transformation.}
 }
 \value{
 A list object of S3 class 'cellMarkers'. See \code{\link[=cellMarkers]{cellMarkers()}} for
-details.
+details. If \code{transform = "qq"} then an additional element \code{qqmerge} is
+returned containing the quantile mapping function between the 2 datasets.
 }
 \description{
 Takes 2 cellMarkers signatures, merges them and recalculates optimal gene
