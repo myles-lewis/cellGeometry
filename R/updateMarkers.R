@@ -95,7 +95,7 @@ updateMarkers <- function(object = NULL,
     gone <- setdiff(old_levels, levels(object$cell_table))
     remove_group <- c(remove_group, gone)
     grp <- !colnames(object$groupmeans) %in% remove_group
-    groupmeans <- groupmeans[, grp]
+    groupmeans <- if (sum(grp) > 1) groupmeans[, grp] else NULL
     object$genemeans_ar <- object$genemeans_ar[, subcl]
   }
   
