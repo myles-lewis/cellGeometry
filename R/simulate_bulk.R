@@ -69,6 +69,7 @@ simulate_bulk <- function(object, samples, subclass, times = 30) {
     mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
+  start <- Sys.time()
   if (!inherits(object, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
     object <- as.matrix(object)
   }
@@ -90,6 +91,7 @@ simulate_bulk <- function(object, samples, subclass, times = 30) {
   sim_pseudo <- as.matrix(object %*% cmat)
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
+  message("Duration ", format(Sys.time() - start, digits = 3))
   sim_pseudo
 }
 
