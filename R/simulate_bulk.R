@@ -76,7 +76,7 @@ simulate_bulk <- function(object, samples, subclass, times = 30) {
   if (ncol(object) != length(subclass)) stop("incompatible dimensions")
   if (!is.factor(subclass)) subclass <- factor(subclass)
   if (any(!colnames(samples) %in% levels(subclass))) stop("incompatible subclasses")
-  message("Creating sampling matrix")
+  message("Creating sampling matrix", appendLF = FALSE)
   samples <- samples * times
   subclass_lev <- levels(subclass)
   subclass_lev <- subclass_lev[subclass_lev %in% colnames(samples)]
@@ -87,11 +87,13 @@ simulate_bulk <- function(object, samples, subclass, times = 30) {
     }))
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
-  message("Matrix multiplication")
+  message(" (", format(Sys.time() - start, digits = 3), ")")
+  start <- Sys.time()
+  message("Matrix multiplication", appendLF = FALSE)
   sim_pseudo <- as.matrix(object %*% cmat)
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
-  message("Duration ", format(Sys.time() - start, digits = 3))
+  message(" (", format(Sys.time() - start, digits = 3), ")")
   sim_pseudo
 }
 
