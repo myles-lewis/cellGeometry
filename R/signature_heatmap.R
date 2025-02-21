@@ -97,8 +97,14 @@ signature_heatmap <- function(x,
     ord <- seq_len(nrow(gene_signature))
   }
   rs <- cell_table[whmax]
-  if (scale == "max") gene_signature <- gene_signature / rmax
-  if (scale == "sphere") gene_signature <- scaleSphere(gene_signature)
+  title <- "mean\nexpr"
+  if (scale == "max") {
+    gene_signature <- gene_signature / rmax
+    title <- "max\nscaled\nexpr"
+  } else if (scale == "sphere") {
+    gene_signature <- scaleSphere(gene_signature)
+    title <- "sphere\nscaled\nexpr"
+  }
   
   layer_fun <- NULL
   if (text) {
@@ -148,5 +154,5 @@ signature_heatmap <- function(x,
           row_title_gp = gpar(fontsize = 6),
           col = col,
           layer_fun = layer_fun,
-          heatmap_legend_param = list(title = 'mean\nexpr'), ...)
+          heatmap_legend_param = list(title = title), ...)
 }
