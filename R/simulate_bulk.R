@@ -48,8 +48,9 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' used with [deconvolute()]: `count_space = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
-#' @param object Either a 'cellMarkers' class object or a single cell count
-#'   matrix with genes in rows and cells in columns.
+#' @param object Either a 'cellMarkers' class object, or a single cell count
+#'   matrix with genes in rows and cells in columns, with rownames representing
+#'   gene IDs/symbols. The matrix can be a sparse matrix or DelayedMatrix.
 #' @param samples An integer matrix with samples in rows and columns for each
 #'   cell subclass in `object`. This can be generated using [generate_samples()].
 #' @param subclass Vector of cell subclasses matching the columns in `object`.

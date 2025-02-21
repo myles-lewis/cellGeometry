@@ -7,8 +7,9 @@
 simulate_bulk(object, samples, subclass, times = 30)
 }
 \arguments{
-\item{object}{Either a 'cellMarkers' class object or a single cell count
-matrix with genes in rows and cells in columns.}
+\item{object}{Either a 'cellMarkers' class object, or a single cell count
+matrix with genes in rows and cells in columns, with rownames representing
+gene IDs/symbols. The matrix can be a sparse matrix or DelayedMatrix.}
 
 \item{samples}{An integer matrix with samples in rows and columns for each
 cell subclass in \code{object}. This can be generated using \code{\link[=generate_samples]{generate_samples()}}.}
