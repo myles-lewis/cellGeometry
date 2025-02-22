@@ -226,6 +226,50 @@ mk <- updateMarkers(mk,
                     remove_subclass = c("Helper T cells", "Cytotoxic T cells"))
 ```
 
+# Refine gene signature
+
+The following arguments are available in both `cellMarkers()` or
+`updateMarkers()`. They can change and improve which genes are selected for the
+gene signature as well as changing the amount of noise reduction in the gene
+signature if the filter is applied during deconvolution by `deconvolute()`.
+
+--------------- ---------------------------------------------------------------------------
+`nsubclass`     Number of genes to select for each single cell subclass.
+                Either a single number or a vector with the number of genes for each
+                subclass.
+                
+`ngroup`        Number of genes to select for each cell group. Either a single
+                number or a vector with the number of genes for each group.
+                
+`expfilter`     Genes whose maximum mean expression on log2 scale per cell
+                type are below this value are removed and not considered for the signature.
+                
+`noisefilter`   Sets an upper bound for `noisefraction` cut-off below
+                which gene expression is set to 0. Essentially gene expression above this
+                level must be retained in the signature. Setting this higher can allow more
+                suppression via `noisefraction` and can favour more highly expressed genes.
+                
+`noisefraction` Numeric value from 0-1 (default 0.25). Higher values mean more 
+                noise suppression. Maximum mean log2 gene expression across
+                cell types is calculated and values in celltypes below this fraction are
+                set to 0. Set in conjunction with `noisefilter.` Note: if this is set too
+                high (too close to 1), it can have a deleterious effect on deconvolution.
+--------------- ---------------------------------------------------------------------------
+
+`nsubclass` and `ngroup` simply define how many genes are picked for each
+subclass or group. If some subclasses do not have enough specific genes,
+lowering `expfilter` is probably the first parameter to try. However as
+`expfilter` approaches zero, lots of genes with very low expression but which
+appear to be highly specific to a subclass (i.e. only expressed in that subclass
+with zero expression in all other cell clusters) will be selected. Although
+these might perform well in simulations, our experience is that they are poor
+markers in real bulk RNA-Seq.
+
+In addition users have full control over editing the gene list for the subclass
+signature using the `add_gene` and `remove_gene` arguments in `updateMarkers()`.
+Similarly `add_groupgene` and `remove_groupgene` can be used to edit the gene
+list for the broader cell group signatures.
+
 # Simulate pseudo-bulk RNA-Seq
 
 We can generate pseudo-bulk to test the deconvolution using the following
