@@ -27,6 +27,7 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
   w <- which(no1 < weak)
   
   ra <- rank_angle(cos_similarity(mk), angle_cutoff)
+  w_ra <- NULL
   if (nrow(ra) > 0) {
     cat("Subclasses with vector overlap:\n")
     cat(paste(
@@ -39,13 +40,13 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
     w2 <- which(no1 == 0)
     s <- intersect(w2, w_ra)
     if (any(s)) {
-      cat("Consider removing:\n ",
-          paste0(colnames(mk$genemeans)[s], collapse = "\n  "), "\n\n")
+      cat("Consider removing:\n")
+      info(mk, s, no1)
     }
     s2 <- setdiff(intersect(w, w_ra), s)
     if (any(s2)) {
-      cat("Consider fixing:\n ",
-          paste0(colnames(mk$genemeans)[s2], collapse = "\n  "), "\n\n")
+      cat("Consider fixing:\n")
+      info(mk, s2, no1)
     }
   }
   
@@ -60,14 +61,14 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
     w <- w[order(spmax[1, ], decreasing = TRUE)]
     spmax <- spmax[, order(spmax[1, ], decreasing = TRUE), drop = FALSE]
     
-    cat(paste0("Weak subclass signatures (<", weak,
-        " top rank markers):\n"))
-    cat(paste(paste0(format(colnames(mk$genemeans)[w]), "   ",
-                     format(as.vector(mk$subclass_table[w])),
-                     "   ", no1[w], "/", nsubclass),
-              collapse = "\n"))
-    cat("\n\n")
+    s3 <- setdiff(w, w_ra)
+    if (any(s3)) {
+      cat(paste0("Other weak subclass signatures (<", weak,
+                 " top rank markers):\n"))
+      info(mk, s3, no1)
+    }
     
+    cat("Spillover:\n")
     s1w <- format(colnames(s1)[w], justify = "left")
     spmaxname <- format(colnames(s1)[spmax[2, ]], justify = "left")
     s1set <- paste(s1w, " spills most into ", spmaxname, "",
@@ -96,4 +97,14 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
   # smetric <- comp_metric(s2)
   # cat("Equal weight mean spillover", format(smetric, digits = 3), "\n")
   
+}
+
+
+info <- function(mk, w, no1) {
+  nsubclass <- max(mk$opt$nsubclass)
+  cat(paste(paste0(format(colnames(mk$genemeans)[w]), "   ",
+                   format(as.vector(mk$subclass_table[w])),
+                   "   ", no1[w], "/", nsubclass),
+            collapse = "\n"))
+  cat("\n\n")
 }
