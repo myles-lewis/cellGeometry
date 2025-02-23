@@ -4,10 +4,10 @@
 \alias{cos_similarity}
 \title{Gene signature cosine similarity matrix}
 \usage{
-cos_similarity(x, use_filter = TRUE)
+cos_similarity(x, use_filter = NULL)
 }
 \arguments{
-\item{x}{Either a \code{cellMarkers} class object or a matrix.}
+\item{x}{Either a matrix or a 'cellMarkers' class or 'deconv' class object.}
 
 \item{use_filter}{Logical whether to use filtered gene signature.}
 }

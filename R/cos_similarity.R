@@ -6,15 +6,20 @@
 #' similarity between matrix columns, unlike [dist()] which computes the
 #' distance metric between matrix rows.
 #' 
-#' @param x Either a `cellMarkers` class object or a matrix.
+#' @param x Either a matrix or a 'cellMarkers' class or 'deconv' class object.
 #' @param use_filter Logical whether to use filtered gene signature.
 #' @returns A symmetric similarity matrix.
 #' @export
 #' 
-cos_similarity <- function(x, use_filter = TRUE) {
+cos_similarity <- function(x, use_filter = NULL) {
+  if (inherits(x, "deconv")) {
+    x <- x$mk
+    if (is.null(use_filter)) use_filter <- x$call$use_filter
+  }
   if (inherits(x, "cellMarkers")) {
-    gs <- mk$geneset
-    x <- if (use_filter) mk$genemeans_filtered[gs, ] else mk$genemeans[gs, ]
+    if (is.null(use_filter)) use_filter <- TRUE
+    gs <- x$geneset
+    x <- if (use_filter) x$genemeans_filtered[gs, ] else x$genemeans[gs, ]
   }
   cos_sim(x)
 }
