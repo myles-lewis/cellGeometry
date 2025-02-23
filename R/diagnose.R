@@ -1,7 +1,8 @@
 
 #' Diagnostics for cellMarker signatures
 #' 
-#' Identifies cell subclasses or groups with weak signatures.
+#' Experimental function which helps identify cell subclasses or groups with
+#' weak signatures.
 #' 
 #' @param mk A 'cellMarkers' class object.
 #' @returns No return value. Displays information about the cellMarkers
@@ -10,7 +11,7 @@
 #'   spills into.
 #' @export
 
-diagnose <- function(mk) {
+diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   nsubclass <- mk$opt$nsubclass
   if (is.null(nsubclass)) nsubclass <- 5
@@ -23,7 +24,30 @@ diagnose <- function(mk) {
     ranks <- i[seq_len(nsubclass), "rank"]
     sum(ranks == 1)
   }, numeric(1))
-  w <- which(no1 < nsubclass)
+  w <- which(no1 < weak)
+  
+  ra <- rank_angle(cos_similarity(mk), angle_cutoff)
+  if (nrow(ra) > 0) {
+    cat("Subclasses with vector overlap:\n")
+    cat(paste(
+      paste0(format(c("", as.character(ra[, 1]))), "   ",
+             format(c("", as.character(ra[, 2]))), "   ",
+             c("angle", format(ra$angle, digits = 3))),
+      collapse = "\n"))
+    cat("\n\n")
+    w_ra <- unlist(lapply(ra[, 1:2], as.integer))
+    w2 <- which(no1 == 0)
+    s <- intersect(w2, w_ra)
+    if (any(s)) {
+      cat("Consider removing:\n ",
+          paste0(colnames(mk$genemeans)[s], collapse = "\n  "), "\n\n")
+    }
+    s2 <- setdiff(intersect(w, w_ra), s)
+    if (any(s2)) {
+      cat("Consider fixing:\n ",
+          paste0(colnames(mk$genemeans)[s2], collapse = "\n  "), "\n\n")
+    }
+  }
   
   s1 <- mk$spillover
   if (length(w) > 0) {
@@ -36,8 +60,8 @@ diagnose <- function(mk) {
     w <- w[order(spmax[1, ], decreasing = TRUE)]
     spmax <- spmax[, order(spmax[1, ], decreasing = TRUE), drop = FALSE]
     
-    cat("Subclass signatures with fewer than", nsubclass,
-        "first rank markers:\n")
+    cat(paste0("Weak subclass signatures (<", weak,
+        " top rank markers):\n"))
     cat(paste(paste0(format(colnames(mk$genemeans)[w]), "   ",
                      format(as.vector(mk$subclass_table[w])),
                      "   ", no1[w], "/", nsubclass),
@@ -56,7 +80,7 @@ diagnose <- function(mk) {
     ranks <- i[seq_len(ngroup), "rank"]
     sum(ranks == 1)
   }, numeric(1))
-  w <- which(no1 < ngroup)
+  w <- which(no1 < weak)
   if (length(w) > 0) {
     cat("Weak cell group signatures:\n")
     cat(paste(paste0(colnames(mk$groupmeans)[w], " ", no1[w], "/", ngroup),
@@ -64,12 +88,12 @@ diagnose <- function(mk) {
     cat("\n")
   }
   
-  smetric <- comp_metric(s1)
-  cat("Standard mean spillover", format(smetric, digits = 3), "\n")
+  # smetric <- comp_metric(s1)
+  # cat("Standard mean spillover", format(smetric, digits = 3), "\n")
   
-  m <- mk$genemeans_filtered[mk$geneset, ]
-  s2 <- dotprod(m, m, equal_weight = TRUE)
-  smetric <- comp_metric(s2)
-  cat("Equal weight mean spillover", format(smetric, digits = 3), "\n")
+  # m <- mk$genemeans_filtered[mk$geneset, ]
+  # s2 <- dotprod(m, m, equal_weight = TRUE)
+  # smetric <- comp_metric(s2)
+  # cat("Equal weight mean spillover", format(smetric, digits = 3), "\n")
   
 }

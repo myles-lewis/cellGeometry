@@ -42,6 +42,7 @@ rank_angle <- function(x, angle_cutoff = 45) {
   ok <- ind[,1] < ind[,2] & ang[o] <= angle_cutoff
   o2 <- o[ok]
   
-  data.frame(c1 = rownames(x)[ind[ok, 1]], c2 = colnames(x)[ind[ok, 2]],
-             angle = ang[o2])
+  c1 <- factor(ind[ok, 1], levels = seq_len(nrow(x)), labels = rownames(x))
+  c2 <- factor(ind[ok, 2], levels = seq_len(ncol(x)), labels = colnames(x))
+  data.frame(c1, c2, angle = ang[o2])
 }
