@@ -5,6 +5,10 @@
 #' weak signatures.
 #' 
 #' @param mk A 'cellMarkers' class object.
+#' @param angle_cutoff Angle in degrees below which cell cluster vectors are
+#'   considered to overlap too much. Range 0-90. See [cos_similarity()].
+#' @param weak Number of 1st ranked genes for each cell cluster at which/below
+#'   its gene set is considered weak.
 #' @returns No return value. Displays information about the cellMarkers
 #'   signature showing cells subclasses with weak signatures and diagnostic
 #'   information including which cell subclasses each problematic signature

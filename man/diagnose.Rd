@@ -4,7 +4,7 @@
 \alias{diagnose}
 \title{Diagnostics for cellMarker signatures}
 \usage{
-diagnose(mk)
+diagnose(mk, angle_cutoff = 30, weak = 2)
 }
 \arguments{
 \item{mk}{A 'cellMarkers' class object.}
@@ -16,5 +16,6 @@ information including which cell subclasses each problematic signature
 spills into.
 }
 \description{
-Identifies cell subclasses or groups with weak signatures.
+Experimental function which helps identify cell subclasses or groups with
+weak signatures.
 }
