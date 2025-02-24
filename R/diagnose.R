@@ -82,6 +82,8 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 2) {
     cat("\n")
   }
   
+  if (nrow(ra) == 0 & length(w) == 0) cat("No subclass signature issues\n")
+  
   no1 <- vapply(mk$group_angle, function(i) {
     ranks <- i[seq_len(ngroup), "rank"]
     sum(ranks == 1)
