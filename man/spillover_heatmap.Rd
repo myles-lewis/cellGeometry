@@ -4,7 +4,7 @@
 \alias{spillover_heatmap}
 \title{Spillover heatmap}
 \usage{
-spillover_heatmap(x, col = NULL, text = NULL, fontsize = 8, ...)
+spillover_heatmap(x, col = NULL, text = NULL, fontsize = 8, subset = NULL, ...)
 }
 \arguments{
 \item{x}{Either a 'cellMarkers' or 'deconv' class object or a spillover
@@ -18,6 +18,8 @@ By default only shown for smaller matrices.}
 
 \item{fontsize}{Numeric value for font size for cell values when
 \code{text = TRUE}.}
+
+\item{subset}{Character vector of groups to be subsetted.}
 
 \item{...}{Optional arguments passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 }

@@ -16,6 +16,7 @@
 #'   By default only shown for smaller matrices.
 #' @param fontsize Numeric value for font size for cell values when
 #'   `text = TRUE`.
+#' @param subset Character vector of groups to be subsetted.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns No return value. Draws a heatmap using ComplexHeatmap.
 #' @importFrom grid grid.text unit
@@ -27,6 +28,7 @@ spillover_heatmap <- function(x,
                               col = NULL,
                               text = NULL,
                               fontsize = 8,
+                              subset = NULL,
                               ...) {
   cell_table <- NULL
   if (inherits(x, "deconv")) {
@@ -37,6 +39,13 @@ spillover_heatmap <- function(x,
     cell_table <- x$cell_table
     m_itself <- x$spillover
   } else m_itself <- x
+  
+  if (!is.null(subset)) {
+    s <- which(cell_table %in% subset)
+    if (length(s) == 0) stop("no such subgroup")
+    return(spillover_heatmap(x = m_itself[s, s], col = col, text = text,
+                             fontsize = fontsize, ...))
+  }
   
   if (is.null(col)) {
     mx <- max(m_itself)
