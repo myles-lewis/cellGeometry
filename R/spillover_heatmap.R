@@ -43,6 +43,7 @@ spillover_heatmap <- function(x,
   if (!is.null(subset)) {
     s <- which(cell_table %in% subset)
     if (length(s) == 0) stop("no such subgroup")
+    if (length(s) == 1) stop("subset too small")
     return(spillover_heatmap(x = m_itself[s, s], col = col, text = text,
                              fontsize = fontsize, ...))
   }
