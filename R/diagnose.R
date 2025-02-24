@@ -11,7 +11,7 @@
 #'   spills into.
 #' @export
 
-diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
+diagnose <- function(mk, angle_cutoff = 30, weak = 2) {
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   nsubclass <- mk$opt$nsubclass
   if (is.null(nsubclass)) nsubclass <- 5
@@ -19,12 +19,13 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
   ngroup <- mk$opt$ngroup
   if (is.null(ngroup)) ngroup <- 5
   ngroup <- max(ngroup)
+  if (weak >= nsubclass) stop("`weak` is >= nsubclass")
   
   no1 <- vapply(mk$best_angle, function(i) {
     ranks <- i[seq_len(nsubclass), "rank"]
     sum(ranks == 1)
   }, numeric(1))
-  w <- which(no1 < weak)
+  w <- which(no1 <= weak)
   
   ra <- rank_angle(cos_similarity(mk), angle_cutoff)
   w_ra <- NULL
@@ -63,7 +64,7 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
     
     s3 <- setdiff(w, w_ra)
     if (any(s3)) {
-      cat(paste0("Other weak subclass signatures (<", weak,
+      cat(paste0("Other weak subclass signatures (\u2264", weak,
                  " top rank markers):\n"))
       info(mk, s3, no1)
     }
@@ -74,16 +75,16 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 3) {
     s1set <- paste(s1w, " spills most into ", spmaxname, "",
                    format(spmax[1, ], digits = 3))
     cat(paste(s1set, collapse = "\n"))
-    cat("\n\n")
+    cat("\n")
   }
   
   no1 <- vapply(mk$group_angle, function(i) {
     ranks <- i[seq_len(ngroup), "rank"]
     sum(ranks == 1)
   }, numeric(1))
-  w <- which(no1 < weak)
+  w <- which(no1 <= weak)
   if (length(w) > 0) {
-    cat("Weak cell group signatures:\n")
+    cat("\nWeak cell group signatures:\n")
     cat(paste(paste0(colnames(mk$groupmeans)[w], " ", no1[w], "/", ngroup),
               collapse = "\n"))
     cat("\n")
