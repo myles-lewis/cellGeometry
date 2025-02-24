@@ -70,18 +70,19 @@ spillover_heatmap <- function(x,
       }
     }
   }
-  hm1 <- Heatmap(m_itself, col = col,
-                 cluster_rows = FALSE, row_split = cell_table,
-                 cluster_row_slices = FALSE, row_title = NULL,
-                 cluster_columns = FALSE, column_split = cell_table,
-                 cluster_column_slices = FALSE, column_title = NULL,
-                 # column_names_rot = 75,
-                 column_names_gp = gpar(fontsize = 8),
-                 row_names_gp = gpar(fontsize = 8),
-                 layer_fun = layer_fun,
-                 heatmap_legend_param = list(title = "spillover",
-                                             legend_width = unit(6, "cm"),
-                                             direction = "horizontal"),
-                 ...) |> suppressMessages()
+  dots <- list(...)
+  args <- list(m_itself, col = col,
+               cluster_rows = FALSE, row_split = cell_table,
+               cluster_row_slices = FALSE, row_title = NULL,
+               cluster_columns = FALSE, column_split = cell_table,
+               cluster_column_slices = FALSE, column_title = NULL,
+               column_names_gp = gpar(fontsize = 8),
+               row_names_gp = gpar(fontsize = 8),
+               layer_fun = layer_fun,
+               heatmap_legend_param = list(title = "spillover",
+                                           legend_width = unit(6, "cm"),
+                                           direction = "horizontal"))
+  if (length(dots)) args[names(dots)] <- dots
+  hm1 <- do.call(Heatmap, args) |> suppressMessages()
   draw(hm1, heatmap_legend_side = "top")
 }
