@@ -143,7 +143,8 @@ signature_heatmap <- function(x,
     }
   }
   
-  Heatmap(gene_signature,
+  dots <- list(...)
+  args <- list(gene_signature,
           cluster_rows = FALSE,
           row_order = ord, row_split = rs,
           cluster_columns = FALSE, column_split = cell_table,
@@ -154,5 +155,7 @@ signature_heatmap <- function(x,
           row_title_gp = gpar(fontsize = 6),
           col = col,
           layer_fun = layer_fun,
-          heatmap_legend_param = list(title = title), ...)
+          heatmap_legend_param = list(title = title))
+  if (length(dots)) args[names(dots)] <- dots
+  do.call(Heatmap, args)
 }
