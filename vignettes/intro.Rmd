@@ -47,7 +47,7 @@ BiocManager::install(c("ensembldb", "DelayedArray"))
 BiocManager::install(c("zellkonverter", "rhdf5", "HDF5Array"))
 
 # optional, if you are using Seurat
-BiocManager::install("Seurat")
+install.packages("Seurat")
 
 # package needed to convert ensembl gene ids to symbols
 BiocManager::install("AnnotationHub")
