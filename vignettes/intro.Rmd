@@ -237,10 +237,39 @@ types are too similar - perhaps one is really a closely related subset of the
 other. Here we see that Helper T cells are the most affected and their signature
 is similar to Tcm/Naive helper T cells.
 
-The `diagnose()` function can be used to identify which cell clusters are
-problematic. Helper T cells in particular do not have any top ranked markers of
-their own since they are largely identical to Tcm/Naive helper T cells in terms
-of their gene expression.
+# Investigating spillover
+
+When cell clusters exhibit spillover, it is generally because of cell types
+being too similar. Cosine similarity is an ideal method for detecting this as it
+explicitly measures the angle between the vectors for each cell subclass as
+defined by in gene space. `cos_similarity()` generates a cosine similarity
+matrix for the cell subclasses, and this can be visualised using a heatmap.
+
+```{r eval = FALSE}
+cs <- cos_similarity(mk)
+ComplexHeatmap::Heatmap(cs)
+```
+
+```{r, out.width='80%', echo=FALSE}
+knitr::include_graphics("typist_cos_sim.png")
+```
+
+The cosine similarity matrix is easily be converted to the angle between the
+vectors for each cell subclass using `acos(cs)`. The function `rank_angle()` can
+be used to list those pairs of subclasses whose vectors are close together in
+terms of the angle between them.
+
+```{r eval = FALSE}
+rank_angle(cs)
+```
+
+This plus the cosine similarity heatmap confirms that the vector for Helper T
+cells is close to the vector for Tcm/Naive helper T cells.
+
+The `diagnose()` function provides more thorough diagnostics. It can be used to
+identify which cell clusters are problematic. Helper T cells in particular do
+not have any top ranked markers of their own since they are largely identical to
+Tcm/Naive helper T cells in terms of their gene expression.
 
 ```{r eval = FALSE}
 diagnose(mk)
