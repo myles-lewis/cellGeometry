@@ -4,17 +4,23 @@
 \alias{spillover_heatmap}
 \title{Spillover heatmap}
 \usage{
-spillover_heatmap(x, col = NULL, text = NULL, fontsize = 8, subset = NULL, ...)
+spillover_heatmap(
+  x,
+  text = NULL,
+  cutoff = 0.5,
+  fontsize = 8,
+  subset = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{Either a 'cellMarkers' or 'deconv' class object or a spillover
 matrix.}
 
-\item{col}{Vector of colours or colour mapping function passed to
-\code{ComplexHeatmap::Heatmap()}.}
+\item{text}{Logical whether to show values of cells where spillover >
+\code{cutoff}. By default only shown for smaller matrices.}
 
-\item{text}{Logical whether to show values of the maximum cell in each row.
-By default only shown for smaller matrices.}
+\item{cutoff}{Threshold for showing values.}
 
 \item{fontsize}{Numeric value for font size for cell values when
 \code{text = TRUE}.}

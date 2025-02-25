@@ -10,10 +10,9 @@
 #' 
 #' @param x Either a 'cellMarkers' or 'deconv' class object or a spillover
 #'   matrix.
-#' @param col Vector of colours or colour mapping function passed to
-#'   `ComplexHeatmap::Heatmap()`.
-#' @param text Logical whether to show values of the maximum cell in each row.
-#'   By default only shown for smaller matrices.
+#' @param text Logical whether to show values of cells where spillover >
+#'   `cutoff`. By default only shown for smaller matrices.
+#' @param cutoff Threshold for showing values.
 #' @param fontsize Numeric value for font size for cell values when
 #'   `text = TRUE`.
 #' @param subset Character vector of groups to be subsetted.
@@ -25,8 +24,8 @@
 #' @export
 
 spillover_heatmap <- function(x,
-                              col = NULL,
                               text = NULL,
+                              cutoff = 0.5,
                               fontsize = 8,
                               subset = NULL,
                               ...) {
@@ -45,25 +44,24 @@ spillover_heatmap <- function(x,
     if (length(s) == 0) stop("no such subgroup")
     if (length(s) == 1) stop("subset too small")
     return(spillover_heatmap(x = m_itself[s, s], col = col, text = text,
-                             fontsize = fontsize, ...))
+                             cutoff = cutoff, fontsize = fontsize, ...))
   }
   
-  if (is.null(col)) {
-    mx <- max(m_itself)
-    col <- if (mx > 1) {
-      colorRamp2(c(0, 0.5, 0.8, 1, mx),
-                 c("#F4FAFF", "steelblue2", "purple", "red", "red3"))
-    } else {
-      colorRamp2(c(0, 0.5, 0.8, 1),
-                 c("#F4FAFF", "steelblue2", "purple", "red"))
-    }
+  mx <- max(m_itself)
+  col <- if (mx > 1) {
+    colorRamp2(c(0, 0.5, 0.8, 1, mx),
+               c("#F4FAFF", "steelblue2", "purple", "red", "red3"))
+  } else {
+    colorRamp2(c(0, 0.5, 0.8, 1),
+               c("#F4FAFF", "steelblue2", "purple", "red"))
   }
+  
   if (is.null(text)) text <- dim(m_itself)[1] <= 50
   layer_fun <- NULL
   if (text) {
     layer_fun <- function(j, i, x, y, width, height, fill) {
       v <- pindex(m_itself, i, j)
-      l <- v > 0.5 & i != j
+      l <- v > cutoff & i != j
       if (any(l)) {
         grid.text(sprintf("%.1f", v[l]), x[l], y[l],
                   gp = gpar(fontsize = fontsize))
@@ -83,6 +81,6 @@ spillover_heatmap <- function(x,
                                            legend_width = unit(6, "cm"),
                                            direction = "horizontal"))
   if (length(dots)) args[names(dots)] <- dots
-  hm1 <- do.call(Heatmap, args) |> suppressMessages()
-  draw(hm1, heatmap_legend_side = "top")
+  hm <- do.call(Heatmap, args) |> suppressMessages()
+  draw(hm, heatmap_legend_side = "top")
 }

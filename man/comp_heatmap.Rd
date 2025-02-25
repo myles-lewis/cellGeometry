@@ -4,13 +4,31 @@
 \alias{comp_heatmap}
 \title{Compensation heatmap}
 \usage{
-comp_heatmap(x, cell_table = NULL, ...)
+comp_heatmap(
+  x,
+  cell_table = NULL,
+  text = NULL,
+  cutoff = 0.2,
+  fontsize = 8,
+  subset = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{object of class 'deconv' or a matrix of compensation values.}
 
 \item{cell_table}{optional grouping vector to separate the heatmap rows and
 columns into groups.}
+
+\item{text}{Logical whether to show values whose absolute value > \code{cutoff}.
+By default only shown for smaller matrices.}
+
+\item{cutoff}{Absolute threshold for showing values.}
+
+\item{fontsize}{Numeric value for font size for cell values when
+\code{text = TRUE}.}
+
+\item{subset}{Character vector of groups to be subsetted.}
 
 \item{...}{optional arguments passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}}
 }
