@@ -74,6 +74,8 @@ matrix is applied.
 
 # Example dataset
 
+## h5ad file
+
 The following example is based on a the Cell Typist dataset (Global) which
 contains 329,762 immune cells and is available on the CZ cellxgene repository,
 described here:
@@ -105,7 +107,7 @@ rownames(mat) <- rownames(typist_h5)
 meta <- typist_h5@colData@listData
 ```
 
-# Seurat version
+## Seurat file
 
 Some users report difficulties with installing zellkonverter which needs working
 python libraries. cellGeometry can also be used with Seurat files although these
@@ -128,7 +130,9 @@ mat <- typist@assays$RNA$counts
 meta <- typist@meta.data
 ```
 
-# Extract cell clusters
+# Obtain gene signatures
+
+## Extract cell clusters
 
 We first check cell cluster subclasses. Then we extract a vector which contains
 the subclass cluster for each cell and a 2nd vector for broader cell groups. We
@@ -149,7 +153,7 @@ subcl[meta$tissue != "blood"] <- NA
 cellgrp[meta$tissue != "blood"] <- NA
 ```
 
-# Create gene signature
+## Create gene signature
 
 We then run the 1st stage of cellGeometry which generates mean gene expression
 for each cell cluster (this is the slowest part). Then the best cell cluster and
@@ -205,7 +209,7 @@ ensDb_v110 <- ah[["AH113665"]]
 mk <- gene2symbol(mk, ensDb_v110)
 ```
 
-# Visualise gene signature
+## Visualise gene signature
 
 The signature gene matrix can be displayed as follows.
 
@@ -237,10 +241,41 @@ types are too similar - perhaps one is really a closely related subset of the
 other. Here we see that Helper T cells are the most affected and their signature
 is similar to Tcm/Naive helper T cells.
 
-The `diagnose()` function provides diagnostics on the gene signature. It can be
-used to identify which cell clusters are problematic. Helper T cells in
-particular do not have any top ranked markers of their own since they are
-largely identical to Tcm/Naive helper T cells in terms of their gene expression.
+## Signature diagnostics
+
+When cell clusters exhibit spillover, it is generally because of cell types
+being too similar. Cosine similarity is an ideal method for detecting this as it
+explicitly measures the angle between the vectors for each cell subclass as
+defined by in gene space. `cos_similarity()` generates a cosine similarity
+matrix for the cell subclasses, and this can be visualised using a heatmap.
+
+```{r eval = FALSE}
+cs <- cos_similarity(mk)
+ComplexHeatmap::Heatmap(cs)
+```
+
+```{r, out.width='80%', echo=FALSE}
+knitr::include_graphics("typist_cos_sim.png")
+```
+
+The cosine similarity matrix is easily be converted to the angle between the
+vectors for each cell subclass using `acos(cs)`. The function `rank_angle()` can
+be used to list those pairs of subclasses whose vectors are close together in
+terms of the angle between them.
+
+```{r eval = FALSE}
+rank_angle(cs)
+```
+
+This plus the cosine similarity heatmap confirms that the vector for Helper T
+cells is rather similar to the vector for Tcm/Naive helper T cells, which is not
+surprising as these cell types overlap.
+
+The `diagnose()` function provides more thorough diagnostics on the gene
+signature. It can be used to identify which cell clusters are problematic.
+Helper T cells in particular do not have any top ranked markers of their own
+since they are largely identical to Tcm/Naive helper T cells in terms of their
+gene expression.
 
 ```{r eval = FALSE}
 diagnose(mk)
@@ -256,7 +291,7 @@ mk <- updateMarkers(mk,
                     remove_subclass = c("Helper T cells", "Cytotoxic T cells"))
 ```
 
-# Refine gene signature
+## Refine gene signature
 
 The following arguments are available in both `cellMarkers()` or
 `updateMarkers()`. They can change and improve which genes are selected for the
@@ -300,7 +335,9 @@ signature using the `add_gene` and `remove_gene` arguments in `updateMarkers()`.
 Similarly `add_groupgene` and `remove_groupgene` can be used to edit the gene
 list for the broader cell group signatures.
 
-# Simulate pseudo-bulk RNA-Seq
+# Deconvolution
+
+## Simulated pseudo-bulk
 
 We can generate pseudo-bulk to test the deconvolution using the following
 commands. Here `generate_samples()` makes 25 samples with random cell counts,
@@ -317,8 +354,6 @@ sim_percent <- sim_counts / rowSums(sim_counts) * 100
 sim_pseudo <- simulate_bulk(mk, sim_counts)
 ```
 
-# Deconvolution
-
 Deconvolution itself is performed as a 2nd function `deconvolute()`. The
 `plot_set()` function can be used to plot the results. The `metric_set()`
 function generates a table of results.
@@ -332,6 +367,8 @@ plot_set(sim_percent, fit$subclass$percent)
 
 metric_set(sim_percent, fit$subclass$percent)  # table of results
 ```
+
+## Sampled pseudo-bulk
 
 In the 2nd mode, the original scRNA-Seq count dataset is sampled. Here we
 oversample the actual cell counts in `sim_counts` by 3x by setting `times = 3`.
@@ -369,7 +406,7 @@ in numbers of cells), `fit$subclass$percent` for output converted to percentage
 of total cells for each sample. The group analysis is returned in a similar vein
 in `fit$group$output` and `fit$group$percent`.
 
-# Settings for real bulk RNA-Seq
+## Real bulk RNA-Seq settings
 
 With a real bulk RNA-Seq dataset the first step is to ensure that only genes
 which are present in the bulk data are used for the gene signatures. This is
@@ -419,32 +456,3 @@ Also, 2 scRNA-Seq datasets can be merged using the function `mergeMarkers()`.
 This merges the `cellMarkers` objects derived from each single cell dataset. One
 dataset is defined as reference, and the 2nd dataset is merged into it after
 adjustment for its overall distribution based on quantile mapping.
-
-# Additional signature checks
-
-When cell clusters exhibit spillover, it is generally because of cell types
-being too similar. Cosine similarity is an ideal method for detecting this as it
-explicitly measures the angle between the vectors for each cell subclass as
-defined by in gene space. `cos_similarity()` generates a cosine similarity
-matrix for the cell subclasses, and this can be visualised using a heatmap.
-
-```{r eval = FALSE}
-cs <- cos_similarity(mk)
-ComplexHeatmap::Heatmap(cs)
-```
-
-```{r, out.width='80%', echo=FALSE}
-knitr::include_graphics("typist_cos_sim.png")
-```
-
-The cosine similarity matrix is easily be converted to the angle between the
-vectors for each cell subclass using `acos(cs)`. The function `rank_angle()` can
-be used to list those pairs of subclasses whose vectors are close together in
-terms of the angle between them.
-
-```{r eval = FALSE}
-rank_angle(cs)
-```
-
-This plus the cosine similarity heatmap confirms that the vector for Helper T
-cells is close to the vector for Tcm/Naive helper T cells.
