@@ -98,6 +98,7 @@ https://datasets.cellxgene.cziscience.com/2ac906a5-9725-4258-8e36-21a9f6c0302a.r
 CZ cellxgene state that Seurat support will end after Dec 2024.
 
 ```
+library(Seurat)
 typist <- readRDS("08f58b32-a01b-4300-8ebc-2b93c18f26f7.rds")  # 15.5 GB in memory
 
 mat <- typist@assays$RNA$counts
