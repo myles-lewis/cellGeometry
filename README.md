@@ -9,8 +9,9 @@ Bioconductor version >=3.20 must be installed first for this package to install
 correctly. For full package functionality, particularly with sparse matrices
 stored on disc in the h5ad format, we recommend that the Bioconductor packages
 zellkonverter, rhdf5 and HDF5Array must also be installed to be able to read
-h5ad files. We also recommend installing AnnotationHub
-to enable conversion of ensembl gene ids to symbols.
+h5ad files. If you are using Seurat, then it needs to be installed. We also
+recommend installing AnnotationHub to enable conversion of ensembl gene ids to
+symbols.
 
 ```
 # Bioconductor must be installed +/- updated first
@@ -22,7 +23,7 @@ BiocManager::install(c("ensembldb", "DelayedArray"))
 # packages needed to read h5ad files
 BiocManager::install(c("zellkonverter", "rhdf5", "HDF5Array"))
 
-# package needed to read Seurat file
+# optional, if you are using Seurat
 BiocManager::install("Seurat")
 
 # package needed to convert ensembl gene ids to symbols
@@ -86,14 +87,15 @@ meta <- typist_h5@colData@listData
 Some users report difficulties with installing zellkonverter. cellGeometry can
 also be used with Seurat files although these become progressively slower with
 larger datasets as well as needing substantial amounts of RAM, so for datasets >1M
-cells we recommend persevering with zellkonverter and the h5ad format. We
-include example code for loading a Seurat file below as an alternative to h5ad.
+cells we recommend persevering with zellkonverter and the h5ad format since it
+is much faster. We include example code for loading a Seurat file below as an
+alternative to h5ad.
 
 At time of writing the rds file (2.9 Gb) in Seurat format can be downloaded from
 CZ cellxgene repository directly using this link:
 https://datasets.cellxgene.cziscience.com/2ac906a5-9725-4258-8e36-21a9f6c0302a.rds
 
-CZ cellxgene state that Seurat support will be end after Dec 2024.
+CZ cellxgene state that Seurat support will end after Dec 2024.
 
 ```
 typist <- readRDS("08f58b32-a01b-4300-8ebc-2b93c18f26f7.rds")  # 15.5 GB in memory
