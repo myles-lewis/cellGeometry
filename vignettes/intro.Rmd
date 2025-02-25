@@ -75,8 +75,8 @@ matrix is applied.
 # Example dataset
 
 The following example is based on a the Cell Typist dataset (Global) which
-contains 329,762 immune cells and is available on the CZ cellxgene repository
-here:
+contains 329,762 immune cells and is available on the CZ cellxgene repository,
+described here:
 https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3
 
 The h5ad file (2.9 Gb) for the example can be downloaded from CZ cellxgene
