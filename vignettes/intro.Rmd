@@ -32,8 +32,9 @@ Bioconductor version >=3.20 must be installed first for this package to install
 correctly. For full package functionality, particularly with sparse matrices
 stored on disc in the h5ad format, we recommend that the Bioconductor packages
 zellkonverter, rhdf5 and HDF5Array must also be installed to be able to read
-h5ad files. We also recommend installing AnnotationHub to enable conversion of
-ensembl gene ids to symbols.
+h5ad files. If you are using Seurat, then it needs to be installed. We also
+recommend installing AnnotationHub to enable conversion of ensembl gene ids to
+symbols.
 
 ```{r eval = FALSE}
 # Bioconductor must be installed +/- updated first
@@ -44,6 +45,9 @@ BiocManager::install(c("ensembldb", "DelayedArray"))
 
 # packages needed to read h5ad files
 BiocManager::install(c("zellkonverter", "rhdf5", "HDF5Array"))
+
+# optional, if you are using Seurat
+BiocManager::install("Seurat")
 
 # package needed to convert ensembl gene ids to symbols
 BiocManager::install("AnnotationHub")
