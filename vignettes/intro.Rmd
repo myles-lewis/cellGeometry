@@ -283,8 +283,9 @@ diagnose(mk)
 
 Below we update the cellMarkers object to remove 2 cell clusters which overlap
 with other cell clusters and are therefore likely to be difficult to deconvolute
-well if applied to real world bulk RNA-Seq. For the simulation it does not
-matter whether these are removed or not.
+well if applied to real world bulk RNA-Seq. (For the simulation it actually does
+not matter whether these are removed or not since the algorithm is able to
+differentiate them sufficiently.)
 
 ```{r eval = FALSE}
 mk <- updateMarkers(mk,
