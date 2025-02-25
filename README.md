@@ -9,8 +9,8 @@ Bioconductor version >=3.20 must be installed first for this package to install
 correctly. For full package functionality, particularly with sparse matrices
 stored on disc in the h5ad format, we recommend that the Bioconductor packages
 zellkonverter, rhdf5 and HDF5Array must also be installed to be able to read
-h5ad files. We also recommend installing AnnotationHub to enable conversion of
-ensembl gene ids to symbols.
+h5ad files. We also recommend installing AnnotationHub
+to enable conversion of ensembl gene ids to symbols.
 
 ```
 # Bioconductor must be installed +/- updated first
@@ -21,6 +21,9 @@ BiocManager::install(c("ensembldb", "DelayedArray"))
 
 # packages needed to read h5ad files
 BiocManager::install(c("zellkonverter", "rhdf5", "HDF5Array"))
+
+# package needed to read Seurat file
+BiocManager::install("Seurat")
 
 # package needed to convert ensembl gene ids to symbols
 BiocManager::install("AnnotationHub")
@@ -45,14 +48,15 @@ dimensional gene marker space using the vector dot product. In order to adjust
 for spillover in the vector projection between cell clusters, a compensation
 matrix is applied.
 
-### Example
+### Example h5ad file
 
-The following example is based on a the Cell Typist dataset which is available
-on the CZI cellxgene repository here:
+The following example is based on a the Cell Typist dataset (Global) which
+contains 329,762 immune cells and is available on the CZ cellxgene repository
+here:
 https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3
 
-The h5ad file for the example can be downloaded from CZI cellxgene repository
-directly using this link:
+The h5ad file (2.9 Gb) for the example can be downloaded from CZ cellxgene
+repository directly using this link:
 https://datasets.cellxgene.cziscience.com/2ac906a5-9725-4258-8e36-21a9f6c0302a.h5ad
 
 First we load the file in HDF5 format so that the full data remains on disc and
@@ -76,6 +80,29 @@ mat <- typist_h5@assays@data$X
 rownames(mat) <- rownames(typist_h5)
 meta <- typist_h5@colData@listData
 ```
+
+### Example Seurat file
+
+Some users report difficulties with installing zellkonverter. cellGeometry can
+also be used with Seurat files although these become progressively slower with
+larger datasets as well as needing substantial amounts of RAM, so for datasets >1M
+cells we recommend persevering with zellkonverter and the h5ad format. We
+include example code for loading a Seurat file below as an alternative to h5ad.
+
+At time of writing the rds file (2.9 Gb) in Seurat format can be downloaded from
+CZ cellxgene repository directly using this link:
+https://datasets.cellxgene.cziscience.com/2ac906a5-9725-4258-8e36-21a9f6c0302a.rds
+
+CZ cellxgene state that Seurat support will be end after Dec 2024.
+
+```
+typist <- readRDS("08f58b32-a01b-4300-8ebc-2b93c18f26f7.rds")  # 15.5 GB in memory
+
+mat <- typist@assays$RNA$counts
+meta <- typist@meta.data
+```
+
+### Extract cell subclasses and clusters
 
 We first check cell cluster subclasses. Then we extract a vector which contains
 the subclass cluster for each cell and a 2nd vector for broader cell groups. We
