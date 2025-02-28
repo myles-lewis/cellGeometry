@@ -160,8 +160,8 @@ tune_dec <- function(mk, test, samples, grid2, output, ...) {
 #'   parameters (maximum mean R squared, averaged across subclasses). For method
 #'   = "overall", the average effect of varying each parameter is calculated by
 #'   mean R-squared across the rest of the grid and the best value for each
-#'   parameter is printed. Invisibly returns a dataframe of mean R squared
-#'   values averaged over subclasses.
+#'   parameter is printed. Invisibly returns a dataframe of mean metric values
+#'   (Pearson r^2, R^2, RMSE) averaged over subclasses.
 #' @export
 summary.tune_deconv <- function(object,
                                 metric = attr(object, "metric"),
@@ -172,16 +172,16 @@ summary.tune_deconv <- function(object,
   
   params <- colnames(object)
   params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
-  mres <- aggregate(object[, metric], by = object[, params, drop = FALSE],
-                    FUN = mean, na.rm = TRUE)
-  w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
-  colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
+  mres <- tune_stats(object, metric, params)
+  w <- if (metric == "RMSE") {which.min(mres$mean.RMSE)
+    } else which.max(mres[, paste0("mean.", metric)])
   
   if (method == attr(object, "method") && metric == attr(object, "metric")) {
     best_tune <- attr(object, "tune")
   } else if (method == "top") {
     best_tune <- mres[w, ]
   } else {
+    # overall mean
     best_tune <- lapply(params, function(i) {
       mres <- aggregate(object[, metric], by = object[, i, drop = FALSE],
                         FUN = mean, na.rm = TRUE)
@@ -197,6 +197,16 @@ summary.tune_deconv <- function(object,
   print(best_tune, row.names = FALSE, digits = max(3, getOption("digits") -3),
         print.gap = 2L)
   invisible(mres)
+}
+
+
+tune_stats <- function(object, metric, params) {
+  mets <- c("pearson.rsq", "Rsq", "RMSE")
+  mres <- aggregate(object[, mets], by = object[, params, drop = FALSE],
+                    FUN = mean, na.rm = TRUE)
+  w <- which(colnames(mres) %in% mets)
+  colnames(mres)[w] <- paste0("mean.", mets)
+  mres
 }
 
 
