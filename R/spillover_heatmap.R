@@ -43,8 +43,8 @@ spillover_heatmap <- function(x,
     s <- which(cell_table %in% subset)
     if (length(s) == 0) stop("no such subgroup")
     if (length(s) == 1) stop("subset too small")
-    return(spillover_heatmap(x = m_itself[s, s], col = col, text = text,
-                             cutoff = cutoff, fontsize = fontsize, ...))
+    return(spillover_heatmap(x = m_itself[s, s], text = text, cutoff = cutoff,
+                             fontsize = fontsize, ...))
   }
   
   mx <- max(m_itself)
