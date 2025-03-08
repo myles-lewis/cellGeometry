@@ -4,7 +4,14 @@
 \alias{simulate_bulk}
 \title{Simulate pseudo-bulk RNA-Seq}
 \usage{
-simulate_bulk(object, samples, subclass, times = 30)
+simulate_bulk(
+  object,
+  samples,
+  subclass,
+  times = 3,
+  add_noise = FALSE,
+  sd = 0.1
+)
 }
 \arguments{
 \item{object}{Either a 'cellMarkers' class object, or a single cell count
@@ -20,6 +27,10 @@ Only used if \code{object} is a single cell count matrix.}
 \item{times}{Scaling factor to increase sampling of cells. Each cell in
 \code{samples} is randomly sampled this many times. Only used if \code{object} is a
 single cell count matrix.}
+
+\item{add_noise}{Logical whether to add noise}
+
+\item{sd}{Standard deviation of noise}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in
@@ -40,6 +51,11 @@ sampling is scaled up by the factor \code{times}.
 The first method can give perfect deconvolution if the following settings are
 used with \code{\link[=deconvolute]{deconvolute()}}: \code{count_space = TRUE}, \code{convert_bulk = FALSE},
 \code{use_filter = FALSE} and \code{comp_amount = 1}.
+
+Noise is added by applying log2+1 to the simulated count matrix, then adding
+gaussian noise with mean 0 and sd specified by \code{sd} using \code{rnorm}, then
+converting back to count scale. Zeroes in the original count matrix are
+preserved as zeroes and negative values are converted to 0.
 }
 \seealso{
 \code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}

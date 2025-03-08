@@ -22,9 +22,9 @@ knitr::opts_chunk$set(
 
 # Geometric single cell deconvolution
 
-`cellGeometry` has been written for fast deconvolution of bulk RNA-Seq datasets
-using a single-cell RNA-Seq reference dataset in which cell clusters have been
-defined.
+`cellGeometry` has been written for ultrafast deconvolution of bulk RNA-Seq
+datasets using a single-cell RNA-Seq reference dataset in which cell clusters
+have been defined.
 
 # Installation
 

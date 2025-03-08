@@ -1,7 +1,7 @@
 # Geometric single cell deconvolution
 
-Deconvolution of bulk RNA-Seq datasets using a single-cell RNA-Seq reference 
-dataset in which cell clusters have been defined.
+Ultrafast deconvolution of bulk RNA-Seq datasets using a single-cell RNA-Seq
+reference dataset in which cell clusters have been defined.
 
 ### Installation
 

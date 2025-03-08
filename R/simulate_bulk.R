@@ -48,6 +48,11 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' used with [deconvolute()]: `count_space = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
+#' Noise is added by applying log2+1 to the simulated count matrix, then adding
+#' gaussian noise with mean 0 and sd specified by `sd` using `rnorm`, then
+#' converting back to count scale. Zeroes in the original count matrix are
+#' preserved as zeroes and negative values are converted to 0.
+#' 
 #' @param object Either a 'cellMarkers' class object, or a single cell count
 #'   matrix with genes in rows and cells in columns, with rownames representing
 #'   gene IDs/symbols. The matrix can be a sparse matrix or DelayedMatrix.
@@ -58,11 +63,14 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' @param times Scaling factor to increase sampling of cells. Each cell in
 #'   `samples` is randomly sampled this many times. Only used if `object` is a
 #'   single cell count matrix.
+#' @param add_noise Logical whether to add noise
+#' @param sd Standard deviation of noise
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]
 #' @export
-simulate_bulk <- function(object, samples, subclass, times = 30) {
+simulate_bulk <- function(object, samples, subclass, times = 3,
+                          add_noise = FALSE, sd = 0.1) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
@@ -95,6 +103,19 @@ simulate_bulk <- function(object, samples, subclass, times = 30) {
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   message(" (", format(Sys.time() - start, digits = 3), ")")
+  
+  if (add_noise) {
+    message("Adding noise")
+    log_sim <- log2(sim_pseudo +1)
+    nz <- sim_pseudo != 0
+    rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
+    rmat <- matrix(rn, nrow = nrow(sim_pseudo))
+    log_sim <- log_sim + rmat * nz
+    sim_pseudo <- 2^log_sim -1
+    sim_pseudo[sim_pseudo < 0] <- 0
+    if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
+  }
+  
   sim_pseudo
 }
 
