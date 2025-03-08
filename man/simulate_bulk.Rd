@@ -10,7 +10,8 @@ simulate_bulk(
   subclass,
   times = 30,
   add_noise = FALSE,
-  sd = 0.1
+  sd = 0.1,
+  sample_error = 0
 )
 }
 \arguments{
@@ -28,9 +29,11 @@ Only used if \code{object} is a single cell count matrix.}
 \code{samples} is randomly sampled this many times. Only used if \code{object} is a
 single cell count matrix.}
 
-\item{add_noise}{Logical whether to add noise}
+\item{add_noise}{Logical whether to add noise.}
 
-\item{sd}{Standard deviation of noise (on log2 scale)}
+\item{sd}{Standard deviation of noise (on log2 scale).}
+
+\item{sample_error}{Proportion of cells sampled whose label is incorrect.}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in
@@ -56,6 +59,10 @@ Noise is added by applying log2+1 to the simulated count matrix, then adding
 gaussian noise with mean 0 and sd specified by \code{sd} using \code{rnorm}, then
 converting back to count scale. Zeroes in the original count matrix are
 preserved as zeroes and negative values are converted to 0.
+
+\code{sample_error} is an alternative method of adding noise by permuting the cell
+labels so that a proportion of cells are drawn from other cell clusters, i.e.
+\code{sample_error} is the proportion with the wrong cell cluster labels.
 }
 \seealso{
 \code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}
