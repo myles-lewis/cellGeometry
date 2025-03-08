@@ -144,7 +144,7 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
 #' @param ... Optional arguments passed to `plot()`.
 #' @returns No return value. Produces scatter plots using base graphics.
 #' @importFrom graphics abline mtext plot.new
-#' @importFrom stats lm runif
+#' @importFrom stats lm runif rnorm
 #' @export
 plot_set <- function(obs, pred, mfrow = NULL,
                      show_zero = FALSE,
