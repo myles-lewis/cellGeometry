@@ -82,6 +82,7 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
     sim_pseudo <- genemean_counts %*% t(samples)
     mode(sim_pseudo) <- "integer"
+    if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd)
     return(sim_pseudo)
   }
   start <- Sys.time()
@@ -116,18 +117,21 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   message(" (", format(Sys.time() - start, digits = 3), ")")
   
-  if (add_noise) {
-    message("Adding noise")
-    log_sim <- log2(sim_pseudo +1)
-    nz <- sim_pseudo != 0
-    rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
-    rmat <- matrix(rn, nrow = nrow(sim_pseudo))
-    log_sim <- log_sim + rmat * nz
-    sim_pseudo <- 2^log_sim -1
-    sim_pseudo[sim_pseudo < 0] <- 0
-    if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
-  }
-  
+  if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd)
+  sim_pseudo
+}
+
+
+addNoise <- function(sim_pseudo, sd) {
+  message("Adding noise")
+  log_sim <- log2(sim_pseudo +1)
+  nz <- sim_pseudo != 0
+  rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
+  rmat <- matrix(rn, nrow = nrow(sim_pseudo))
+  log_sim <- log_sim + rmat * nz
+  sim_pseudo <- 2^log_sim -1
+  sim_pseudo[sim_pseudo < 0] <- 0
+  if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   sim_pseudo
 }
 
