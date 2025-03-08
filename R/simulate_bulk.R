@@ -64,12 +64,12 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #'   `samples` is randomly sampled this many times. Only used if `object` is a
 #'   single cell count matrix.
 #' @param add_noise Logical whether to add noise
-#' @param sd Standard deviation of noise
+#' @param sd Standard deviation of noise (on log2 scale)
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]
 #' @export
-simulate_bulk <- function(object, samples, subclass, times = 3,
+simulate_bulk <- function(object, samples, subclass, times = 30,
                           add_noise = FALSE, sd = 0.1) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1

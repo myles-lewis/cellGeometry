@@ -8,7 +8,7 @@ simulate_bulk(
   object,
   samples,
   subclass,
-  times = 3,
+  times = 30,
   add_noise = FALSE,
   sd = 0.1
 )
@@ -30,7 +30,7 @@ single cell count matrix.}
 
 \item{add_noise}{Logical whether to add noise}
 
-\item{sd}{Standard deviation of noise}
+\item{sd}{Standard deviation of noise (on log2 scale)}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in
