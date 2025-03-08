@@ -53,10 +53,6 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' converting back to count scale. Zeroes in the original count matrix are
 #' preserved as zeroes and negative values are converted to 0.
 #' 
-#' `sample_error` is an alternative method of adding noise by permuting the cell
-#' labels so that a proportion of cells are drawn from other cell clusters, i.e.
-#' `sample_error` is the proportion with the wrong cell cluster labels.
-#' 
 #' @param object Either a 'cellMarkers' class object, or a single cell count
 #'   matrix with genes in rows and cells in columns, with rownames representing
 #'   gene IDs/symbols. The matrix can be a sparse matrix or DelayedMatrix.
@@ -69,14 +65,12 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #'   single cell count matrix.
 #' @param add_noise Logical whether to add noise.
 #' @param sd Standard deviation of noise (on log2 scale).
-#' @param sample_error Proportion of cells sampled whose label is incorrect. 
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]
 #' @export
 simulate_bulk <- function(object, samples, subclass, times = 30,
-                          add_noise = FALSE, sd = 0.1,
-                          sample_error = 0) {
+                          add_noise = FALSE, sd = 0.1) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
@@ -99,13 +93,7 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
   cmat <- vapply(seq_len(nrow(samples)), function(j) {
     s <- unlist(lapply(subclass_lev, function(i) {
       w <- which(subclass == i)
-      n <- samples[j, i]
-      if (sample_error == 0) return(sample(w, n, replace = TRUE))
-      nbad <- round(n * sample_error)
-      good <- sample(w, n - nbad, replace = TRUE)
-      w2 <- which(subclass != i)
-      bad <- sample(w2, nbad, replace = TRUE)
-      c(good, bad)
+      sample(w, samples[j, i], replace = TRUE)
     }))
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
