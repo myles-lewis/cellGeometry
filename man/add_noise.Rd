@@ -4,7 +4,7 @@
 \alias{add_noise}
 \title{Add noise to simulated count data}
 \usage{
-add_noise(sim_pseudo, sd1 = 100, sd2 = 0.01)
+add_noise(sim_pseudo, sd1 = 100, sd2 = 0.05)
 }
 \arguments{
 \item{sim_pseudo}{An integer count matrix with genes in rows and cell

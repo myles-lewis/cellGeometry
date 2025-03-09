@@ -119,7 +119,7 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns.
 #' @export
-add_noise <- function(sim_pseudo, sd1 = 100, sd2 = 0.01) {
+add_noise <- function(sim_pseudo, sd1 = 100, sd2 = 0.05) {
   if (sd2 > 0) {
     # Gaussian noise on log scale
     rn <- rnorm(prod(dim(sim_pseudo)), sd = sd2)
