@@ -49,7 +49,8 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
 #' Gaussian noise is added to the simulated count matrix using `rnorm` with sd
-#' specified by `sd` scaled by `times`. Negative values are converted to 0.
+#' specified by `sd`. When sampling from a count matrix, `sd` is scaled by
+#' `times`. Negative values are converted to 0.
 #' 
 #' @param object Either a 'cellMarkers' class object, or a single cell count
 #'   matrix with genes in rows and cells in columns, with rownames representing

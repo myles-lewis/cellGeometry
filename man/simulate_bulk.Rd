@@ -53,7 +53,8 @@ used with \code{\link[=deconvolute]{deconvolute()}}: \code{count_space = TRUE}, 
 \code{use_filter = FALSE} and \code{comp_amount = 1}.
 
 Gaussian noise is added to the simulated count matrix using \code{rnorm} with sd
-specified by \code{sd} scaled by \code{times}. Negative values are converted to 0.
+specified by \code{sd}. When sampling from a count matrix, \code{sd} is scaled by
+\code{times}. Negative values are converted to 0.
 }
 \seealso{
 \code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}
