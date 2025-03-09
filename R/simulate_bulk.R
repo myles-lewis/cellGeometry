@@ -137,7 +137,7 @@ add_noise <- function(sim_pseudo, sd = 100, sd2 = 0.05, type = 1) {
       log_sim <- log_sim + rmat
       sim_pseudo <- 2^log_sim -1
     }
-    if (sd1 > 0) {
+    if (sd > 0) {
       # simple Gaussian noise
       rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
       rmat <- matrix(round(rn), nrow = nrow(sim_pseudo))
