@@ -3,6 +3,7 @@
 S3method(plot,qqmap)
 S3method(summary,cellMarkers)
 S3method(summary,tune_deconv)
+export(add_noise)
 export(adjust_library_size)
 export(cellMarkers)
 export(comp_heatmap)

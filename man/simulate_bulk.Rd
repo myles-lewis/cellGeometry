@@ -28,12 +28,6 @@ Only used if \code{object} is a single cell count matrix.}
 \item{times}{Scaling factor to increase sampling of cells. Each cell in
 \code{samples} is randomly sampled this many times. Only used if \code{object} is a
 single cell count matrix.}
-
-\item{add_noise}{Logical whether to add noise.}
-
-\item{sd1}{Standard deviation of noise added to counts.}
-
-\item{sd2}{Standard deviation of noise added to log2(counts+1).}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in
@@ -54,16 +48,7 @@ sampling is scaled up by the factor \code{times}.
 The first method can give perfect deconvolution if the following settings are
 used with \code{\link[=deconvolute]{deconvolute()}}: \code{count_space = TRUE}, \code{convert_bulk = FALSE},
 \code{use_filter = FALSE} and \code{comp_amount = 1}.
-
-Gaussian noise can be added to the simulated count matrix in 2 ways which can
-be combined. \code{sd1} controls addition of simple Gaussian noise to counts using
-\code{rnorm} with sd specified by \code{sd1}. When sampling from a count matrix, \code{sd1}
-is scaled by \code{times}. If \code{sd2} is >0, counts are converted using log2+1 and
-Gaussian noise added, followed by conversion back to count scale. Negative
-values are converted to 0. \code{sd1} affects low expressed genes and hardly
-affects high expressed genes. \code{sd2} affects all genes irrespective of
-expression level.
 }
 \seealso{
-\code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}
+\code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}} \code{\link[=add_noise]{add_noise()}}
 }
