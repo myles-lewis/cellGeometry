@@ -52,9 +52,9 @@ The first method can give perfect deconvolution if the following settings are
 used with \code{\link[=deconvolute]{deconvolute()}}: \code{count_space = TRUE}, \code{convert_bulk = FALSE},
 \code{use_filter = FALSE} and \code{comp_amount = 1}.
 
-Gaussian noise is added to the simulated count matrix using \code{rnorm} with sd
-specified by \code{sd}. When sampling from a count matrix, \code{sd} is scaled by
-\code{times}. Negative values are converted to 0.
+Poisson noise is added to the simulated count matrix using \code{rpois} with
+lambda specified by \code{sd^2} and centred around lambda. When sampling from a
+count matrix, \code{sd} is scaled by \code{times}. Negative values are set to 0.
 }
 \seealso{
 \code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}

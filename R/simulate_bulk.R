@@ -48,9 +48,9 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' used with [deconvolute()]: `count_space = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
-#' Gaussian noise is added to the simulated count matrix using `rnorm` with sd
-#' specified by `sd`. When sampling from a count matrix, `sd` is scaled by
-#' `times`. Negative values are converted to 0.
+#' Poisson noise is added to the simulated count matrix using `rpois` with
+#' lambda specified by `sd^2` and centred around lambda. When sampling from a
+#' count matrix, `sd` is scaled by `times`. Negative values are set to 0.
 #' 
 #' @param object Either a 'cellMarkers' class object, or a single cell count
 #'   matrix with genes in rows and cells in columns, with rownames representing
@@ -113,16 +113,18 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
 
 addNoise <- function(sim_pseudo, sd) {
   message("Adding noise")
-  rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
-  rmat <- matrix(round(rn), nrow = nrow(sim_pseudo))
+  lam <- sd^2
+  rp <- rpois(prod(dim(sim_pseudo)), lam) - lam
+  rmat <- matrix(rp, nrow = nrow(sim_pseudo))
   
-  # gaussian noise on log scale
+  # Gaussian noise on log scale
+  # rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
   # nz <- sim_pseudo != 0
   # log_sim <- log2(sim_pseudo +1)
   # log_sim <- log_sim + rmat * nz
   # sim_pseudo <- 2^log_sim -1
   
-  # simple gaussian noise
+  # simple Poisson noise
   sim_pseudo <- sim_pseudo + rmat
   sim_pseudo[sim_pseudo < 0] <- 0
   sim_pseudo
@@ -153,7 +155,7 @@ addNoise <- function(sim_pseudo, sd) {
 #' @param ... Optional arguments passed to `plot()`.
 #' @returns No return value. Produces scatter plots using base graphics.
 #' @importFrom graphics abline mtext plot.new
-#' @importFrom stats lm runif rnorm
+#' @importFrom stats lm runif rpois
 #' @export
 plot_set <- function(obs, pred, mfrow = NULL,
                      show_zero = FALSE,
