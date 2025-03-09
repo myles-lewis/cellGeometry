@@ -48,9 +48,14 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' used with [deconvolute()]: `count_space = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
-#' Gaussian noise is added to the simulated count matrix using `rnorm` with sd
-#' specified by `sd`. When sampling from a count matrix, `sd` is scaled by
-#' `times`. Negative values are converted to 0.
+#' Gaussian noise can be added to the simulated count matrix in 2 ways which can
+#' be combined. `sd1` controls addition of simple Gaussian noise to counts using
+#' `rnorm` with sd specified by `sd1`. When sampling from a count matrix, `sd1`
+#' is scaled by `times`. If `sd2` is >0, counts are converted using log2+1 and
+#' Gaussian noise added, followed by conversion back to count scale. Negative
+#' values are converted to 0. `sd1` affects low expressed genes and hardly
+#' affects high expressed genes. `sd2` affects all genes irrespective of
+#' expression level.
 #' 
 #' @param object Either a 'cellMarkers' class object, or a single cell count
 #'   matrix with genes in rows and cells in columns, with rownames representing
@@ -63,23 +68,24 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #'   `samples` is randomly sampled this many times. Only used if `object` is a
 #'   single cell count matrix.
 #' @param add_noise Logical whether to add noise.
-#' @param sd Standard deviation of noise (on count scale).
+#' @param sd1 Standard deviation of noise added to counts.
+#' @param sd2 Standard deviation of noise added to log2(counts+1).
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]
 #' @export
 simulate_bulk <- function(object, samples, subclass, times = 30,
-                          add_noise = FALSE, sd = 100) {
+                          add_noise = FALSE, sd1 = 100, sd2 = 0) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
     sim_pseudo <- genemean_counts %*% t(samples)
-    if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd)
+    if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd1, sd2)
     mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
   # sample from count matrix
-  sd <- sd * times
+  sd1 <- sd1 * times
   start <- Sys.time()
   if (!inherits(object, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
     object <- as.matrix(object)
@@ -105,26 +111,33 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
   colnames(sim_pseudo) <- rownames(samples)
   message(" (", format(Sys.time() - start, digits = 3), ")")
   
-  if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd)
+  if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd1, sd2)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   sim_pseudo
 }
 
 
-addNoise <- function(sim_pseudo, sd) {
+addNoise <- function(sim_pseudo, sd1, sd2) {
   message("Adding noise")
-  rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
-  rmat <- matrix(round(rn), nrow = nrow(sim_pseudo))
+  if (sd2 > 0) {
+    # Gaussian noise on log scale
+    rn <- rnorm(prod(dim(sim_pseudo)), sd = sd2)
+    rmat <- matrix(rn, nrow = nrow(sim_pseudo))
+    log_sim <- log2(sim_pseudo +1)
+    log_sim <- log_sim + rmat
+    sim_pseudo <- 2^log_sim -1
+  }
+  if (sd1 > 0) {
+    # simple Gaussian noise
+    rn <- rnorm(prod(dim(sim_pseudo)), sd = sd1)
+    rmat <- matrix(round(rn), nrow = nrow(sim_pseudo))
+    sim_pseudo <- sim_pseudo + rmat
+  }
   
-  # gaussian noise on log scale
-  # nz <- sim_pseudo != 0
-  # log_sim <- log2(sim_pseudo +1)
-  # log_sim <- log_sim + rmat * nz
-  # sim_pseudo <- 2^log_sim -1
-  
-  # simple gaussian noise
-  sim_pseudo <- sim_pseudo + rmat
   sim_pseudo[sim_pseudo < 0] <- 0
+  if (max(sim_pseudo) <= .Machine$integer.max) {
+    mode(sim_pseudo) <- "integer"
+  } else sim_pseudo <- round(sim_pseudo)
   sim_pseudo
 }
 
