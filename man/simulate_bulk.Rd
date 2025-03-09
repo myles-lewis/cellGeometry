@@ -10,7 +10,7 @@ simulate_bulk(
   subclass,
   times = 30,
   add_noise = FALSE,
-  sd = 0.1
+  sd = 100
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ single cell count matrix.}
 
 \item{add_noise}{Logical whether to add noise.}
 
-\item{sd}{Standard deviation of noise (on log2 scale).}
+\item{sd}{Standard deviation of noise (on count scale).}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in
@@ -52,10 +52,8 @@ The first method can give perfect deconvolution if the following settings are
 used with \code{\link[=deconvolute]{deconvolute()}}: \code{count_space = TRUE}, \code{convert_bulk = FALSE},
 \code{use_filter = FALSE} and \code{comp_amount = 1}.
 
-Noise is added by applying log2+1 to the simulated count matrix, then adding
-gaussian noise with mean 0 and sd specified by \code{sd} using \code{rnorm}, then
-converting back to count scale. Zeroes in the original count matrix are
-preserved as zeroes and negative values are converted to 0.
+Gaussian noise is added to the simulated count matrix using \code{rnorm} with sd
+specified by \code{sd} scaled by \code{times}. Negative values are converted to 0.
 }
 \seealso{
 \code{\link[=generate_samples]{generate_samples()}} \code{\link[=deconvolute]{deconvolute()}}

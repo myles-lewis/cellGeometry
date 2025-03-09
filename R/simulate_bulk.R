@@ -48,10 +48,8 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #' used with [deconvolute()]: `count_space = TRUE`, `convert_bulk = FALSE`,
 #' `use_filter = FALSE` and `comp_amount = 1`.
 #' 
-#' Noise is added by applying log2+1 to the simulated count matrix, then adding
-#' gaussian noise with mean 0 and sd specified by `sd` using `rnorm`, then
-#' converting back to count scale. Zeroes in the original count matrix are
-#' preserved as zeroes and negative values are converted to 0.
+#' Gaussian noise is added to the simulated count matrix using `rnorm` with sd
+#' specified by `sd` scaled by `times`. Negative values are converted to 0.
 #' 
 #' @param object Either a 'cellMarkers' class object, or a single cell count
 #'   matrix with genes in rows and cells in columns, with rownames representing
@@ -64,21 +62,23 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #'   `samples` is randomly sampled this many times. Only used if `object` is a
 #'   single cell count matrix.
 #' @param add_noise Logical whether to add noise.
-#' @param sd Standard deviation of noise (on log2 scale).
+#' @param sd Standard deviation of noise (on count scale).
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()]
 #' @export
 simulate_bulk <- function(object, samples, subclass, times = 30,
-                          add_noise = FALSE, sd = 0.1) {
+                          add_noise = FALSE, sd = 100) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
     sim_pseudo <- genemean_counts %*% t(samples)
-    mode(sim_pseudo) <- "integer"
     if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd)
+    mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
+  # sample from count matrix
+  sd <- sd * times
   start <- Sys.time()
   if (!inherits(object, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
     object <- as.matrix(object)
@@ -102,24 +102,28 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
   message("Matrix multiplication", appendLF = FALSE)
   sim_pseudo <- as.matrix(object %*% cmat)
   colnames(sim_pseudo) <- rownames(samples)
-  if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   message(" (", format(Sys.time() - start, digits = 3), ")")
   
   if (add_noise) sim_pseudo <- addNoise(sim_pseudo, sd)
+  if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   sim_pseudo
 }
 
 
 addNoise <- function(sim_pseudo, sd) {
   message("Adding noise")
-  log_sim <- log2(sim_pseudo +1)
-  nz <- sim_pseudo != 0
   rn <- rnorm(prod(dim(sim_pseudo)), sd = sd)
-  rmat <- matrix(rn, nrow = nrow(sim_pseudo))
-  log_sim <- log_sim + rmat * nz
-  sim_pseudo <- 2^log_sim -1
+  rmat <- matrix(round(rn), nrow = nrow(sim_pseudo))
+  
+  # gaussian noise on log scale
+  # nz <- sim_pseudo != 0
+  # log_sim <- log2(sim_pseudo +1)
+  # log_sim <- log_sim + rmat * nz
+  # sim_pseudo <- 2^log_sim -1
+  
+  # simple gaussian noise
+  sim_pseudo <- sim_pseudo + rmat
   sim_pseudo[sim_pseudo < 0] <- 0
-  if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
   sim_pseudo
 }
 
