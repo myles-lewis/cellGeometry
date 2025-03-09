@@ -146,6 +146,7 @@ add_noise <- function(counts, sd = 100, sd2 = 0.05, type = 1) {
     }
   } else {
     # sqrt transform
+    sd <- sqrt(sd) /2  # loose equivalence
     rn <- rnorm(prod(dim(counts)), sd = sd)
     rmat <- matrix(rn, nrow = nrow(counts))
     sx <- sqrt(counts)
