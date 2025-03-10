@@ -35,5 +35,7 @@ An alternative system of adding noise is invoked if \code{type = 2}. Here counts
 are square root transformed before Gaussian noise is added, and then
 transformed back. This still has a stronger effect on low expressed genes,
 but the effect is more graduated with a more gradual fall off in effect on
-genes with increasing expression.
+genes with increasing expression. \code{sd} is scaled to a mean library size
+(total counts in each sample/column) of 1e9 counts to adjust for the effect
+of sampling more cells in \code{\link[=simulate_bulk]{simulate_bulk()}} by increasing \code{times}.
 }
