@@ -62,8 +62,7 @@ generate_samples <- function(object, n, equal_sample = TRUE) {
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()] [add_noise()]
 #' @export
-simulate_bulk <- function(object, samples, subclass, times = 30,
-                          add_noise = FALSE, sd1 = 100, sd2 = 0) {
+simulate_bulk <- function(object, samples, subclass, times = 30) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")

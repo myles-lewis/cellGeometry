@@ -29,6 +29,7 @@
 #'   row. This supercedes `text`.
 #' @param outline_col Colour for the outline boxes when `outlines = TRUE`.
 #' @param subset Character vector of groups to be subsetted.
+#' @param add_genes Character vector of gene names to be added to the heatmap.
 #' @param ... Optional arguments passed to [ComplexHeatmap::Heatmap()].
 #' @returns A 'Heatmap' class object.
 #' @importFrom grDevices hcl.colors
@@ -48,6 +49,7 @@ signature_heatmap <- function(x,
                               outlines = FALSE,
                               outline_col = "black",
                               subset = NULL,
+                              add_genes = NULL,
                               ...) {
   type <- match.arg(type)
   rank <- match.arg(rank)
@@ -60,6 +62,14 @@ signature_heatmap <- function(x,
   if (inherits(x, "cellMarkers")) {
     if (is.null(use_filter)) use_filter <- TRUE
     gset <- if (type == "subclass") x$geneset else x$group_geneset
+    if (!is.null(add_genes)) {
+      ok <- add_genes %in% rownames(x$genemeans)
+      if (!all(ok)) {
+        message("Genes not found: ", paste(add_genes[!ok], collapse = ", "))
+      }
+      add_genes <- add_genes[ok]
+      gset <- unique(c(gset, add_genes))
+    }
     if (type != "group") cell_table <- x$cell_table
     if (arith_mean) {
       if (type == "group") stop("arithmetic mean not available for group means")
@@ -81,7 +91,7 @@ signature_heatmap <- function(x,
     s <- which(x$cell_table %in% subset)
     if (length(s) == 0) stop("no such subgroup")
     genes <- lapply(x$best_angle[s], function(i) rownames(i)[1:x$opt$nsubclass])
-    genes <- unique(unlist(genes))
+    genes <- unique(c(unlist(genes), add_genes))
     gs <- gene_signature[genes, s]
     return(signature_heatmap(x = gs, rank = rank, scale = scale, col = col,
                              text = text, fontsize = fontsize,

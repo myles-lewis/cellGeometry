@@ -17,6 +17,7 @@ signature_heatmap(
   outlines = FALSE,
   outline_col = "black",
   subset = NULL,
+  add_genes = NULL,
   ...
 )
 }
@@ -57,6 +58,8 @@ row. This supercedes \code{text}.}
 \item{outline_col}{Colour for the outline boxes when \code{outlines = TRUE}.}
 
 \item{subset}{Character vector of groups to be subsetted.}
+
+\item{add_genes}{Character vector of gene names to be added to the heatmap.}
 
 \item{...}{Optional arguments passed to \code{\link[ComplexHeatmap:Heatmap]{ComplexHeatmap::Heatmap()}}.}
 }
