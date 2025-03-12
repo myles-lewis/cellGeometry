@@ -8,7 +8,8 @@ generate_samples(
   object,
   n,
   equal_sample = TRUE,
-  method = c("unif", "dirichlet")
+  method = c("unif", "dirichlet"),
+  alpha = 1.5
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ cells in the main scRNA-Seq data.}
 
 \item{method}{Either "unif" or "dirichlet" to specify whether cell numbers
 are drawn from uniform distribution or dirichlet distribution.}
+
+\item{alpha}{Shape parameter for \code{gtools::rdirichlet()}. Automatically
+expanded to be a vector whose length is the number of subclasses.}
 }
 \value{
 An integer matrix with \code{n} rows, with columns for each cell

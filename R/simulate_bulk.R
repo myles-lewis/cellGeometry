@@ -13,6 +13,8 @@
 #'   cells in the main scRNA-Seq data.
 #' @param method Either "unif" or "dirichlet" to specify whether cell numbers
 #'   are drawn from uniform distribution or dirichlet distribution.
+#' @param alpha Shape parameter for `gtools::rdirichlet()`. Automatically
+#'   expanded to be a vector whose length is the number of subclasses.
 #' @returns An integer matrix with `n` rows, with columns for each cell
 #'   subclasses in `object`, representing cell counts for each cell subclass.
 #'   Designed to be passed to [simulate_bulk()].
@@ -23,7 +25,8 @@
 #' @importFrom gtools rdirichlet
 #' @export
 generate_samples <- function(object, n, equal_sample = TRUE,
-                             method = c("unif", "dirichlet")) {
+                             method = c("unif", "dirichlet"),
+                             alpha = 1.5) {
   lim <- object$subclass_table
   nc <- length(lim)
   method <- match.arg(method)
@@ -35,7 +38,7 @@ generate_samples <- function(object, n, equal_sample = TRUE,
       sim_counts <- sim_counts * fac
     } else sim_counts <- t(t(sim_counts) * as.vector(lim))
   } else {
-    sim_counts <- gtools::rdirichlet(n, rep(2, nc)) * sum(lim)
+    sim_counts <- gtools::rdirichlet(n, rep_len(alpha, nc)) * sum(lim)
     dimnames(sim_counts) <- list(paste0("S", c(1:n)), names(lim))
   }
   mode(sim_counts) <- "integer"
