@@ -4,7 +4,12 @@
 \alias{generate_samples}
 \title{Generate random cell number samples}
 \usage{
-generate_samples(object, n, equal_sample = TRUE)
+generate_samples(
+  object,
+  n,
+  equal_sample = TRUE,
+  method = c("unif", "dirichlet")
+)
 }
 \arguments{
 \item{object}{A 'cellMarkers' class object}
@@ -14,6 +19,9 @@ generate_samples(object, n, equal_sample = TRUE)
 \item{equal_sample}{Logical whether to sample subclasses equally or generate
 samples with proportions of cells in keeping with the original subtotal of
 cells in the main scRNA-Seq data.}
+
+\item{method}{Either "unif" or "dirichlet" to specify whether cell numbers
+are drawn from uniform distribution or dirichlet distribution.}
 }
 \value{
 An integer matrix with \code{n} rows, with columns for each cell

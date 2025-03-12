@@ -11,6 +11,8 @@
 #' @param equal_sample Logical whether to sample subclasses equally or generate
 #'   samples with proportions of cells in keeping with the original subtotal of
 #'   cells in the main scRNA-Seq data.
+#' @param method Either "unif" or "dirichlet" to specify whether cell numbers
+#'   are drawn from uniform distribution or dirichlet distribution.
 #' @returns An integer matrix with `n` rows, with columns for each cell
 #'   subclasses in `object`, representing cell counts for each cell subclass.
 #'   Designed to be passed to [simulate_bulk()].
@@ -18,16 +20,24 @@
 #' Leaving `equal_sample = TRUE` is better for tuning deconvolution parameters.
 #' 
 #' @seealso [simulate_bulk()]
+#' @importFrom gtools rdirichlet
 #' @export
-generate_samples <- function(object, n, equal_sample = TRUE) {
+generate_samples <- function(object, n, equal_sample = TRUE,
+                             method = c("unif", "dirichlet")) {
   lim <- object$subclass_table
   nc <- length(lim)
-  sim_counts <- matrix(runif(n * nc), ncol = nc,
-                       dimnames = list(paste0("S", c(1:n)), names(lim)))
-  if (equal_sample) {
-    fac <- sum(lim) / nc
-    sim_counts <- sim_counts * fac
-  } else sim_counts <- t(t(sim_counts) * as.vector(lim))
+  method <- match.arg(method)
+  if (method == "unif") {
+    sim_counts <- matrix(runif(n * nc), ncol = nc,
+                         dimnames = list(paste0("S", c(1:n)), names(lim)))
+    if (equal_sample) {
+      fac <- sum(lim) / nc
+      sim_counts <- sim_counts * fac
+    } else sim_counts <- t(t(sim_counts) * as.vector(lim))
+  } else {
+    sim_counts <- gtools::rdirichlet(n, rep(2, nc)) * sum(lim)
+    dimnames(sim_counts) <- list(paste0("S", c(1:n)), names(lim))
+  }
   mode(sim_counts) <- "integer"
   sim_counts
 }
