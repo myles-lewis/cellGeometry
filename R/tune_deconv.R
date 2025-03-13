@@ -86,6 +86,7 @@ tune_deconv <- function(mk, test, samples, grid,
     if (is.null(grid2)) stop("No parameters to tune")
     res <- tune_dec(mk, test, samples, grid2, output, ...)
   }
+  res$subclass <- factor(res$subclass, levels = names(mk$cell_table))
   
   if (method == "top") {
     mres <- aggregate(res[, metric], by = res[, params, drop = FALSE],
@@ -209,6 +210,30 @@ tune_stats <- function(object, metric, params) {
   w <- which(colnames(mres) %in% mets)
   colnames(mres)[w] <- paste0("mean.", mets)
   mres
+}
+
+
+best_nsubclass <- function(object) {
+  if (!"nsubclass" %in% colnames(object)) stop("nsubclass not tuned")
+  best_tune <- attr(object, "tune")
+  met <- attr(object, "metric")
+  wc <- which(!colnames(best_tune) %in% c("nsubclass", paste0("mean.", met)))
+  if (length(wc)) {
+    ind <- lapply(wc, function(i) {
+      wcol <- colnames(best_tune)[i]
+      object[, wcol] == best_tune[[i]]
+    })
+    ind <- do.call(cbind, ind)
+    w <- rowSums(ind) == length(wc)
+    object <- object[w, ]
+  }
+  ret <- lapply(levels(object$subclass), function(i) {
+    sub <- object[object$subclass == i, ]
+    w <- which.max(sub[, met])
+    sub$nsubclass[w]
+  })
+  names(ret) <- levels(object$subclass)
+  unlist(ret)
 }
 
 
