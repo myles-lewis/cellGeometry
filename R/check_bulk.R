@@ -12,11 +12,12 @@ bulk_stats <- function(bulkdata) {
 }
 
 
-check_bulk <- function(mk, bulk) {
-  cm <- lapply(mk$best_angle, function(i) {
+check_bulk <- function(mk, bulk, return_cormat = TRUE) {
+  lapply(mk$best_angle, function(i) {
     genes <- rownames(i)[seq_len(mk$opt$nsubclass)]
     cormat <- cor(t(bulk[genes, ]))
     diag(cormat) <- NA
+    if (return_cormat) return(cormat)
     rowMeans(cormat, na.rm = TRUE)
   })
 }
