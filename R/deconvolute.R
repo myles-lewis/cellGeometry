@@ -188,10 +188,10 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
       comp_amount[w] <- newcomps
       atest <- deconv(test, cellmat, comp_amount = comp_amount, equal_weight,
                       count_space)
-      if (any(atest$output < -.Machine$double.eps^0.25)) {
-        message("compensation problem: min output ", min(atest$output))}
-      if (any(atest$percent < -.Machine$double.eps^0.25)) {
-        message("compensation problem: min percent ", min(atest$percent))}
+      # if (any(atest$output < -.Machine$double.eps^0.25)) {
+      #   message("compensation problem: min output ", min(atest$output))}
+      # if (any(atest$percent < -.Machine$double.eps^0.25)) {
+      #   message("compensation problem: min percent ", min(atest$percent))}
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0

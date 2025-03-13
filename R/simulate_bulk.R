@@ -106,21 +106,8 @@ simulate_bulk <- function(object, samples, subclass, times = 30,
       if (method == "unif" || n < length(w) * 2) {
         sample(w, n, replace = TRUE)
       } else {
-        rd <- rdirichlet(1, rep_len(alpha, length(w)))
-        f <- function(x) {
-          x <- matrix(x, ncol = 1)
-          rdx_mat <- x %*% rd
-          (rowSums(round(rdx_mat)) - n)^2
-        }
-        sx <- seq(n/2, n*1.5, length.out = n*100)
-        out_length <- f(sx)
-        best <- which.min(out_length)
-        out <- round(rd * sx[best])
-        if (sum(out) != n) {
-          print(c(sum(out), n))
-          # stop("dirichlet ratio failed")
-        }
-        out
+        rd <- as.vector(rdirichlet(1, rep_len(alpha, length(w))))
+        sample(w, n, replace = TRUE, prob = rd)
       }
     }))
     tabulate(s, nbins = length(subclass))
