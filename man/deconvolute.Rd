@@ -17,6 +17,7 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = "ref",
   plot_comp = FALSE,
+  bysample = FALSE,
   verbose = FALSE
 )
 }
@@ -59,6 +60,9 @@ scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
 \item{plot_comp}{logical, whether to analyse compensation values across
 subclasses.}
+
+\item{bysample}{Logical, whether \code{comp_amount} is optimised per sample. This
+is a little slower.}
 
 \item{verbose}{logical, whether to show additional information.}
 }

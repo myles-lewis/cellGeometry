@@ -31,6 +31,8 @@
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param plot_comp logical, whether to analyse compensation values across
 #'   subclasses.
+#' @param bysample Logical, whether `comp_amount` is optimised per sample. This
+#'   is a little slower.
 #' @param verbose logical, whether to show additional information.
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
@@ -60,7 +62,7 @@
 #'   \item{comp_check}{optional list element returned when `plot_comp = TRUE`}
 #' @seealso [cellMarkers()] [updateMarkers()]
 #' @author Myles Lewis
-#' @importFrom matrixStats colMins
+#' @importFrom matrixStats colMins rowMins
 #' @importFrom stats optimise
 #' @export
 #'
@@ -74,6 +76,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = "ref",
                         plot_comp = FALSE,
+                        bysample = FALSE,
                         verbose = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
@@ -98,7 +101,7 @@ deconvolute <- function(mk, test, log = TRUE,
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, equal_weight,
-                           adjust_comp, count_space)
+                           adjust_comp, count_space, bysample)
   } else {
     gtest <- NULL
   }
@@ -119,7 +122,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
-                         adjust_comp, count_space)
+                         adjust_comp, count_space, bysample)
   
   if (verbose) {
     maxsp <- max_spill(atest$spillover)
@@ -163,9 +166,14 @@ deconvolute <- function(mk, test, log = TRUE,
 }
 
 deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
-                          adjust_comp = TRUE, count_space = FALSE) {
+                          adjust_comp = TRUE, count_space = FALSE,
+                          bysample = FALSE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
+  if (bysample) {
+    return(deconv_adjust_bysample(test, cellmat, comp_amount, equal_weight,
+                                  adjust_comp, count_space))
+  }
   
   atest <- deconv(test, cellmat, comp_amount, equal_weight, count_space)
   if (any(atest$output < 0)) {
@@ -188,10 +196,6 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
       comp_amount[w] <- newcomps
       atest <- deconv(test, cellmat, comp_amount = comp_amount, equal_weight,
                       count_space)
-      # if (any(atest$output < -.Machine$double.eps^0.25)) {
-      #   message("compensation problem: min output ", min(atest$output))}
-      # if (any(atest$percent < -.Machine$double.eps^0.25)) {
-      #   message("compensation problem: min percent ", min(atest$percent))}
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
@@ -199,6 +203,55 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
   }
   atest
 }
+
+
+deconv_adjust_bysample <- function(test, cellmat, comp_amount, equal_weight,
+                                   adjust_comp, count_space) {
+  
+  atest <- deconv(test, cellmat, comp_amount, equal_weight, count_space)
+  if (any(atest$output < 0)) {
+    if (adjust_comp) {
+      minout <- rowMins(atest$output)
+      wr <- which(minout < 0)
+      minout <- colMins(atest$output)
+      w <- which(minout < 0)
+      message("optimising compensation (", length(w), ")")
+      btest <- lapply(wr, function(j) {
+        testj <- test[, j, drop = FALSE]
+        w <- which(atest$output[j, ] < 0)
+        newcomps <- vapply(w, function(i) {
+          f <- function(x) {
+            newcomp <- comp_amount
+            newcomp[i] <- x
+            ntest <- quick_deconv(testj, cellmat, comp_amount = newcomp,
+                                  equal_weight, count_space)
+            ntest[, i]^2
+          }
+          if (comp_amount[i] == 0) return(0)
+          xmin <- optimise(f, c(0, comp_amount[i]))
+          xmin$minimum
+        }, numeric(1))
+        comp_amount2 <- comp_amount
+        comp_amount2[w] <- newcomps
+        output <- quick_deconv(testj, cellmat, comp_amount = comp_amount2,
+                               equal_weight, count_space)
+        list(output = output, comp_amount = comp_amount2)
+      })
+      newrows <- lapply(btest, function(x) x$output)
+      newrows <- do.call(rbind, newrows)
+      atest$output[wr, ] <- newrows
+      comps <- lapply(btest, function(x) x$comp_amount)
+      comps <- do.call(rbind, comps)
+      atest$comp_amount <- rbind(atest$comp_amount, comps)
+      atest$percent <- atest$output / rowSums(atest$output) * 100
+      # fix floating point errors
+      atest$output[atest$output < 0] <- 0
+      atest$percent[atest$percent < 0] <- 0
+    } else message("negative cell proportion projection detected")
+  }
+  atest
+}
+
 
 deconv <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
                    count_space = FALSE) {
@@ -226,6 +279,17 @@ deconv <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
        compensation = mixcomp, rawcomp = rawcomp, comp_amount = comp_amount)
 }
 
+
+quick_deconv <- function(test, cellmat, comp_amount, equal_weight,
+                         count_space) {
+  if (count_space) {
+    test <- 2^test -1
+    cellmat <- 2^cellmat -1
+  }
+  m_itself <- dotprod(cellmat, cellmat, equal_weight)
+  mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
+  dotprod(test, cellmat, equal_weight) %*% mixcomp
+}
 
 approxfun.matrix <- function(x, FUN) {
   if (is.data.frame(x)) x <- as.matrix(x)
