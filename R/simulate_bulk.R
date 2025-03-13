@@ -38,7 +38,7 @@ generate_samples <- function(object, n, equal_sample = TRUE,
       sim_counts <- sim_counts * fac
     } else sim_counts <- t(t(sim_counts) * as.vector(lim))
   } else {
-    sim_counts <- gtools::rdirichlet(n, rep_len(alpha, nc)) * sum(lim)
+    sim_counts <- rdirichlet(n, rep_len(alpha, nc)) * sum(lim)
     dimnames(sim_counts) <- list(paste0("S", c(1:n)), names(lim))
   }
   mode(sim_counts) <- "integer"
@@ -75,7 +75,8 @@ generate_samples <- function(object, n, equal_sample = TRUE,
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()] [add_noise()]
 #' @export
-simulate_bulk <- function(object, samples, subclass, times = 30) {
+simulate_bulk <- function(object, samples, subclass, times = 30,
+                          method = c("unif", "dirichlet"), alpha = 1) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
@@ -83,14 +84,17 @@ simulate_bulk <- function(object, samples, subclass, times = 30) {
     mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
+  
   # sample from count matrix
-  start <- Sys.time()
   if (!inherits(object, c("dgCMatrix", "matrix", "Seurat", "DelayedMatrix"))) {
     object <- as.matrix(object)
   }
   if (ncol(object) != length(subclass)) stop("incompatible dimensions")
   if (!is.factor(subclass)) subclass <- factor(subclass)
   if (any(!colnames(samples) %in% levels(subclass))) stop("incompatible subclasses")
+  method <- match.arg(method)
+  
+  start <- Sys.time()
   message("Creating sampling matrix", appendLF = FALSE)
   samples <- samples * times
   subclass_lev <- levels(subclass)
@@ -98,11 +102,31 @@ simulate_bulk <- function(object, samples, subclass, times = 30) {
   cmat <- vapply(seq_len(nrow(samples)), function(j) {
     s <- unlist(lapply(subclass_lev, function(i) {
       w <- which(subclass == i)
-      sample(w, samples[j, i], replace = TRUE)
+      n <- samples[j, i]
+      if (method == "unif" || n < length(w) * 2) {
+        sample(w, n, replace = TRUE)
+      } else {
+        rd <- rdirichlet(1, rep_len(alpha, length(w)))
+        f <- function(x) {
+          x <- matrix(x, ncol = 1)
+          rdx_mat <- x %*% rd
+          (rowSums(round(rdx_mat)) - n)^2
+        }
+        sx <- seq(n/2, n*1.5, length.out = n*100)
+        out_length <- f(sx)
+        best <- which.min(out_length)
+        out <- round(rd * sx[best])
+        if (sum(out) != n) {
+          print(c(sum(out), n))
+          # stop("dirichlet ratio failed")
+        }
+        out
+      }
     }))
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
   message(" (", format(Sys.time() - start, digits = 3), ")")
+  
   start <- Sys.time()
   message("Matrix multiplication", appendLF = FALSE)
   sim_pseudo <- as.matrix(object %*% cmat)
