@@ -71,6 +71,9 @@ generate_samples <- function(object, n, equal_sample = TRUE,
 #' @param times Scaling factor to increase sampling of cells. Each cell in
 #'   `samples` is randomly sampled this many times. Only used if `object` is a
 #'   single cell count matrix.
+#' @param method Either "unif" or "dirichlet" to specify whether cells are
+#'   sampled uniformly or based on the Dirichlet distribution.
+#' @param alpha Shape parameter for Dirichlet sampling.
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()] [add_noise()]

@@ -4,7 +4,14 @@
 \alias{simulate_bulk}
 \title{Simulate pseudo-bulk RNA-Seq}
 \usage{
-simulate_bulk(object, samples, subclass, times = 30)
+simulate_bulk(
+  object,
+  samples,
+  subclass,
+  times = 30,
+  method = c("unif", "dirichlet"),
+  alpha = 1
+)
 }
 \arguments{
 \item{object}{Either a 'cellMarkers' class object, or a single cell count
@@ -20,6 +27,11 @@ Only used if \code{object} is a single cell count matrix.}
 \item{times}{Scaling factor to increase sampling of cells. Each cell in
 \code{samples} is randomly sampled this many times. Only used if \code{object} is a
 single cell count matrix.}
+
+\item{method}{Either "unif" or "dirichlet" to specify whether cells are
+sampled uniformly or based on the Dirichlet distribution.}
+
+\item{alpha}{Shape parameter for Dirichlet sampling.}
 }
 \value{
 An integer count matrix with genes in rows and cell subclasses in
