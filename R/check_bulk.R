@@ -12,7 +12,8 @@ bulk_stats <- function(bulkdata) {
 }
 
 
-check_bulk <- function(mk, bulk, return_cormat = TRUE) {
+check_bulk <- function(mk, bulk, log = TRUE, return_cormat = TRUE) {
+  if (log) bulk <- log2(bulk +1)
   lapply(mk$best_angle, function(i) {
     genes <- rownames(i)[seq_len(mk$opt$nsubclass)]
     cormat <- cor(t(bulk[genes, ]))
