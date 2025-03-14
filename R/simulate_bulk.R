@@ -226,6 +226,10 @@ plot_set <- function(obs, pred, mfrow = NULL,
                      colour = "blue",
                      title = "", cex.title = 1, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
+  if (anyNA(pred)) {
+    message("`pred` contains NA")
+    pred[is.na(pred)] <- 0
+  }
   if (is.null(cols)) cols <- TRUE
   subclasses <- colnames(obs)[cols]
   nr1 <- ceiling(sqrt(length(subclasses)))
@@ -282,6 +286,10 @@ plot_set <- function(obs, pred, mfrow = NULL,
 #' @export
 metric_set <- function(obs, pred) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
+  if (anyNA(pred)) {
+    message("`pred` contains NA")
+    pred[is.na(pred)] <- 0
+  }
   
   out <- t(vapply(colnames(obs), function(i) {
     r1 <- Rsq(obs[, i], pred[, i])
