@@ -100,7 +100,7 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 2) {
   # cat("Standard mean spillover", format(smetric, digits = 3), "\n")
   
   # m <- mk$genemeans_filtered[mk$geneset, ]
-  # s2 <- dotprod(m, m, equal_weight = TRUE)
+  # s2 <- dotprod(m, m)
   # smetric <- comp_metric(s2)
   # cat("Equal weight mean spillover", format(smetric, digits = 3), "\n")
   
