@@ -1,10 +1,10 @@
 
-dotprod <- function(test, cellmat, equal_weight = FALSE) {
+dotprod <- function(test, cellmat, weights = NULL) {
   msc <- cellmat
-  if (equal_weight) {
-    vecLength <- sqrt(rowSums(cellmat^2))
-    msc <- cellmat / vecLength
-    test <- test / vecLength
+  if (!is.null(weights)) {
+    if (length(weights) != nrow(cellmat)) stop("incorrect weights length")
+    msc <- cellmat / weights
+    test <- test / weights
   }
   md <- colSums(msc^2)
   t( t(t(test) %*% msc) / md )
@@ -23,4 +23,9 @@ max_spill <- function(m) {
 max_abs <- function(m) {
   if (abs(min(m)) > max(m)) return(min(m))
   max(m)
+}
+
+residuals_deconv <- function(test, cellmat, output) {
+  pred <- tcrossprod(cellmat, output)
+  test - pred
 }

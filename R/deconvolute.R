@@ -19,8 +19,8 @@
 #' @param group_comp_amount either a single value from 0-1 for the amount of
 #'   compensation for cell group analysis or a numeric vector with the same
 #'   length as the number of cell groups to deconvolute.
-#' @param equal_weight logical, whether the gene signature matrix is scaled to
-#'   equalise the effects of each gene.
+#' @param weights Optional vector of weights which affects how much each gene in
+#'   the gene signature matrix affects the deconvolution.
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
 #' @param use_filter logical, whether to use denoised signature matrix.
@@ -70,7 +70,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         count_space = FALSE,
                         comp_amount = 1,
                         group_comp_amount = 0,
-                        equal_weight = FALSE,
+                        weights = NULL,
                         adjust_comp = TRUE,
                         use_filter = TRUE,
                         arith_mean = FALSE,
@@ -100,7 +100,7 @@ deconvolute <- function(mk, test, log = TRUE,
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
-    gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, equal_weight,
+    gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights,
                            adjust_comp, count_space, bysample)
   } else {
     gtest <- NULL
@@ -121,8 +121,8 @@ deconvolute <- function(mk, test, log = TRUE,
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
-  atest <- deconv_adjust(logtest2, cellmat, comp_amount, equal_weight,
-                         adjust_comp, count_space, bysample)
+  atest <- deconv_adjust(logtest2, cellmat, comp_amount, weights,
+                         adjust_comp, count_space, bysample, resid = TRUE)
   
   if (verbose) {
     maxsp <- max_spill(atest$spillover)
@@ -159,23 +159,23 @@ deconvolute <- function(mk, test, log = TRUE,
   if (plot_comp) {
     message("analysing compensation")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
-                                 equal_weight, count_space)
+                                 weights, count_space)
   }
   class(out) <- "deconv"
   out
 }
 
-deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
+deconv_adjust <- function(test, cellmat, comp_amount = 0, weights = FALSE,
                           adjust_comp = TRUE, count_space = FALSE,
-                          bysample = FALSE) {
+                          bysample = FALSE, ...) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (bysample) {
-    return(deconv_adjust_bysample(test, cellmat, comp_amount, equal_weight,
+    return(deconv_adjust_bysample(test, cellmat, comp_amount, weights,
                                   adjust_comp, count_space))
   }
   
-  atest <- deconv(test, cellmat, comp_amount, equal_weight, count_space)
+  atest <- deconv(test, cellmat, comp_amount, weights, count_space, ...)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
@@ -185,7 +185,7 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[i] <- x
-          ntest <- deconv(test, cellmat, comp_amount = newcomp, equal_weight,
+          ntest <- deconv(test, cellmat, comp_amount = newcomp, weights,
                           count_space)
           min(ntest$output[, i], na.rm = TRUE)^2
         }
@@ -194,8 +194,8 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
         xmin$minimum
       }, numeric(1))
       comp_amount[w] <- newcomps
-      atest <- deconv(test, cellmat, comp_amount = comp_amount, equal_weight,
-                      count_space)
+      atest <- deconv(test, cellmat, comp_amount = comp_amount, weights,
+                      count_space, ...)
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
@@ -205,10 +205,10 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
 }
 
 
-deconv_adjust_bysample <- function(test, cellmat, comp_amount, equal_weight,
+deconv_adjust_bysample <- function(test, cellmat, comp_amount, weights,
                                    adjust_comp, count_space) {
   
-  atest <- deconv(test, cellmat, comp_amount, equal_weight, count_space)
+  atest <- deconv(test, cellmat, comp_amount, weights, count_space)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- rowMins(atest$output)
@@ -224,7 +224,7 @@ deconv_adjust_bysample <- function(test, cellmat, comp_amount, equal_weight,
             newcomp <- comp_amount
             newcomp[i] <- x
             ntest <- quick_deconv(testj, cellmat, comp_amount = newcomp,
-                                  equal_weight, count_space)
+                                  weights, count_space)
             ntest[, i]^2
           }
           if (comp_amount[i] == 0) return(0)
@@ -234,7 +234,7 @@ deconv_adjust_bysample <- function(test, cellmat, comp_amount, equal_weight,
         comp_amount2 <- comp_amount
         comp_amount2[w] <- newcomps
         output <- quick_deconv(testj, cellmat, comp_amount = comp_amount2,
-                               equal_weight, count_space)
+                               weights, count_space)
         list(output = output, comp_amount = comp_amount2)
       })
       newrows <- lapply(btest, function(x) x$output)
@@ -253,8 +253,8 @@ deconv_adjust_bysample <- function(test, cellmat, comp_amount, equal_weight,
 }
 
 
-deconv <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
-                   count_space = FALSE) {
+deconv <- function(test, cellmat, comp_amount = 0, weights = NULL,
+                   count_space = FALSE, resid = FALSE) {
   if (!(length(comp_amount) %in% c(1, ncol(cellmat))))
     stop('comp_amount must be either single number or vector of length matching cellmat cols')
   if (!identical(rownames(test), rownames(cellmat)))
@@ -263,32 +263,36 @@ deconv <- function(test, cellmat, comp_amount = 0, equal_weight = FALSE,
     test <- 2^test -1
     cellmat <- 2^cellmat -1
   }
-  m_itself <- dotprod(cellmat, cellmat, equal_weight)
+  m_itself <- dotprod(cellmat, cellmat, weights)
   rawcomp <- solve(m_itself)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
-  output <- dotprod(test, cellmat, equal_weight) %*% mixcomp
+  output <- dotprod(test, cellmat, weights) %*% mixcomp
   percent <- output / rowSums(output) * 100
   # if (!count_space) {
   # cell_count <- 2^output -1
   # cell_percent <- cell_count / rowSums(cell_count) * 100
   # } else cell_count <- cell_percent <- NULL
   
-  list(output = output, percent = percent,
+  out <- list(output = output, percent = percent,
        # cell_count = cell_count, cell_percent = cell_percent,
        spillover = m_itself,
        compensation = mixcomp, rawcomp = rawcomp, comp_amount = comp_amount)
+  if (resid) {
+    out$residuals <- residuals_deconv(test, cellmat, output)
+  }
+  out
 }
 
 
-quick_deconv <- function(test, cellmat, comp_amount, equal_weight,
+quick_deconv <- function(test, cellmat, comp_amount, weights,
                          count_space) {
   if (count_space) {
     test <- 2^test -1
     cellmat <- 2^cellmat -1
   }
-  m_itself <- dotprod(cellmat, cellmat, equal_weight)
+  m_itself <- dotprod(cellmat, cellmat, weights)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
-  dotprod(test, cellmat, equal_weight) %*% mixcomp
+  dotprod(test, cellmat, weights) %*% mixcomp
 }
 
 approxfun.matrix <- function(x, FUN) {
@@ -316,7 +320,7 @@ bulk2sc <- function(x) {
 }
 
 
-comp_check <- function(test, cellmat, comp_amount, equal_weight,
+comp_check <- function(test, cellmat, comp_amount, weights,
                        count_space) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
@@ -326,7 +330,7 @@ comp_check <- function(test, cellmat, comp_amount, equal_weight,
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- deconv(test, cellmat, newcomp, equal_weight, count_space)
+      ntest <- deconv(test, cellmat, newcomp, weights, count_space)
       min(ntest$output[, i], na.rm = TRUE)
     }, numeric(1))
   })

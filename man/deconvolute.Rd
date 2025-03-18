@@ -11,7 +11,7 @@ deconvolute(
   count_space = FALSE,
   comp_amount = 1,
   group_comp_amount = 0,
-  equal_weight = FALSE,
+  weights = NULL,
   adjust_comp = TRUE,
   use_filter = TRUE,
   arith_mean = FALSE,
@@ -43,8 +43,8 @@ subclasses to deconvolute.}
 compensation for cell group analysis or a numeric vector with the same
 length as the number of cell groups to deconvolute.}
 
-\item{equal_weight}{logical, whether the gene signature matrix is scaled to
-equalise the effects of each gene.}
+\item{weights}{Optional vector of weights which affects how much each gene in
+the gene signature matrix affects the deconvolution.}
 
 \item{adjust_comp}{logical, whether to optimise \code{comp_amount} to prevent
 negative cell proportion projections.}
