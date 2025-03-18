@@ -213,11 +213,10 @@ tune_stats <- function(object, metric, params) {
 }
 
 
-best_nsubclass <- function(object) {
+best_nsubclass <- function(object, metric = attr(object, "metric")) {
   if (!"nsubclass" %in% colnames(object)) stop("nsubclass not tuned")
   best_tune <- attr(object, "tune")
-  met <- attr(object, "metric")
-  wc <- which(!colnames(best_tune) %in% c("nsubclass", paste0("mean.", met)))
+  wc <- which(!colnames(best_tune) %in% c("nsubclass", paste0("mean.", metric)))
   if (length(wc)) {
     ind <- lapply(wc, function(i) {
       wcol <- colnames(best_tune)[i]
@@ -229,7 +228,7 @@ best_nsubclass <- function(object) {
   }
   ret <- lapply(levels(object$subclass), function(i) {
     sub <- object[object$subclass == i, ]
-    w <- which.max(sub[, met])
+    w <- if (metric != "RMSE") which.max(sub[, metric]) else which.min(sub[, metric])
     sub$nsubclass[w]
   })
   names(ret) <- levels(object$subclass)
