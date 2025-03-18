@@ -3,8 +3,8 @@ dotprod <- function(test, cellmat, weights = NULL) {
   msc <- cellmat
   if (!is.null(weights)) {
     if (length(weights) != nrow(cellmat)) stop("incorrect weights length")
-    msc <- cellmat / weights
-    test <- test / weights
+    msc <- cellmat * weights
+    test <- test * weights
   }
   md <- colSums(msc^2)
   t( t(t(test) %*% msc) / md )

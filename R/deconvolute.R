@@ -100,7 +100,7 @@ deconvolute <- function(mk, test, log = TRUE,
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
-    gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights,
+    gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
                            adjust_comp, count_space, bysample)
   } else {
     gtest <- NULL
