@@ -189,11 +189,12 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
     w <- 1 / pmax(abs_dev, delta)
     w <- w / mean(w)
     fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
-                         adjust_comp, count_space, bysample = FALSE,
-                         resid = TRUE, verbose = (i == n_iter), ...))
+                             adjust_comp, count_space, bysample = FALSE,
+                             resid = TRUE, verbose = (i == n_iter), ...),
+               silent = TRUE)
     if (inherits(fit, "try-error")) {
       fit1$weights <- w
-      fit1$error <- attr(fit, "message")
+      warning(fit)
       return(fit1)
     }
   }
