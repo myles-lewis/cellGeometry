@@ -184,6 +184,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                                adjust_comp, count_space, bysample = FALSE,
                                resid = TRUE, verbose = FALSE, ...)
+  
   for (i in seq_len(n_iter)) {
     abs_dev <- rowMeans(abs(fit$residuals))
     w <- 1 / pmax(abs_dev, delta)
@@ -193,10 +194,11 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
                              resid = TRUE, verbose = (i == n_iter), ...),
                silent = TRUE)
     if (inherits(fit, "try-error")) {
-      fit1$weights <- w
       warning(fit)
+      fit1$weights <- w
       return(fit1)
     }
+    fit1 <- fit
   }
   fit$weights <- w
   fit
