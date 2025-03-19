@@ -179,7 +179,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
                               delta, ...) {
   if (!IRW) {
     return(deconv_adjust(test, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, bysample, ...))
+                         adjust_comp, count_space, bysample, resid = TRUE, ...))
   }
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                                adjust_comp, count_space, bysample = FALSE,
