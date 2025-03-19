@@ -176,14 +176,15 @@ deconvolute <- function(mk, test, log = TRUE,
 
 deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
                               adjust_comp, count_space, bysample, IRW, n_iter,
-                              delta, ...) {
+                              delta) {
   if (!IRW) {
     return(deconv_adjust(test, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, bysample, resid = TRUE, ...))
+                         adjust_comp, count_space, bysample, resid = TRUE))
   }
+  
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                                adjust_comp, count_space, bysample = FALSE,
-                               resid = TRUE, verbose = FALSE, ...)
+                               resid = TRUE, verbose = FALSE)
   
   for (i in seq_len(n_iter)) {
     abs_dev <- rowMeans(abs(fit$residuals))
@@ -191,7 +192,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
     w <- w / mean(w)
     fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
                              adjust_comp, count_space, bysample = FALSE,
-                             resid = TRUE, verbose = (i == n_iter), ...),
+                             resid = TRUE, verbose = (i == n_iter)),
                silent = TRUE)
     if (inherits(fit, "try-error")) {
       warning(fit)
