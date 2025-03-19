@@ -19,7 +19,7 @@ deconvolute(
   plot_comp = FALSE,
   IRW = FALSE,
   n_iter = 5,
-  delta = 1e-04,
+  delta = 0.01,
   bysample = FALSE,
   verbose = FALSE
 )

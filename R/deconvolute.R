@@ -83,7 +83,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         plot_comp = FALSE,
                         IRW = FALSE,
                         n_iter = 5,
-                        delta = 1e-4,
+                        delta = 0.01,
                         bysample = FALSE,
                         verbose = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")

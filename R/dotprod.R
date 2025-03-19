@@ -7,8 +7,10 @@ dotprod <- function(test, cellmat, weights = NULL) {
     test <- test * weights
   }
   md <- colSums(msc^2)
-  t( t(t(test) %*% msc) / md )
+  t( t(crossprod(test, msc)) / md )
 }
+
+# t( t(t(test) %*% msc) / md )
 
 comp_metric <- function(m) {
   m2 <- m - diag(nrow(m))
