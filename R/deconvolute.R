@@ -36,6 +36,9 @@
 #' @param n_iter Number of iterations.
 #' @param delta Regularisation term for the weighting function (to avoid
 #'   division by zero).
+#' @param Lp p-norm value. Recommended value is from 0-1. Lower values slow down
+#'   iteration. Absolute deviation of residuals are raised to the power of `Lp`
+#'   as part of the reweighting function.
 #' @param bysample Logical, whether `comp_amount` is optimised per sample. This
 #'   is a little slower.
 #' @param verbose logical, whether to show additional information.
@@ -84,6 +87,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         IRW = FALSE,
                         n_iter = 5,
                         delta = ifelse(count_space, 1, 0.01),
+                        Lp = 1,
                         bysample = FALSE,
                         verbose = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
@@ -131,7 +135,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust_irw(logtest2, cellmat, comp_amount, weights,
                              adjust_comp, count_space, bysample,
-                             IRW, n_iter, delta)
+                             IRW, n_iter, delta, Lp)
   
   if (verbose) {
     maxsp <- max_spill(atest$spillover)
@@ -176,7 +180,7 @@ deconvolute <- function(mk, test, log = TRUE,
 
 deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
                               adjust_comp, count_space, bysample, IRW, n_iter,
-                              delta) {
+                              delta, Lp) {
   if (!IRW) {
     return(deconv_adjust(test, cellmat, comp_amount, weights,
                          adjust_comp, count_space, bysample, resid = TRUE))
@@ -187,7 +191,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
                                resid = TRUE, verbose = FALSE)
   
   for (i in seq_len(n_iter)) {
-    abs_dev <- rowMeans(abs(fit$residuals))
+    abs_dev <- rowMeans(abs(fit$residuals)^Lp)
     w <- 1 / pmax(abs_dev, delta)
     w <- w / mean(w)
     fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
