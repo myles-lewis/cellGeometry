@@ -76,6 +76,9 @@ deconvolute <- function(mk, test, log = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = "ref",
                         plot_comp = FALSE,
+                        IRW = FALSE,
+                        n_iter = 5,
+                        delta = 1e-5,
                         bysample = FALSE,
                         verbose = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
@@ -121,8 +124,9 @@ deconvolute <- function(mk, test, log = TRUE,
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
-  atest <- deconv_adjust(logtest2, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, bysample, resid = TRUE)
+  atest <- deconv_adjust_irw(logtest2, cellmat, comp_amount, weights,
+                             adjust_comp, count_space, bysample,
+                             IRW, n_iter, delta)
   
   if (verbose) {
     maxsp <- max_spill(atest$spillover)
@@ -165,9 +169,32 @@ deconvolute <- function(mk, test, log = TRUE,
   out
 }
 
-deconv_adjust <- function(test, cellmat, comp_amount = 0, weights = FALSE,
-                          adjust_comp = TRUE, count_space = FALSE,
-                          bysample = FALSE, ...) {
+deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
+                              adjust_comp, count_space, bysample, IRW, n_iter,
+                              delta, ...) {
+  if (!IRW) {
+    return(deconv_adjust(test, cellmat, comp_amount, weights,
+                         adjust_comp, count_space, bysample, ...))
+  }
+  fit <- deconv_adjust(test, cellmat, comp_amount, weights,
+                       adjust_comp, count_space, bysample = FALSE, resid = TRUE,
+                       verbose = FALSE, ...)
+  for (i in seq_len(n_iter)) {
+    abs_dev <- rowMeans(abs(fit$residuals))
+    w <- 1 / pmax(abs_dev, delta)
+    w <- w / mean(w)
+    fit <- deconv_adjust(test, cellmat, comp_amount, weights = w,
+                         adjust_comp, count_space, bysample = FALSE,
+                         resid = TRUE, verbose = (i == n_iter), ...)
+  }
+  fit$weights <- w
+  fit
+}
+
+
+deconv_adjust <- function(test, cellmat, comp_amount, weights,
+                          adjust_comp, count_space, bysample, verbose = TRUE,
+                          ...) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (bysample) {
@@ -180,7 +207,7 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, weights = FALSE,
     if (adjust_comp) {
       minout <- colMins(atest$output)
       w <- which(minout < 0)
-      message("optimising compensation (", length(w), ")")
+      if (verbose) message("optimising compensation (", length(w), ")")
       newcomps <- vapply(w, function(i) {
         f <- function(x) {
           newcomp <- comp_amount
@@ -199,7 +226,7 @@ deconv_adjust <- function(test, cellmat, comp_amount = 0, weights = FALSE,
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
-    } else message("negative cell proportion projection detected")
+    } else if (verbose) message("negative cell proportion projection detected")
   }
   atest
 }
@@ -268,24 +295,17 @@ deconv <- function(test, cellmat, comp_amount = 0, weights = NULL,
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   output <- dotprod(test, cellmat, weights) %*% mixcomp
   percent <- output / rowSums(output) * 100
-  # if (!count_space) {
-  # cell_count <- 2^output -1
-  # cell_percent <- cell_count / rowSums(cell_count) * 100
-  # } else cell_count <- cell_percent <- NULL
   
-  out <- list(output = output, percent = percent,
-       # cell_count = cell_count, cell_percent = cell_percent,
-       spillover = m_itself,
-       compensation = mixcomp, rawcomp = rawcomp, comp_amount = comp_amount)
-  if (resid) {
-    out$residuals <- residuals_deconv(test, cellmat, output)
-  }
+  out <- list(output = output, percent = percent, spillover = m_itself,
+              compensation = mixcomp, rawcomp = rawcomp,
+              comp_amount = comp_amount)
+  if (resid) out$residuals <- residuals_deconv(test, cellmat, output)
+  
   out
 }
 
 
-quick_deconv <- function(test, cellmat, comp_amount, weights,
-                         count_space) {
+quick_deconv <- function(test, cellmat, comp_amount, weights, count_space) {
   if (count_space) {
     test <- 2^test -1
     cellmat <- 2^cellmat -1
