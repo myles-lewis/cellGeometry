@@ -17,6 +17,9 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = "ref",
   plot_comp = FALSE,
+  IRW = FALSE,
+  n_iter = 5,
+  delta = 1e-04,
   bysample = FALSE,
   verbose = FALSE
 )
@@ -60,6 +63,14 @@ scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
 \item{plot_comp}{logical, whether to analyse compensation values across
 subclasses.}
+
+\item{IRW}{Logical, enables iterative reweighting of each gene in the gene
+signature matrix based on the absolute deviation of the residuals.}
+
+\item{n_iter}{Number of iterations.}
+
+\item{delta}{Regularisation term for the weighting function (to avoid
+division by zero).}
 
 \item{bysample}{Logical, whether \code{comp_amount} is optimised per sample. This
 is a little slower.}

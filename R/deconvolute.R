@@ -31,6 +31,11 @@
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param plot_comp logical, whether to analyse compensation values across
 #'   subclasses.
+#' @param IRW Logical, enables iterative reweighting of each gene in the gene
+#'   signature matrix based on the absolute deviation of the residuals.
+#' @param n_iter Number of iterations.
+#' @param delta Regularisation term for the weighting function (to avoid
+#'   division by zero).
 #' @param bysample Logical, whether `comp_amount` is optimised per sample. This
 #'   is a little slower.
 #' @param verbose logical, whether to show additional information.
@@ -78,7 +83,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         plot_comp = FALSE,
                         IRW = FALSE,
                         n_iter = 5,
-                        delta = 1e-5,
+                        delta = 1e-4,
                         bysample = FALSE,
                         verbose = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
