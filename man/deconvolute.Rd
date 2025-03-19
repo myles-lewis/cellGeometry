@@ -74,8 +74,9 @@ signature matrix based on the absolute deviation of the residuals.}
 division by zero).}
 
 \item{Lp}{p-norm value. Recommended value is from 0-1. Lower values slow down
-iteration. Absolute deviation of residuals are raised to the power of \code{Lp}
-as part of the reweighting function.}
+iteration and control the extremeness of the weighting. Absolute deviation
+of residuals are raised to the power of \code{Lp} as part of the reweighting
+function.}
 
 \item{bysample}{Logical, whether \code{comp_amount} is optimised per sample. This
 is a little slower.}

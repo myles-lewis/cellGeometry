@@ -37,8 +37,9 @@
 #' @param delta Regularisation term for the weighting function (to avoid
 #'   division by zero).
 #' @param Lp p-norm value. Recommended value is from 0-1. Lower values slow down
-#'   iteration. Absolute deviation of residuals are raised to the power of `Lp`
-#'   as part of the reweighting function.
+#'   iteration and control the extremeness of the weighting. Absolute deviation
+#'   of residuals are raised to the power of `Lp` as part of the reweighting
+#'   function.
 #' @param bysample Logical, whether `comp_amount` is optimised per sample. This
 #'   is a little slower.
 #' @param verbose logical, whether to show additional information.
