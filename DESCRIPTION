@@ -34,5 +34,6 @@ Depends:
     R (>= 4.1.0)
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    seriation
 VignetteBuilder: knitr
