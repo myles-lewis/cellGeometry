@@ -29,9 +29,5 @@ max_abs <- function(m) {
 
 residuals_deconv <- function(test, cellmat, output, count_space) {
   pred <- tcrossprod(cellmat, output)
-  # if (count_space) {
-  #   pred[pred < 0] <- 0
-  #   return(log2(test +1) - log2(pred +1))
-  # }
   test - pred
 }
