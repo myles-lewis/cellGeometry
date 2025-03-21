@@ -20,6 +20,9 @@
 #' @param cex.names Character expansion controlling bar names font size.
 #' @param order_cells Character value specifying with cell types are ordered by
 #'   abundance.
+#' @param seriate Character value which enables ordering of samples using the
+#'   `seriation` package. Any matrix based seriation methods can be used to
+#'   order the samples. Recommended options include "CA", "BEA" or "BEA_TSP".
 #' @param legend_ncol Number of columns for ggplot2 legend. If set to `NULL`
 #'   ggplot2 sets the column number automatically.
 #' @param legend_position Position of ggplot2 legend
@@ -32,7 +35,9 @@
 
 stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                        order_cells = c("none", "increase", "decrease"),
-                       cex.names = 0.7, ...) {
+                       seriate = NULL,
+                       cex.names = 0.7,
+                       show_xticks = TRUE, ...) {
   order_cells <- match.arg(order_cells)
   if (inherits(x, "deconv")) x <- x$subclass$output
   if (is.null(scheme)) {
@@ -53,6 +58,14 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     x <- x[ord, ]
   }
   
+  if (!is.null(seriate)) {
+    if (!requireNamespace("seriation", quietly = TRUE)) {
+      stop("Package 'seriation' is not installed", call. = FALSE)
+    }
+    ord <- seriation::seriate(x, method = seriate, margin = 1)[[1]]
+    x <- x[ord, ]
+  }
+  
   cell_ord <- order(colMeans(x))
   if (order_cells == "increase") {
     x <- x[, cell_ord]
@@ -63,10 +76,11 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
   strw <- max(strwidth(rownames(x), units = "inches", cex = cex.names),
               na.rm = TRUE)
   mar1 <- strw / par("csi") +1.5
+  if (!show_xticks) mar1 <- 2
   op <- par(mar = c(mar1, 4, 1.5, 1.5))
   on.exit(par(op))
   barplot(t(x), las = 2, col = scheme,
-          cex.names = cex.names,
+          cex.names = cex.names, xaxt = ifelse(show_xticks, "s", "n"),
           tcl = -0.3, mgp = c(2.2, 0.5, 0), ...)
   # extend axis line
   yrange <- par("usr")[3:4]
@@ -77,24 +91,29 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
 #' @rdname stack_plot
 #' @importFrom ggplot2 ggplot geom_col aes scale_fill_manual xlab ylab
 #'   theme_classic theme element_text guide_legend guides guide_axis
-#'   scale_y_continuous expansion
+#'   scale_y_continuous expansion element_blank
 #' @importFrom rlang .data
 #' @importFrom utils stack
 #' @export
 
 stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                          order_cells = c("none", "increase", "decrease"),
-                         legend_ncol = NULL, legend_position = "bottom") {
-  order_cells <- match.arg(order_cells)
+                         seriate = NULL,
+                         legend_ncol = NULL, legend_position = "bottom",
+                         show_xticks = FALSE) {
+  
   if (inherits(x, "deconv")) x <- x$subclass$output
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
+  if (percent) {
+    rs <- rowSums(x)
+    x <- x / rs * 100
+  }
+  order_cells <- match.arg(order_cells)
   ord <- seq_len(nrow(x))
   if (length(order_col) > 1 || order_col != 0) {
     if (percent) {
-      rs <- rowSums(x)
-      x <- x / rs * 100
       ord <- if (length(order_col) == 1) {
         order(x[, order_col])
       } else {
@@ -104,7 +123,14 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
       ord <- order(rowSums(x))
     }
   }
-    
+  
+  if (!is.null(seriate)) {
+    if (!requireNamespace("seriation", quietly = TRUE)) {
+      stop("Package 'seriation' is not installed", call. = FALSE)
+    }
+    ord <- seriation::seriate(x, method = seriate, margin = 1)[[1]]
+  }
+  
   ylab <- if (percent) "Cell proportion(%)" else "Relative cell amount"
   
   df <- stack(as.data.frame(x))
@@ -117,7 +143,7 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     df$ind <- factor(df$ind, levels = colnames(x)[rev(cell_ord)])
   }
   
-  ggplot(df, aes(x = .data$id, y = .data$values, fill = .data$ind)) +
+  p <- ggplot(df, aes(x = .data$id, y = .data$values, fill = .data$ind)) +
     geom_col(colour = "black", linewidth = 0.3) +
     scale_fill_manual(values = scheme,
                       guide = guide_legend(title = "Cell type",
@@ -129,6 +155,9 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     xlab("") + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"))
+  if (!show_xticks) p <- p + theme(axis.text.x = element_blank(),
+                                  axis.ticks.x = element_blank())
+  p
 }
 
 

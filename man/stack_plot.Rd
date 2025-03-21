@@ -11,7 +11,9 @@ stack_plot(
   order_col = 1,
   scheme = NULL,
   order_cells = c("none", "increase", "decrease"),
+  seriate = NULL,
   cex.names = 0.7,
+  show_xticks = TRUE,
   ...
 )
 
@@ -21,8 +23,10 @@ stack_ggplot(
   order_col = 1,
   scheme = NULL,
   order_cells = c("none", "increase", "decrease"),
+  seriate = NULL,
   legend_ncol = NULL,
-  legend_position = "bottom"
+  legend_position = "bottom",
+  show_xticks = FALSE
 )
 }
 \arguments{
@@ -45,6 +49,10 @@ bars are shown in the original order of the rows of \code{x}.}
 
 \item{order_cells}{Character value specifying with cell types are ordered by
 abundance.}
+
+\item{seriate}{Character value which enables ordering of samples using the
+\code{seriation} package. Any matrix based seriation methods can be used to
+order the samples. Recommended options include "CA", "BEA" or "BEA_TSP".}
 
 \item{cex.names}{Character expansion controlling bar names font size.}
 
