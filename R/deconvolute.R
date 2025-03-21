@@ -179,6 +179,7 @@ deconvolute <- function(mk, test, log = TRUE,
   out
 }
 
+
 deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
                               adjust_comp, count_space, bysample, IRW, n_iter,
                               delta, Lp) {
@@ -186,12 +187,18 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
     return(deconv_adjust(test, cellmat, comp_amount, weights,
                          adjust_comp, count_space, bysample, resid = TRUE))
   }
+  # if (bysample) {
+  #   return(deconv_irw_bysample(test, cellmat, comp_amount, weights,
+  #                              adjust_comp, count_space, n_iter, delta, Lp))
+  # }
   
+  message("iterative reweighting ", appendLF = FALSE)
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                                adjust_comp, count_space, bysample = FALSE,
                                resid = TRUE, verbose = FALSE)
   
   for (i in seq_len(n_iter)) {
+    message(".", appendLF = (i == n_iter))
     abs_dev <- rowMeans(abs(fit$residuals)^Lp)
     w <- 1 / pmax(abs_dev, delta)
     w <- w / mean(w)
@@ -209,6 +216,21 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
   fit$weights <- w
   fit
 }
+
+# deconv_irw_bysample <- function(test, cellmat, comp_amount, weights,
+#                                 adjust_comp, count_space, n_iter, delta, Lp) {
+#   out <- lapply(seq_len(ncol(test)), function(i) {
+#     deconv_adjust_irw(test[, i, drop = FALSE], cellmat, comp_amount, weights,
+#                       adjust_comp, count_space, bysample = FALSE, IRW = TRUE,
+#                       n_iter, delta, Lp)
+#   })
+#   output <- lapply(out, "[[", "output")
+#   output <- do.call(rbind, output)
+#   percent <- output / rowSums(output) * 100
+#   comp_amount <- lapply(out, "[[", "comp_amount")
+#   comp_amount <- do.call(rbind, comp_amount)
+#   list(output = output, percent = percent, comp_amount = comp_amount)
+# }
 
 
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
@@ -318,8 +340,7 @@ deconv <- function(test, cellmat, comp_amount = 0, weights = NULL,
   out <- list(output = output, percent = percent, spillover = m_itself,
               compensation = mixcomp, rawcomp = rawcomp,
               comp_amount = comp_amount)
-  if (resid) out$residuals <- residuals_deconv(test, cellmat, output)
-  
+  if (resid) out$residuals <- residuals_deconv(test, cellmat, output, count_space)
   out
 }
 
