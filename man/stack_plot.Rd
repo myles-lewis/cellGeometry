@@ -56,6 +56,8 @@ order the samples. Recommended options include "CA", "BEA" or "BEA_TSP".}
 
 \item{cex.names}{Character expansion controlling bar names font size.}
 
+\item{show_xticks}{Logical whether to show rownames as x axis labels.}
+
 \item{...}{Optional arguments passed to \code{\link[graphics:barplot]{graphics::barplot()}}.}
 
 \item{legend_ncol}{Number of columns for ggplot2 legend. If set to \code{NULL}
