@@ -200,6 +200,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights,
   for (i in seq_len(n_iter)) {
     message(".", appendLF = (i == n_iter))
     abs_dev <- rowMeans(abs(fit$residuals)^Lp)
+    # if (count_space) abs_dev <- 2^abs_dev -1
     w <- 1 / pmax(abs_dev, delta)
     w <- w / mean(w)
     fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
