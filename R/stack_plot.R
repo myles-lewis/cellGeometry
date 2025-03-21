@@ -23,6 +23,7 @@
 #' @param seriate Character value which enables ordering of samples using the
 #'   `seriation` package. Any matrix based seriation methods can be used to
 #'   order the samples. Recommended options include "CA", "BEA" or "BEA_TSP".
+#' @param show_xticks Logical whether to show rownames as x axis labels.
 #' @param legend_ncol Number of columns for ggplot2 legend. If set to `NULL`
 #'   ggplot2 sets the column number automatically.
 #' @param legend_position Position of ggplot2 legend
