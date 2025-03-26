@@ -65,7 +65,7 @@ tune_deconv <- function(mk, test, samples, grid,
   if (any(params %in% names(dots))) stop("argument in `grid` also passed in `...`")
   w1 <- which(params %in% arg_set1)
   w2 <- which(params %in% arg_set2)
-  grid2 <- if (length(w2) > 0) expand.grid(grid[w2]) else NULL
+  grid2 <- if (length(w2) > 0) expand.grid(grid[w2], stringsAsFactors = FALSE) else NULL
   if (verbose) {
     message("Tuning parameters: ", paste(params, collapse = ", "))
   }
