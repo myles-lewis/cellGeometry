@@ -42,6 +42,7 @@ mergeMarkers <- function(mk1, mk2,
     qfun <- quantile_map(mk2, mk1, respace = TRUE) |> suppressMessages()
     mk2$genemeans <- qfun$map(mk2$genemeans)
     mk2$groupmeans <- qfun$map(mk2$groupmeans)
+    if (!is.null(mk2$genemeans_ar)) mk2$genemeans_ar <- qfun$map(mk2$genemeans_ar)
     qfun$xlab <- xlab
     qfun$ylab <- ylab
   } else if (transform %in% c("scale", "linear.qq")) {
@@ -51,6 +52,7 @@ mergeMarkers <- function(mk1, mk2,
     }
     mk2$genemeans <- mk2$genemeans * scale
     mk2$groupmeans <- mk2$groupmeans * scale
+    mk2$genemeans_ar <- mk2$genemeans_ar * scale
   }
   
   common <- intersect(rownames(mk1$genemeans), rownames(mk2$genemeans))
@@ -61,6 +63,9 @@ mergeMarkers <- function(mk1, mk2,
   gp1 <- mk1$groupmeans[common, ]
   gp2 <- mk2$groupmeans[common, ]
   groupmeans <- cbind(gp1, gp2)
+  gm1_ar <- mk1$genemeans_ar[common, ]
+  gm2_ar <- mk2$genemeans_ar[common, ]
+  genemeans_ar <- cbind(gm1_ar, gm2_ar)
   
   # remove subclass or group
   cell_table <- c(mk1$cell_table, mk2$cell_table)
@@ -82,6 +87,7 @@ mergeMarkers <- function(mk1, mk2,
   subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
   subclass_table <- subclass_table[!rem_subcl]
   mk1$subclass_table <- subclass_table
+  mk1$genemeans_ar <- genemeans_ar
   if (!is.null(qfun)) mk1$qqmerge <- qfun
   
   updateMarkers(mk1, ...)
