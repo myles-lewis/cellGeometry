@@ -12,16 +12,16 @@ deconvolute(
   comp_amount = 1,
   group_comp_amount = 0,
   weights = NULL,
+  weight_method = NULL,
   adjust_comp = TRUE,
   use_filter = TRUE,
   arith_mean = FALSE,
   convert_bulk = "ref",
+  bysample = FALSE,
   plot_comp = FALSE,
-  IRW = FALSE,
   n_iter = 5,
   delta = ifelse(count_space, 1, 0.01),
   Lp = 1,
-  bysample = FALSE,
   verbose = FALSE
 )
 }
@@ -50,6 +50,12 @@ length as the number of cell groups to deconvolute.}
 \item{weights}{Optional vector of weights which affects how much each gene in
 the gene signature matrix affects the deconvolution.}
 
+\item{weight_method}{Optional. Choices include "equal" in which case weights
+are calculated so that each gene has equal weighting in the vector
+projection. Or "irw" which enables iterative reweighting of genes based on
+residuals (see details). Setting this overrules any vector supplied by
+\code{weights}.}
+
 \item{adjust_comp}{logical, whether to optimise \code{comp_amount} to prevent
 negative cell proportion projections.}
 
@@ -62,13 +68,13 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
+\item{bysample}{Logical, whether \code{comp_amount} is optimised per sample. This
+is a little slower.}
+
 \item{plot_comp}{logical, whether to analyse compensation values across
 subclasses.}
 
-\item{IRW}{Logical, enables iterative reweighting of each gene in the gene
-signature matrix based on the absolute deviation of the residuals.}
-
-\item{n_iter}{Number of iterations.}
+\item{n_iter}{Number of iterations for iterative reweighting.}
 
 \item{delta}{Regularisation term for the weighting function (to avoid
 division by zero).}
@@ -77,9 +83,6 @@ division by zero).}
 iteration and control the extremeness of the weighting. Absolute deviation
 of residuals are raised to the power of \code{Lp} as part of the reweighting
 function.}
-
-\item{bysample}{Logical, whether \code{comp_amount} is optimised per sample. This
-is a little slower.}
 
 \item{verbose}{logical, whether to show additional information.}
 }
@@ -114,6 +117,24 @@ within cell group percentages. The total percentage still adds to 100\%.}
 \description{
 Deconvolution of bulk RNA-Seq using vector projection method with adjustable
 compensation for spillover.
+}
+\details{
+Equal weighting of genes by setting \code{weight_method = "equal"} can help
+devolution of subclusters whose signature genes have low expression.
+Iterative reweighting (IRW) is an experimental method which is conceptually
+similar to IRWLS (iteratively reweighted least squares). Weights are
+iteratively updated based on the reciprocal of the residual gene expression.
+Residuals are calculated by subtracting the actual gene expression in the
+\code{test} matrix from predicted gene expression based on deconvolved cell
+quantities. Default settings are 5 iterations and p-norm of 1 which
+corresponds to mean absolute deviation per gene. The concept is that noisy
+genes which are less informative for the deconvolution are downweighted.
+However, since residuals are strongly proportional to mean gene expression,
+most of the reweighting effect of IRW is due to the rebalancing of the genes
+based on gene expression in the test matrix.
+
+Note that \code{weight_method = "equal"} is applied to both subclass and group
+deconvolution, whereas IRW is only applied to subclass deconvolution.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}}

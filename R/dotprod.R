@@ -12,6 +12,11 @@ dotprod <- function(test, cellmat, weights = NULL) {
 
 # t( t(t(test) %*% msc) / md )
 
+equalweight <- function(cellmat) {
+  vecLength <- sqrt(rowSums(cellmat^2))
+  1/vecLength
+} 
+
 comp_metric <- function(m) {
   m2 <- m - diag(nrow(m))
   mean(abs(m2))
