@@ -301,6 +301,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
     if (length(fix_params)) {
       # 2 or more params tuned, fix using best_tune
       fix <- lapply(fix_params, function(i) {
+        if (is.character(best_tune[, i])) return(result[, i] == best_tune[, i])
         near(result[, i], best_tune[, i])
       })
       p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
@@ -329,6 +330,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
     if (length(fix_params)) {
       # 3 or more params tuned, fix using best_tune
       fix <- lapply(fix_params, function(i) {
+        if (is.character(best_tune[, i])) return(mres[, i] == best_tune[, i])
         near(mres[, i], best_tune[, i])
       })
       p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
