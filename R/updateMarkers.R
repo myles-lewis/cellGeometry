@@ -148,7 +148,7 @@ updateMarkers <- function(object = NULL,
   
   # determine spillover
   gene_sig <- genemeans_filtered[geneset, ]
-  m_itself <- dotprod(gene_sig, gene_sig, equal_weight = FALSE)
+  m_itself <- dotprod(gene_sig, gene_sig)
   
   out <- list(call = object$call,
               best_angle = best_angle,

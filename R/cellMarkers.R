@@ -240,7 +240,7 @@ cellMarkers <- function(scdata,
   
   # determine spillover
   gene_sig <- genemeans_filtered[geneset, ]
-  m_itself <- dotprod(gene_sig, gene_sig, equal_weight = FALSE)
+  m_itself <- dotprod(gene_sig, gene_sig)
   
   out <- list(call = .call,
               best_angle = best_angle,
@@ -294,17 +294,17 @@ mem_estimate <- function(dimx, subclass, cellgroup, sliceMem, cores) {
   dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * dimx[1]
   mem <- structure(dimmax * 8, class = "object_size")
   if (mem > 1e9)
-    message("Max subclass/group memory ", format(mem, units = "GB"))
+    message("Largest subclass/group object ", format(mem, units = "GB"))
   if (mem > sliceMem * 1e9) {
     message("Slicing above ", sliceMem, " Gb")
   } else message("No slicing")
   
-  nsubcl <- sort(tab, decreasing = TRUE)[1:cores]
-  ngroup <- sort(tab2, decreasing = TRUE)[1:cores]
+  nsubcl <- sort(tab, decreasing = TRUE)[1:pmin(cores, length(tab))]
+  ngroup <- sort(tab2, decreasing = TRUE)[1:pmin(cores, length(tab2))]
   msubcl <- nsubcl * as.numeric(dimx[1]) / 1.25e8
   mgroup <- ngroup * as.numeric(dimx[1]) / 1.25e8
   msubcl[msubcl > sliceMem] <- sliceMem
   mgroup[mgroup > sliceMem] <- sliceMem
   mem <- max(c(sum(msubcl), sum(mgroup)))
-  message("Estimated memory requirement ", format(mem, digits = 2), " Gb")
+  message("Estimated minimum RAM required ", format(mem, digits = 2), " Gb")
 }
