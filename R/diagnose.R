@@ -1,10 +1,10 @@
 
 #' Diagnostics for cellMarker signatures
 #' 
-#' Experimental function which helps identify cell subclasses or groups with
-#' weak signatures.
+#' Diagnostic tool for identifying cell subclasses or groups with weak
+#' signatures.
 #' 
-#' @param mk A 'cellMarkers' class object.
+#' @param mk A 'cellMarkers' or 'deconv' class object.
 #' @param angle_cutoff Angle in degrees below which cell cluster vectors are
 #'   considered to overlap too much. Range 0-90. See [cos_similarity()].
 #' @param weak Number of 1st ranked genes for each cell cluster at which/below
@@ -15,7 +15,14 @@
 #'   spills into.
 #' @export
 
-diagnose <- function(mk, angle_cutoff = 30, weak = 2) {
+diagnose <- function(object, angle_cutoff = 30, weak = 2) {
+  if (inherits(object, "cellMarkers")) {
+    mk <- object
+    s1 <- mk$spillover
+  } else if (inherits(object, "deconv")) {
+    mk <- object$mk
+    s1 <- object$subclass$spillover
+  }
   if (!inherits(mk, "cellMarkers")) stop ("Not a 'cellMarkers' class object")
   nsubclass <- mk$opt$nsubclass
   if (is.null(nsubclass)) nsubclass <- 5
@@ -55,7 +62,6 @@ diagnose <- function(mk, angle_cutoff = 30, weak = 2) {
     }
   }
   
-  s1 <- mk$spillover
   if (length(w) > 0) {
     spmax <- vapply(w, function(i) {
       col_i <- s1[, i]
