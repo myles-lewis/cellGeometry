@@ -7,13 +7,13 @@
 diagnose(object, angle_cutoff = 30, weak = 2)
 }
 \arguments{
+\item{object}{A 'cellMarkers' or 'deconv' class object.}
+
 \item{angle_cutoff}{Angle in degrees below which cell cluster vectors are
 considered to overlap too much. Range 0-90. See \code{\link[=cos_similarity]{cos_similarity()}}.}
 
 \item{weak}{Number of 1st ranked genes for each cell cluster at which/below
 its gene set is considered weak.}
-
-\item{mk}{A 'cellMarkers' or 'deconv' class object.}
 }
 \value{
 No return value. Displays information about the cellMarkers
