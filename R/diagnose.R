@@ -5,6 +5,8 @@
 #' signatures.
 #' 
 #' @param object A 'cellMarkers' or 'deconv' class object.
+#' @param group Character vector to focus on cell subclasses within a particular
+#'   group or groups.
 #' @param angle_cutoff Angle in degrees below which cell cluster vectors are
 #'   considered to overlap too much. Range 0-90. See [cos_similarity()].
 #' @param weak Number of 1st ranked genes for each cell cluster at which/below
@@ -15,7 +17,7 @@
 #'   spills into.
 #' @export
 
-diagnose <- function(object, angle_cutoff = 30, weak = 2) {
+diagnose <- function(object, group = NULL, angle_cutoff = 30, weak = 2) {
   if (inherits(object, "cellMarkers")) {
     mk <- object
     s1 <- mk$spillover
@@ -36,9 +38,17 @@ diagnose <- function(object, angle_cutoff = 30, weak = 2) {
     ranks <- i[seq_len(nsubclass), "rank"]
     sum(ranks == 1)
   }, numeric(1))
-  w <- which(no1 <= weak)
-  
   ra <- rank_angle(cos_similarity(mk), angle_cutoff)
+  
+  ind <- TRUE
+  if (!is.null(group)) {
+    ind <- mk$cell_table %in% group
+    if (sum(ind) == 0) stop("group not found")
+    subcl <- colnames(mk$genemeans)[ind]
+    ra_ind <- ra[, 1] %in% subcl | ra[, 2] %in% subcl
+    ra <- ra[ra_ind, ]
+  }
+  w <- which(no1 <= weak & ind)
   w_ra <- NULL
   if (nrow(ra) > 0) {
     cat("Subclasses with vector overlap:\n")

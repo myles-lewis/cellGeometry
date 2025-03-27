@@ -4,10 +4,13 @@
 \alias{diagnose}
 \title{Diagnostics for cellMarker signatures}
 \usage{
-diagnose(object, angle_cutoff = 30, weak = 2)
+diagnose(object, group = NULL, angle_cutoff = 30, weak = 2)
 }
 \arguments{
 \item{object}{A 'cellMarkers' or 'deconv' class object.}
+
+\item{group}{Character vector to focus on cell subclasses within a particular
+group or groups.}
 
 \item{angle_cutoff}{Angle in degrees below which cell cluster vectors are
 considered to overlap too much. Range 0-90. See \code{\link[=cos_similarity]{cos_similarity()}}.}
