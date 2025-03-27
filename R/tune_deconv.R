@@ -55,6 +55,9 @@ tune_deconv <- function(mk, test, samples, grid,
                         verbose = TRUE, cores = 1, ...) {
   method <- match.arg(method, c("top", "overall"))
   metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
+  if (ncol(test) != nrow(samples)) stop("incompatible test and samples")
+  if (!identical(colnames(mk$genemeans), colnames(samples)))
+    stop("incompatible subclasses between mk and samples")
   
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
