@@ -271,7 +271,7 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
 #' @export
 plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
-                      metric = "pearson", title = NULL) {
+                      metric = attr(result, "metric"), title = NULL) {
   params <- colnames(result)
   params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
   if (!xvar %in% params) stop("incorrect `xvar`")
@@ -324,6 +324,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
                    width = 0.02 * xdiff) +
       stat_summary(fun = mean, geom = "point", col = "black") +
+      labs(color = "") +
       ggtitle(title) +
       theme_bw() +
       theme(plot.title = element_text(size = 9),
