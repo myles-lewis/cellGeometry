@@ -8,7 +8,7 @@ plot_tune(
   result,
   group = "subclass",
   xvar = colnames(result)[1],
-  metric = "pearson",
+  metric = attr(result, "metric"),
   title = NULL
 )
 }
