@@ -284,7 +284,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
     
-    p <- ggplot(result, aes(x = .data[[xvar]], y = .data$Rsq)) +
+    p <- ggplot(result, aes(x = .data[[xvar]], y = .data[[metric]])) +
       stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
                    width = 0.02 * xdiff) +
       stat_summary(fun = mean, geom = "point", col = "black") +
