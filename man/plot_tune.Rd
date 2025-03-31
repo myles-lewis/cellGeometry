@@ -8,6 +8,7 @@ plot_tune(
   result,
   group = "subclass",
   xvar = colnames(result)[1],
+  fix = NULL,
   metric = attr(result, "metric"),
   title = NULL
 )
@@ -21,6 +22,8 @@ the generalised mean effect of varying the parameter specified by \code{xvar}.}
 
 \item{xvar}{Character value specifying column in \code{result} to vary along the x
 axis.}
+
+\item{fix}{Optional list specifying parameters to be fixed at specific values.}
 
 \item{metric}{Specifies tuning metric: either "pearson", "Rsq" or "RMSE".}
 

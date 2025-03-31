@@ -252,6 +252,7 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #'   the generalised mean effect of varying the parameter specified by `xvar`.
 #' @param xvar Character value specifying column in `result` to vary along the x
 #'   axis.
+#' @param fix Optional list specifying parameters to be fixed at specific values.
 #' @param metric Specifies tuning metric: either "pearson", "Rsq" or "RMSE".
 #' @param title Character value for the plot title.
 #' @returns ggplot2 scatter plot.
@@ -308,7 +309,8 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   if (!is.null(fix)) {
     if (!all(names(fix) %in% colnames(best_tune))) stop("unable to fix parameter")
     for (i in seq_along(fix)) {
-      if (!fix[i] %in% unique(mres[, names(fix)[i]])) {
+      
+      if (length(fix[i]) != 1 || !fix[i] %in% unique(mres[, names(fix)[i]])) {
         stop("unable to fix parameter level")}
       best_tune[names(fix)[i]] <- fix[i]
     }
