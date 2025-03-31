@@ -136,7 +136,7 @@ tune_dec <- function(mk, test, samples, grid2, output, ...) {
   res <- lapply(seq_len(nrow(grid2)), function(i) {
     dots <- list(...)
     grid2_row <- grid2[i, , drop = FALSE]
-    args <- list(mk = mk, test = test)
+    args <- list(mk = mk, test = test, verbose = FALSE)
     args <- c(args, grid2_row)
     if (length(dots)) args[names(dots)] <- dots
     fit <- do.call("deconvolute", args) |> suppressMessages()

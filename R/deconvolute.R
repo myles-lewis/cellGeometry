@@ -273,22 +273,28 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     if (adjust_comp) {
       minout <- colMins(atest$output)
       w <- which(minout < 0)
-      if (verbose) message("optimising compensation (", length(w), ")")
-      newcomps <- vapply(w, function(i) {
+      if (verbose) {
+        message("optimising compensation (", length(w), ")")
+        pb <- txtProgressBar2(eta = FALSE)
+      }
+      newcomps <- vapply(seq_along(w), function(i) {
+        wi <- w[i]
         f <- function(x) {
           newcomp <- comp_amount
-          newcomp[i] <- x
+          newcomp[wi] <- x
           ntest <- deconv(test, cellmat, comp_amount = newcomp, weights,
                           count_space)
-          min(ntest$output[, i], na.rm = TRUE)^2
+          min(ntest$output[, wi], na.rm = TRUE)^2
         }
-        if (comp_amount[i] == 0) return(0)
-        xmin <- optimise(f, c(0, comp_amount[i]))
+        if (comp_amount[wi] == 0) return(0)
+        xmin <- optimise(f, c(0, comp_amount[wi]))
+        if (verbose) setTxtProgressBar(pb, i / length(w))
         xmin$minimum
       }, numeric(1))
       comp_amount[w] <- newcomps
       atest <- deconv(test, cellmat, comp_amount = comp_amount, weights,
                       count_space, ...)
+      if (verbose) close(pb)
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
