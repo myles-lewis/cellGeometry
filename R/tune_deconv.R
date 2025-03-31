@@ -142,7 +142,9 @@ tune_dec <- function(mk, test, samples, grid2, output, ...) {
     fit <- do.call("deconvolute", args) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
-    df <- data.frame(grid2_row, subclass = rownames(out), row.names = NULL)
+    ngene <- length(fit$mk$geneset)
+    df <- data.frame(grid2_row, subclass = rownames(out), ngene,
+                     row.names = NULL)
     cbind(df, out)
   })
   do.call(rbind, res)
@@ -268,9 +270,10 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' the x axis and R-squared/RMSE values are averaged over the whole grid to give
 #' the generalised mean effect of varying the `xvar` parameter.
 #' @importFrom dplyr near
-#' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw
+#' @importFrom ggplot2 geom_line ggtitle mean_se stat_summary theme_bw labs
 #' @export
 plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
+                      fix = NULL,
                       metric = attr(result, "metric"), title = NULL) {
   params <- colnames(result)
   params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
@@ -292,12 +295,24 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   }
   if (!group %in% colnames(result)) stop("incorrect `group`")
   by_params <- c(group, xvar)
-  fix_params <- params[!params %in% by_params]
+  fix_params <- params[!params %in% c(by_params, "ngene")]
+  if ("ngene" %in% by_params) fix_params <- fix_params[fix_params != "nsubclass"]
+  
   mres <- aggregate(result[, metric], by = result[, params, drop = FALSE],
                     FUN = mean, na.rm = TRUE)
   w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
   colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
   best_tune <- mres[w, ]
+  
+  # custom fix params
+  if (!is.null(fix)) {
+    if (!all(names(fix) %in% colnames(best_tune))) stop("unable to fix parameter")
+    for (i in seq_along(fix)) {
+      if (!fix[i] %in% unique(mres[, names(fix)[i]])) {
+        stop("unable to fix parameter level")}
+      best_tune[names(fix)[i]] <- fix[i]
+    }
+  }
   
   if (group == "subclass") {
     # usual plot

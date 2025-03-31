@@ -113,6 +113,7 @@ updateMarkers <- function(object = NULL,
   })
   geneset <- unique(c(unlist(geneset), add_gene))
   if (!is.null(remove_gene)) geneset <- geneset[!geneset %in% remove_gene]
+  geneset <- geneset[!is.na(geneset)]
   
   # group analysis
   if (!is.null(groupmeans)) {
