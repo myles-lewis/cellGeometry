@@ -82,7 +82,7 @@ tune_deconv <- function(mk, test, samples, grid,
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
       df2 <- tune_dec(mk_update, test, samples, grid2, output, ...)
       data.frame(grid1_row, df2, row.names = NULL)
-    }, mc.cores = cores, progress = verbose)
+    }, mc.cores = cores, mc.preschedule = FALSE, progress = verbose)
     res <- do.call(rbind, res)
   } else {
     # null grid1
