@@ -105,7 +105,10 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                          legend_ncol = NULL, legend_position = "bottom",
                          show_xticks = FALSE) {
   
-  if (inherits(x, "deconv")) x <- x$subclass$output
+  if (inherits(x, "deconv")) {
+    scheme <- material_colours(x$mk)
+    x <- x$subclass$output
+  }
   if (is.null(scheme)) {
     scheme <- hue_pal(h = c(0, 270))(ncol(x))
   }
