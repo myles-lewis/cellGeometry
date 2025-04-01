@@ -40,10 +40,12 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                        cex.names = 0.7,
                        show_xticks = TRUE, ...) {
   order_cells <- match.arg(order_cells)
-  if (inherits(x, "deconv")) x <- x$subclass$output
-  if (is.null(scheme)) {
-    scheme <- hue_pal(h = c(0, 270))(ncol(x))
+  if (inherits(x, "deconv")) {
+    scheme <- material_colours(x$mk)
+    x <- x$subclass$output
   }
+  if (is.null(scheme)) scheme <- hue_pal(h = c(0, 270))(ncol(x))
+  
   if (length(order_col) > 1 || order_col != 0) {
     if (percent) {
       rs <- rowSums(x)
@@ -196,4 +198,19 @@ violin_plot <- function(x, percent = FALSE,
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
           legend.position = "none")
+}
+
+
+material_colours <- function(mk) {
+  subcl_tab <- table(mk$cell_table)
+  ngroup <- length(subcl_tab)
+  if (ngroup < 20 && requireNamespace("ggsci", quietly = TRUE)) {
+    pal <- eval(formals(ggsci::pal_material)$palette)
+    group_pal <- pal[round(19 / ngroup * seq(0, ngroup-1)) +1]
+    cols <- lapply(seq_len(ngroup), function(i) {
+      ggsci::pal_material(group_pal[i], subcl_tab[i])(subcl_tab[i])
+    })
+    return(unlist(cols))
+  }
+  hue_pal(h = c(0, 300))(length(mk$cell_table))
 }

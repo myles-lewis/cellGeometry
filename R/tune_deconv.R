@@ -125,10 +125,11 @@ tune_deconv <- function(mk, test, samples, grid,
 # tune inner grid of arguments for deconvolute()
 tune_dec <- function(mk, test, samples, grid2, output, ...) {
   if (is.null(grid2)) {
-    fit <- deconvolute(mk, test, ...) |> suppressMessages()
+    fit <- deconvolute(mk, test, verbose = FALSE, ...) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
-    df <- data.frame(subclass = rownames(out), row.names = NULL)
+    ngene <- length(fit$mk$geneset)
+    df <- data.frame(subclass = rownames(out), ngene, row.names = NULL)
     df <- cbind(df, out)
     return(df)
   }

@@ -32,10 +32,11 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
     pc <- round(100 * v)
     if (nb == .nb && pc == .pc) 
       return()
+    curr <- Sys.time()
+    dur <- as.numeric(difftime(curr, .start, units = "secs"))
+    if (dur < 1) return()
     tim <- ""
     if (eta && pc > 0 && pc != 100) {
-      curr <- Sys.time()
-      dur <- as.numeric(difftime(curr, .start, units = "secs"))
       rem <- (1 - v) / v * dur
       if (rem > 1) tim <- paste("  eta", format_dur(rem))
     }
@@ -49,11 +50,13 @@ txtProgressBar2 <- function(min = 0, max = 1, initial = 0, char = "=",
   }
   getVal <- function() .val
   kill <- function() if (!.killed) {
-    end <- Sys.time()
-    p <- paste0("  (", format(end - .start, digits = 3), ")")
-    if (eta) p <- str_pad(p, 15)
-    cat(paste0(p, "\n"))
-    flush.console()
+    dur <- Sys.time() - .start
+    if (dur > 1) {
+      p <- paste0("  (", format(dur, digits = 3), ")")
+      if (eta) p <- str_pad(p, 15)
+      cat(paste0(p, "\n"))
+      flush.console()
+    }
     .killed <<- TRUE
   }
   up <- up3
