@@ -347,7 +347,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       theme_bw() +
       theme(plot.title = element_text(size = 9),
             axis.text = element_text(colour = "black"),
-            legend.key.size = unit(0.9, 'lines'),
+            legend.key.size = unit(0.8, 'lines'),
             legend.spacing.y = unit(0, 'lines'))
   } else {
     # mean Rsq over subclasses
@@ -375,7 +375,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       theme_bw() +
       theme(plot.title = element_text(size = 9),
             axis.text = element_text(colour = "black"),
-            legend.key.size = unit(0.9, 'lines'),
+            legend.key.size = unit(0.8, 'lines'),
             legend.spacing.y = unit(0, 'lines'))
   }
 }
