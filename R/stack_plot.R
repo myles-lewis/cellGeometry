@@ -40,8 +40,10 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                        cex.names = 0.7,
                        show_xticks = TRUE, ...) {
   order_cells <- match.arg(order_cells)
+  ord_table <- NULL
   if (inherits(x, "deconv")) {
     scheme <- material_colours(x$mk)
+    ord_table <- order(x$mk$cell_table)
     x <- x$subclass$output
   }
   if (is.null(scheme)) scheme <- hue_pal(h = c(0, 270))(ncol(x))
@@ -74,6 +76,8 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     x <- x[, cell_ord]
   } else if (order_cells == "decrease") {
     x <- x[, rev(cell_ord)]
+  } else if (!is.null(ord_table)) {
+    x <- x[, ord_table]
   }
   
   strw <- max(strwidth(rownames(x), units = "inches", cex = cex.names),
@@ -104,9 +108,10 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                          seriate = NULL,
                          legend_ncol = NULL, legend_position = "bottom",
                          show_xticks = FALSE) {
-  
+  ord_table <- NULL
   if (inherits(x, "deconv")) {
     scheme <- material_colours(x$mk)
+    ord_table <- order(x$mk$cell_table)
     x <- x$subclass$output
   }
   if (is.null(scheme)) {
@@ -147,6 +152,8 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     df$ind <- factor(df$ind, levels = colnames(x)[cell_ord])
   } else if (order_cells == "decrease") {
     df$ind <- factor(df$ind, levels = colnames(x)[rev(cell_ord)])
+  } else if (!is.null(ord_table)) {
+    df$ind <- factor(df$ind, levels = colnames(x)[ord_table])
   }
   
   p <- ggplot(df, aes(x = .data$id, y = .data$values, fill = .data$ind)) +
@@ -160,7 +167,9 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     guides(x = guide_axis(angle = 90)) +
     xlab("") + ylab(ylab) +
     theme_classic() +
-    theme(axis.text = element_text(colour = "black"))
+    theme(axis.text = element_text(colour = "black"),
+          legend.key.size = unit(0.8, 'lines'),
+          legend.spacing.y = unit(0, 'lines'))
   if (!show_xticks) p <- p + theme(axis.text.x = element_blank(),
                                   axis.ticks.x = element_blank())
   p
