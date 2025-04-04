@@ -8,8 +8,8 @@ simulate_bulk(
   object,
   samples,
   subclass,
-  times = 10,
-  method = c("dirichlet", "unif"),
+  times = 30,
+  method = c("unif", "dirichlet"),
   alpha = 1
 )
 }
