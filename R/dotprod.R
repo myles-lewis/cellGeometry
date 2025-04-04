@@ -32,7 +32,7 @@ max_abs <- function(m) {
   max(m)
 }
 
-residuals_deconv <- function(test, cellmat, output, count_space) {
+residuals_deconv <- function(test, cellmat, output) {
   pred <- tcrossprod(cellmat, output)
   test - pred
 }

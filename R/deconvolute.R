@@ -371,7 +371,7 @@ deconv <- function(test, cellmat, comp_amount = 0, weights = NULL,
   out <- list(output = output, percent = percent, spillover = m_itself,
               compensation = mixcomp, rawcomp = rawcomp,
               comp_amount = comp_amount)
-  if (resid) out$residuals <- residuals_deconv(test, cellmat, output, count_space)
+  if (resid) out$residuals <- residuals_deconv(test, cellmat, output)
   out
 }
 
