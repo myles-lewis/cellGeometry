@@ -19,7 +19,7 @@
 #'   [deconvolute()]. This deconvolution result is compared against the actual
 #'   sample cell numbers in `samples`, using [metric_set()].
 #' @param metric Specifies tuning metric to choose optimal tune: either
-#'   "pearson", "Rsq" or "RMSE".
+#'  "RMSE", "Rsq" or "pearson".
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
 #'   "overall", the average effect of varying each parameter is calculated using
@@ -50,11 +50,11 @@
 #' @export
 tune_deconv <- function(mk, test, samples, grid,
                         output = "output",
-                        metric = "pearson",
+                        metric = "RMSE",
                         method = "top",
                         verbose = TRUE, cores = 1, ...) {
   method <- match.arg(method, c("top", "overall"))
-  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
+  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq"))
   if (ncol(test) != nrow(samples)) stop("incompatible test and samples")
   if (!identical(colnames(mk$genemeans), colnames(samples)))
     stop("incompatible subclasses between mk and samples")

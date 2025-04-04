@@ -10,7 +10,7 @@ tune_deconv(
   samples,
   grid,
   output = "output",
-  metric = "pearson",
+  metric = "RMSE",
   method = "top",
   verbose = TRUE,
   cores = 1,
@@ -37,7 +37,7 @@ which output from the subclass results element resulting from a call to
 sample cell numbers in \code{samples}, using \code{\link[=metric_set]{metric_set()}}.}
 
 \item{metric}{Specifies tuning metric to choose optimal tune: either
-"pearson", "Rsq" or "RMSE".}
+"RMSE", "Rsq" or "pearson".}
 
 \item{method}{Either "top" or "overall". Determines how best parameter values
 are chosen. With "top" the single top configuration is chosen. With
