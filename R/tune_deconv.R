@@ -158,7 +158,7 @@ tune_dec <- function(mk, test, samples, grid2, output, ...) {
 #' 
 #' @param object dataframe of class `'tune_deconv'`.
 #' @param metric Specifies tuning metric to choose optimal tune: either
-#'   "pearson", "Rsq" or "RMSE".
+#'   "RMSE", "Rsq" or "pearson".
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
 #'   "overall", the average effect of varying each parameter is calculated using

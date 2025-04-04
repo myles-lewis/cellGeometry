@@ -15,7 +15,7 @@
 \item{object}{dataframe of class \code{'tune_deconv'}.}
 
 \item{metric}{Specifies tuning metric to choose optimal tune: either
-"pearson", "Rsq" or "RMSE".}
+"RMSE", "Rsq" or "pearson".}
 
 \item{method}{Either "top" or "overall". Determines how best parameter values
 are chosen. With "top" the single top configuration is chosen. With
