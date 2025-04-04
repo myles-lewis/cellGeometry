@@ -97,15 +97,15 @@
 #' @export
 #'
 deconvolute <- function(mk, test, log = TRUE,
-                        count_space = FALSE,
+                        count_space = TRUE,
                         comp_amount = 1,
                         group_comp_amount = 0,
                         weights = NULL,
-                        weight_method = NULL,
+                        weight_method = "equal",
                         adjust_comp = TRUE,
                         use_filter = TRUE,
                         arith_mean = FALSE,
-                        convert_bulk = "ref",
+                        convert_bulk = FALSE,
                         bysample = FALSE,
                         plot_comp = FALSE,
                         n_iter = 5,
