@@ -201,7 +201,6 @@ summary.tune_deconv <- function(object,
     colnames(best_tune) <- params
   }
   
-  
   cat("Best tune:\n")
   print(best_tune, row.names = FALSE, digits = max(3, getOption("digits") -3),
         print.gap = 2L)
@@ -254,7 +253,7 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' @param xvar Character value specifying column in `result` to vary along the x
 #'   axis.
 #' @param fix Optional list specifying parameters to be fixed at specific values.
-#' @param metric Specifies tuning metric: either "pearson", "Rsq" or "RMSE".
+#' @param metric Specifies tuning metric: either "RMSE", "Rsq" or "pearson".
 #' @param title Character value for the plot title.
 #' @returns ggplot2 scatter plot.
 #' @details
@@ -280,7 +279,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   params <- colnames(result)
   params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
   if (!xvar %in% params) stop("incorrect `xvar`")
-  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
+  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq"))
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))

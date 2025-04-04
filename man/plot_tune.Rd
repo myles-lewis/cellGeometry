@@ -25,7 +25,7 @@ axis.}
 
 \item{fix}{Optional list specifying parameters to be fixed at specific values.}
 
-\item{metric}{Specifies tuning metric: either "pearson", "Rsq" or "RMSE".}
+\item{metric}{Specifies tuning metric: either "RMSE", "Rsq" or "pearson".}
 
 \item{title}{Character value for the plot title.}
 }
