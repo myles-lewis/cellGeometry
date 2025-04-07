@@ -430,20 +430,29 @@ bulk RNA-Seq due to differences in chemistry and the amplification step required
 by single-cell sequencing. So we recommend the default settings for real-world
 bulk data when calling `deconvolute()`. The main settings to choose here are:
 
-----------------------  --------------------------------------------------------
-`use_filter = TRUE`     Reduces the overall amount of spillover & compensation 
-                        by denoising the gene signatures.
+--------------  ----------  -----------  ---------------------------------------------
+Parameter       Optimal     Real-world   Purpose
+                simulation  recommended    
+--------------  ----------  -----------  ---------------------------------------------
+`count_space`   `TRUE`      `TRUE`       Toggles whether the deconvolution is performed in 
+                                         count space (exponential space) or in log<sub>2</sub> space.
 
-`convert_bulk = TRUE`   Converts the bulk RNA-Seq onto scRNA-Seq data scale 
-                        based on a reference dataset in which both bulk and 
-                        scRNA-Seq were performed simultaneously.
-                      
-`count_space = FALSE`   Toggles whether the deconvolution is performed in 
-                        count space (exponential space) or in log<sub>2</sub> space.
-----------------------  --------------------------------------------------------
+`weight_method`  `"equal"`   `"equal"`   Scaling is applied so that each gene in the gene signature has equal
+                                         weight.
+
+`convert_bulk`  `FALSE`     `FALSE`      Converts the bulk RNA-Seq onto scRNA-Seq data scale 
+                                         based on a reference dataset in which both bulk and 
+                                         scRNA-Seq were performed simultaneously.
+
+`use_filter`    `FALSE`     `TRUE`       Reduces the overall amount of spillover & compensation 
+                                         by denoising the gene signatures.
+
+`arith_mean`    `TRUE`      `FALSE`      Whether to use arithmetic mean of counts or the standard 
+                                         log<sub>2</sub> mean.
+--------------  ----------  -----------  ----------------------------------------------
 
 We recommend `use_filter` is always on for real-world bulk analysis as it reduces
-the need for compensation particularly for genes where non-specific low level
+the compensation burden particularly for genes where non-specific low level
 expression is present in some cell clusters which can occur even for good
 markers. We suggest `deconvolute()` is used in one of 2 modes: either
 `convert_bulk = TRUE` or `count_space = TRUE`, but **not both**.
