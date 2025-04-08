@@ -434,20 +434,20 @@ bulk data when calling `deconvolute()`. The main settings to choose here are:
 Parameter       Optimal     Real-world   Purpose
                 simulation  recommended    
 --------------  ----------  -----------  ---------------------------------------------
-`count_space`   `TRUE`      `TRUE`       Toggles whether the deconvolution is performed in 
+`count_space`   TRUE        TRUE         Toggles whether the deconvolution is performed in 
                                          count space (exponential space) or in log<sub>2</sub> space.
 
-`weight_method`  `"equal"`   `"equal"`   Scaling is applied so that each gene in the gene signature has equal
+`weight_method` "equal"     "equal"      Scaling is applied so that each gene in the gene signature has equal
                                          weight.
 
-`convert_bulk`  `FALSE`     `FALSE`      Converts the bulk RNA-Seq onto scRNA-Seq data scale 
+`convert_bulk`  FALSE       FALSE        Converts the bulk RNA-Seq onto scRNA-Seq data scale 
                                          based on a reference dataset in which both bulk and 
                                          scRNA-Seq were performed simultaneously.
 
-`use_filter`    `FALSE`     `TRUE`       Reduces the overall amount of spillover & compensation 
+`use_filter`    **FALSE**   TRUE         Reduces the overall amount of spillover & compensation 
                                          by denoising the gene signatures.
 
-`arith_mean`    `TRUE`      `FALSE`      Whether to use arithmetic mean of counts or the standard 
+`arith_mean`    **TRUE**    FALSE        Whether to use arithmetic mean of counts or the standard 
                                          log<sub>2</sub> mean.
 --------------  ----------  -----------  ----------------------------------------------
 
