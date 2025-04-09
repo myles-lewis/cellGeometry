@@ -43,8 +43,6 @@
 #'   iteration and control the extremeness of the weighting. Absolute deviation
 #'   of residuals are raised to the power of `Lp` as part of the reweighting
 #'   function.
-#' @param bysample Logical, whether `comp_amount` is optimised per sample. This
-#'   is a little slower.
 #' @param verbose logical, whether to show additional information.
 #' @details
 #' Equal weighting of genes by setting `weight_method = "equal"` can help
@@ -106,7 +104,6 @@ deconvolute <- function(mk, test, log = TRUE,
                         use_filter = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
-                        bysample = FALSE,
                         plot_comp = FALSE,
                         n_iter = 5,
                         delta = ifelse(count_space, 1, 0.01),
@@ -135,7 +132,7 @@ deconvolute <- function(mk, test, log = TRUE,
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
-                           adjust_comp, count_space, bysample, weight_method)
+                           adjust_comp, count_space, weight_method)
   } else {
     gtest <- NULL
   }
@@ -156,7 +153,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust_irw(logtest2, cellmat, comp_amount, weights,
-                             weight_method, adjust_comp, count_space, bysample,
+                             weight_method, adjust_comp, count_space,
                              n_iter, delta, Lp)
   
   if (verbose) {
@@ -202,20 +199,16 @@ deconvolute <- function(mk, test, log = TRUE,
 
 
 deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method,
-                              adjust_comp, count_space, bysample, n_iter,
+                              adjust_comp, count_space, n_iter,
                               delta, Lp) {
   if (weight_method != "irw") {
     return(deconv_adjust(test, cellmat, comp_amount, weights, adjust_comp,
-                         count_space, bysample, weight_method, resid = TRUE))
+                         count_space, weight_method, resid = TRUE))
   }
-  # if (bysample) {
-  #   return(deconv_irw_bysample(test, cellmat, comp_amount, weights,
-  #                              adjust_comp, count_space, n_iter, delta, Lp))
-  # }
   
   message("iterative reweighting ", appendLF = FALSE)
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                               adjust_comp, count_space, bysample = FALSE,
+                               adjust_comp, count_space,
                                resid = TRUE, verbose = FALSE)
   
   for (i in seq_len(n_iter)) {
@@ -224,7 +217,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
     w <- 1 / pmax(abs_dev, delta)
     w <- w / mean(w)
     fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
-                             adjust_comp, count_space, bysample = FALSE,
+                             adjust_comp, count_space,
                              resid = TRUE, verbose = (i == n_iter)),
                silent = TRUE)
     if (inherits(fit, "try-error")) {
@@ -238,34 +231,15 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
   fit
 }
 
-# deconv_irw_bysample <- function(test, cellmat, comp_amount, weights,
-#                                 adjust_comp, count_space, n_iter, delta, Lp) {
-#   out <- lapply(seq_len(ncol(test)), function(i) {
-#     deconv_adjust_irw(test[, i, drop = FALSE], cellmat, comp_amount, weights,
-#                       adjust_comp, count_space, bysample = FALSE, IRW = TRUE,
-#                       n_iter, delta, Lp)
-#   })
-#   output <- lapply(out, "[[", "output")
-#   output <- do.call(rbind, output)
-#   percent <- output / rowSums(output) * 100
-#   comp_amount <- lapply(out, "[[", "comp_amount")
-#   comp_amount <- do.call(rbind, comp_amount)
-#   list(output = output, percent = percent, comp_amount = comp_amount)
-# }
-
 
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
-                          adjust_comp, count_space, bysample,
+                          adjust_comp, count_space,
                           weight_method = "", verbose = TRUE, ...) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (weight_method == "equal") {
     cellmat2 <- if (count_space) 2^cellmat -1 else cellmat
     weights <- equalweight(cellmat2)
-  }
-  if (bysample) {
-    return(deconv_adjust_bysample(test, cellmat, comp_amount, weights,
-                                  adjust_comp, count_space))
   }
   
   atest <- deconv(test, cellmat, comp_amount, weights, count_space, ...)
@@ -299,54 +273,6 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
     } else if (verbose) message("negative cell proportion projection detected")
-  }
-  atest
-}
-
-
-deconv_adjust_bysample <- function(test, cellmat, comp_amount, weights,
-                                   adjust_comp, count_space) {
-  
-  atest <- deconv(test, cellmat, comp_amount, weights, count_space)
-  if (any(atest$output < 0)) {
-    if (adjust_comp) {
-      minout <- rowMins(atest$output)
-      wr <- which(minout < 0)
-      minout <- colMins(atest$output)
-      w <- which(minout < 0)
-      message("optimising compensation (", length(w), ")")
-      btest <- lapply(wr, function(j) {
-        testj <- test[, j, drop = FALSE]
-        w <- which(atest$output[j, ] < 0)
-        newcomps <- vapply(w, function(i) {
-          f <- function(x) {
-            newcomp <- comp_amount
-            newcomp[i] <- x
-            ntest <- quick_deconv(testj, cellmat, comp_amount = newcomp,
-                                  weights, count_space)
-            ntest[, i]^2
-          }
-          if (comp_amount[i] == 0) return(0)
-          xmin <- optimise(f, c(0, comp_amount[i]))
-          xmin$minimum
-        }, numeric(1))
-        comp_amount2 <- comp_amount
-        comp_amount2[w] <- newcomps
-        output <- quick_deconv(testj, cellmat, comp_amount = comp_amount2,
-                               weights, count_space)
-        list(output = output, comp_amount = comp_amount2)
-      })
-      newrows <- lapply(btest, function(x) x$output)
-      newrows <- do.call(rbind, newrows)
-      atest$output[wr, ] <- newrows
-      comps <- lapply(btest, function(x) x$comp_amount)
-      comps <- do.call(rbind, comps)
-      atest$comp_amount <- rbind(atest$comp_amount, comps)
-      atest$percent <- atest$output / rowSums(atest$output) * 100
-      # fix floating point errors
-      atest$output[atest$output < 0] <- 0
-      atest$percent[atest$percent < 0] <- 0
-    } else message("negative cell proportion projection detected")
   }
   atest
 }
