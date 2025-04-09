@@ -237,6 +237,8 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
                           weight_method = "", verbose = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
+  if (!identical(rownames(test), rownames(cellmat)))
+    stop('test and cell matrices must have same genes (rownames)')
   if (weight_method == "equal") {
     cellmat2 <- if (count_space) 2^cellmat -1 else cellmat
     weights <- equalweight(cellmat2)
@@ -267,7 +269,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       }, numeric(1))
       comp_amount[w] <- newcomps
       atest <- deconv(test, cellmat, comp_amount = comp_amount, weights,
-                      count_space, ...)
+                      count_space)
       if (verbose) close(pb)
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
@@ -279,12 +281,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
 }
 
 
-deconv <- function(test, cellmat, comp_amount = 0, weights = NULL,
-                   count_space = FALSE) {
-  if (!(length(comp_amount) %in% c(1, ncol(cellmat))))
-    stop('comp_amount must be either single number or vector of length matching cellmat cols')
-  if (!identical(rownames(test), rownames(cellmat)))
-    stop('test and cell matrices must have same genes (rownames)')
+deconv <- function(test, cellmat, comp_amount, weights, count_space) {
   if (count_space) {
     test <- 2^test -1
     cellmat <- 2^cellmat -1
