@@ -132,7 +132,7 @@ deconvolute <- function(mk, test, log = TRUE,
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
-                           adjust_comp, count_space, weight_method)
+                           adjust_comp, count_space, weight_method, resid = FALSE)
   } else {
     gtest <- NULL
   }
@@ -234,15 +234,18 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
 
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
                           adjust_comp, count_space,
-                          weight_method = "", verbose = TRUE) {
+                          weight_method = "", verbose = TRUE, resid = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (!identical(rownames(test), rownames(cellmat)))
     stop('test and cell matrices must have same genes (rownames)')
-  if (weight_method == "equal") {
-    cellmat2 <- if (count_space) 2^cellmat -1 else cellmat
-    weights <- equalweight(cellmat2)
+  if (count_space) {
+    test <- 2^test -1
+    cellmat <- 2^cellmat -1
   }
+  if (!is.null(weights) && length(weights) != nrow(cellmat))
+    stop("incorrect weights length")
+  if (weight_method == "equal") weights <- equalweight(cellmat)
   
   atest <- deconv(test, cellmat, comp_amount, weights, count_space)
   if (any(atest$output < 0)) {
@@ -258,9 +261,8 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
-          ntest <- deconv(test, cellmat, comp_amount = newcomp, weights,
-                          count_space)
-          min(ntest$output[, wi], na.rm = TRUE)^2
+          ntest <- quick_deconv(test, cellmat, comp_amount = newcomp, weights)
+          min(ntest[, wi], na.rm = TRUE)^2
         }
         if (comp_amount[wi] == 0) return(0)
         xmin <- optimise(f, c(0, comp_amount[wi]))
@@ -276,16 +278,12 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       atest$percent[atest$percent < 0] <- 0
     } else if (verbose) message("negative cell proportion projection detected")
   }
-  atest$residuals <- residuals_deconv(test, cellmat, atest$output)
+  if (resid) atest$residuals <- residuals_deconv(test, cellmat, atest$output)
   atest
 }
 
 
 deconv <- function(test, cellmat, comp_amount, weights, count_space) {
-  if (count_space) {
-    test <- 2^test -1
-    cellmat <- 2^cellmat -1
-  }
   m_itself <- dotprod(cellmat, cellmat, weights)
   rawcomp <- solve(m_itself)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
@@ -298,11 +296,7 @@ deconv <- function(test, cellmat, comp_amount, weights, count_space) {
 }
 
 
-quick_deconv <- function(test, cellmat, comp_amount, weights, count_space) {
-  if (count_space) {
-    test <- 2^test -1
-    cellmat <- 2^cellmat -1
-  }
+quick_deconv <- function(test, cellmat, comp_amount, weights) {
   m_itself <- dotprod(cellmat, cellmat, weights)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   dotprod(test, cellmat, weights) %*% mixcomp
