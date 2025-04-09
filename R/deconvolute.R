@@ -203,13 +203,13 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
                               delta, Lp) {
   if (weight_method != "irw") {
     return(deconv_adjust(test, cellmat, comp_amount, weights, adjust_comp,
-                         count_space, weight_method, resid = TRUE))
+                         count_space, weight_method))
   }
   
   message("iterative reweighting ", appendLF = FALSE)
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                                adjust_comp, count_space,
-                               resid = TRUE, verbose = FALSE)
+                               verbose = FALSE)
   
   for (i in seq_len(n_iter)) {
     message(".", appendLF = (i == n_iter))
@@ -218,7 +218,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
     w <- w / mean(w)
     fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
                              adjust_comp, count_space,
-                             resid = TRUE, verbose = (i == n_iter)),
+                             verbose = (i == n_iter)),
                silent = TRUE)
     if (inherits(fit, "try-error")) {
       warning(fit)
@@ -234,7 +234,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
 
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
                           adjust_comp, count_space,
-                          weight_method = "", verbose = TRUE, ...) {
+                          weight_method = "", verbose = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (weight_method == "equal") {
@@ -242,7 +242,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     weights <- equalweight(cellmat2)
   }
   
-  atest <- deconv(test, cellmat, comp_amount, weights, count_space, ...)
+  atest <- deconv(test, cellmat, comp_amount, weights, count_space)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
@@ -274,12 +274,13 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       atest$percent[atest$percent < 0] <- 0
     } else if (verbose) message("negative cell proportion projection detected")
   }
+  atest$residuals <- residuals_deconv(test, cellmat, atest$output)
   atest
 }
 
 
 deconv <- function(test, cellmat, comp_amount = 0, weights = NULL,
-                   count_space = FALSE, resid = FALSE) {
+                   count_space = FALSE) {
   if (!(length(comp_amount) %in% c(1, ncol(cellmat))))
     stop('comp_amount must be either single number or vector of length matching cellmat cols')
   if (!identical(rownames(test), rownames(cellmat)))
@@ -294,11 +295,9 @@ deconv <- function(test, cellmat, comp_amount = 0, weights = NULL,
   output <- dotprod(test, cellmat, weights) %*% mixcomp
   percent <- output / rowSums(output) * 100
   
-  out <- list(output = output, percent = percent, spillover = m_itself,
-              compensation = mixcomp, rawcomp = rawcomp,
-              comp_amount = comp_amount)
-  if (resid) out$residuals <- residuals_deconv(test, cellmat, output)
-  out
+  list(output = output, percent = percent, spillover = m_itself,
+       compensation = mixcomp, rawcomp = rawcomp,
+       comp_amount = comp_amount)
 }
 
 
