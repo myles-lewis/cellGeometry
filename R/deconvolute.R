@@ -247,7 +247,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     stop("incorrect weights length")
   if (weight_method == "equal") weights <- equalweight(cellmat)
   
-  atest <- deconv(test, cellmat, comp_amount, weights, count_space)
+  atest <- deconv(test, cellmat, comp_amount, weights)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
@@ -270,8 +270,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         xmin$minimum
       }, numeric(1))
       comp_amount[w] <- newcomps
-      atest <- deconv(test, cellmat, comp_amount = comp_amount, weights,
-                      count_space)
+      atest <- deconv(test, cellmat, comp_amount = comp_amount, weights)
       if (verbose) close(pb)
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
@@ -283,7 +282,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
 }
 
 
-deconv <- function(test, cellmat, comp_amount, weights, count_space) {
+deconv <- function(test, cellmat, comp_amount, weights) {
   m_itself <- dotprod(cellmat, cellmat, weights)
   rawcomp <- solve(m_itself)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
@@ -331,14 +330,18 @@ comp_check <- function(test, cellmat, comp_amount, weights,
                        count_space) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
+  if (count_space) {
+    test <- 2^test -1
+    cellmat <- 2^cellmat -1
+  }
   px <- seq(0, 1, 0.05)
   
   out <- lapply(seq_len(ncol(cellmat)), function(i) {
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- deconv(test, cellmat, newcomp, weights, count_space)
-      min(ntest$output[, i], na.rm = TRUE)
+      ntest <- quick_deconv(test, cellmat, newcomp, weights)
+      min(ntest[, i], na.rm = TRUE)
     }, numeric(1))
   })
   names(out) <- colnames(cellmat)
