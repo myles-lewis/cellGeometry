@@ -34,7 +34,7 @@
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
-#' @param plot_comp logical, whether to analyse compensation values across
+#' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses.
 #' @param n_iter Number of iterations for iterative reweighting.
 #' @param delta Regularisation term for the weighting function (to avoid
@@ -87,7 +87,7 @@
 #'   subclass adjusted so that the percentages across subclasses are nested
 #'   within cell group percentages. The total percentage still adds to 100%.}
 #'   \item{comp_amount}{original argument `comp_amount`}
-#'   \item{comp_check}{optional list element returned when `plot_comp = TRUE`}
+#'   \item{comp_check}{optional list element returned when `check_comp = TRUE`}
 #' @seealso [cellMarkers()] [updateMarkers()]
 #' @author Myles Lewis
 #' @importFrom matrixStats colMins rowMins
@@ -104,7 +104,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         use_filter = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
-                        plot_comp = FALSE,
+                        check_comp = FALSE,
                         n_iter = 5,
                         delta = ifelse(count_space, 1, 0.01),
                         Lp = 1,
@@ -188,7 +188,7 @@ deconvolute <- function(mk, test, log = TRUE,
               nest_output = nest_output, nest_percent = nest_percent,
               comp_amount = comp_amount)
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
-  if (plot_comp) {
+  if (check_comp) {
     message("analysing compensation")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
                                  weights, count_space)
