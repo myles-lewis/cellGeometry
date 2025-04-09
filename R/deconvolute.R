@@ -43,8 +43,7 @@
 #'   iteration and control the extremeness of the weighting. Absolute deviation
 #'   of residuals are raised to the power of `Lp` as part of the reweighting
 #'   function.
-#' @param verbose logical, whether to show messages.
-#' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
+#' @param verbose logical, whether to show additional information.
 #' @details
 #' Equal weighting of genes by setting `weight_method = "equal"` can help
 #' devolution of subclusters whose signature genes have low expression.
@@ -109,7 +108,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         n_iter = 5,
                         delta = ifelse(count_space, 1, 0.01),
                         Lp = 1,
-                        verbose = TRUE, cores = 1L) {
+                        verbose = FALSE) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
   weight_method <- match.arg(weight_method, c("none", "equal", "irw"))
@@ -118,7 +117,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
   if (convert_bulk == "qqmap") {
-    if (verbose) message("Quantile map bulk to sc, ", appendLF = FALSE)
+    message("Quantile map bulk to sc, ", appendLF = FALSE)
     qqmap <- quantile_map(log2(test +1), mk$genemeans, remove_zeros = TRUE)
   }
   bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = qqmap$map)
@@ -133,8 +132,7 @@ deconvolute <- function(mk, test, log = TRUE,
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
-                           adjust_comp, count_space, weight_method,
-                           verbose = verbose, resid = FALSE)
+                           adjust_comp, count_space, weight_method, resid = FALSE)
   } else {
     gtest <- NULL
   }
@@ -156,7 +154,13 @@ deconvolute <- function(mk, test, log = TRUE,
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_adjust_irw(logtest2, cellmat, comp_amount, weights,
                              weight_method, adjust_comp, count_space,
-                             n_iter, delta, Lp, verbose, cores)
+                             n_iter, delta, Lp)
+  
+  if (verbose) {
+    maxsp <- max_spill(atest$spillover)
+    message("Max spillover ", format(maxsp, digits = 3))
+    # message("Max/min compensation ", format(max_abs(atest$compensation), digits = 3))
+  }
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -185,7 +189,7 @@ deconvolute <- function(mk, test, log = TRUE,
               comp_amount = comp_amount)
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
-    if (verbose) message("analysing compensation")
+    message("analysing compensation")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
                                  weights, count_space)
   }
@@ -195,26 +199,26 @@ deconvolute <- function(mk, test, log = TRUE,
 
 
 deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method,
-                              adjust_comp, count_space, n_iter, delta, Lp,
-                              verbose, cores) {
+                              adjust_comp, count_space, n_iter,
+                              delta, Lp) {
   if (weight_method != "irw") {
     return(deconv_adjust(test, cellmat, comp_amount, weights, adjust_comp,
-                         count_space, weight_method, cores, verbose))
+                         count_space, weight_method))
   }
   
-  if (verbose) message("iterative reweighting ", appendLF = FALSE)
+  message("iterative reweighting ", appendLF = FALSE)
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                               adjust_comp, count_space, cores = cores,
+                               adjust_comp, count_space,
                                verbose = FALSE)
   
   for (i in seq_len(n_iter)) {
-    if (verbose) message(".", appendLF = (i == n_iter))
+    message(".", appendLF = (i == n_iter))
     abs_dev <- rowMeans(abs(fit$residuals)^Lp)
     w <- 1 / pmax(abs_dev, delta)
     w <- w / mean(w)
     fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
-                             adjust_comp, count_space, cores = cores,
-                             verbose = FALSE),
+                             adjust_comp, count_space,
+                             verbose = (i == n_iter)),
                silent = TRUE)
     if (inherits(fit, "try-error")) {
       warning(fit)
@@ -230,8 +234,7 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
 
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
                           adjust_comp, count_space,
-                          weight_method = "", cores = 1L, verbose = TRUE,
-                          resid = TRUE) {
+                          weight_method = "", verbose = TRUE, resid = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (!identical(rownames(test), rownames(cellmat)))
@@ -249,9 +252,11 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     if (adjust_comp) {
       minout <- colMins(atest$output)
       w <- which(minout < 0)
-      if (verbose) message("optimising compensation (", length(w), ")")
-      
-      newcomps <- pmclapply(seq_along(w), function(i) {
+      if (verbose) {
+        message("optimising compensation (", length(w), ")")
+        pb <- txtProgressBar2(eta = FALSE)
+      }
+      newcomps <- vapply(seq_along(w), function(i) {
         wi <- w[i]
         f <- function(x) {
           newcomp <- comp_amount
@@ -261,10 +266,12 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         }
         if (comp_amount[wi] == 0) return(0)
         xmin <- optimise(f, c(0, comp_amount[wi]))
+        if (verbose) setTxtProgressBar(pb, i / length(w))
         xmin$minimum
-      }, progress = verbose, mc.cores = cores)
-      comp_amount[w] <- unlist(newcomps)
+      }, numeric(1))
+      comp_amount[w] <- newcomps
       atest <- deconv(test, cellmat, comp_amount = comp_amount, weights)
+      if (verbose) close(pb)
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
