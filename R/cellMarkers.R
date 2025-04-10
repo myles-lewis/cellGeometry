@@ -283,8 +283,6 @@ summary.cellMarkers <- function(object, ...) {
   for (i in 1:5) {
     cat(paste0(names(object$opt)[i], ": ", object$opt[i], "\n"))
   }
-  # cat("Subclass cell totals:\n")
-  # print(object$subclass_table)
 }
 
 
