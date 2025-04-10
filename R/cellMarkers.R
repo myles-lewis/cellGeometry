@@ -270,7 +270,8 @@ cellMarkers <- function(scdata,
 
 #' @export
 summary.cellMarkers <- function(object, ...) {
-  cat("scRNA-Seq dataset:", nrow(object$genemeans), "genes\n")
+  cat("scRNA-Seq dataset:", nrow(object$genemeans), "genes,",
+      sum(object$subclass_table), "cells\n")
   cat("Cell subclasses:", ncol(object$genemeans), "\n")
   cat("Cell subclass signature:", length(object$geneset), "genes\n")
   cat("Cell groups:", ncol(object$groupmeans), "\n")
@@ -282,8 +283,8 @@ summary.cellMarkers <- function(object, ...) {
   for (i in 1:5) {
     cat(paste0(names(object$opt)[i], ": ", object$opt[i], "\n"))
   }
-  cat("Subclass cell totals:\n")
-  print(object$subclass_table)
+  # cat("Subclass cell totals:\n")
+  # print(object$subclass_table)
 }
 
 
