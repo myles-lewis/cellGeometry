@@ -28,8 +28,8 @@
 #'   the mean R-squared across all variations of other parameters. This can give
 #'   a more stable choice of final tuning.
 #' @param verbose Logical whether to show progress.
-#' @param cores Number of cores for parallelisation using
-#'   [mcprogress::pmclapply()]. Parallelisation is not available on windows.
+#' @param cores Number of cores for parallelisation via [parallel::mclapply()].
+#'   Parallelisation is not available on windows.
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
 #' @returns Dataframe with class `'tune_deconv'` whose columns include: the
@@ -48,7 +48,7 @@
 #' 
 #' @seealso [plot_tune()] [summary.tune_deconv()]
 #' @importFrom stats aggregate
-#' @importFrom mcprogress pmclapply
+#' @importFrom pbmcapply pbmclapply
 #' @export
 tune_deconv <- function(mk, test, samples, grid,
                         output = "output",
@@ -77,14 +77,14 @@ tune_deconv <- function(mk, test, samples, grid,
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
-    res <- pmclapply(seq_len(nrow(grid1)), function(i) {
+    res <- pbmclapply(seq_len(nrow(grid1)), function(i) {
       args <- list(object = mk)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
       df2 <- tune_dec(mk_update, test, samples, grid2, output, ...)
       data.frame(grid1_row, df2, row.names = NULL)
-    }, mc.cores = cores, mc.preschedule = FALSE, progress = verbose)
+    }, mc.cores = cores, mc.preschedule = FALSE)
     res <- do.call(rbind, res)
   } else {
     # null grid1

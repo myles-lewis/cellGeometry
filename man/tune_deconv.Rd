@@ -49,8 +49,8 @@ a more stable choice of final tuning.}
 
 \item{verbose}{Logical whether to show progress.}
 
-\item{cores}{Number of cores for parallelisation using
-\code{\link[mcprogress:pmclapply]{mcprogress::pmclapply()}}. Parallelisation is not available on windows.}
+\item{cores}{Number of cores for parallelisation via \code{\link[parallel:mclapply]{parallel::mclapply()}}.
+Parallelisation is not available on windows.}
 
 \item{...}{Optional arguments passed to \code{\link[=deconvolute]{deconvolute()}} to control fixed
 settings.}
