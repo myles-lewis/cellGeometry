@@ -13,8 +13,7 @@ scmean(
   sliceMem = 16,
   cores = 1L,
   load_balance = FALSE,
-  use_future = FALSE,
-  ...
+  use_future = FALSE
 )
 }
 \arguments{
@@ -53,8 +52,6 @@ across cores (experimental).}
 \item{use_future}{Logical, whether to use the future backend for
 parallelisation via \code{future_lapply()} instead of the default which is
 \code{mclapply()}.}
-
-\item{...}{Additional arguments passed to \code{future_lapply()}.}
 }
 \value{
 a matrix of mean log2 gene expression across cell types with genes
