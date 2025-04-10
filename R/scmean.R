@@ -34,7 +34,6 @@
 #' @param use_future Logical, whether to use the future backend for
 #'   parallelisation via `future_lapply()` instead of the default which is
 #'   `mclapply()`.
-#' @param ... Additional arguments passed to `future_lapply()`.
 #' @details 
 #' Mean functions which can be applied by setting `FUN` include `logmean` (the
 #' default) which applies row means to log2(counts+1), or `trimmean` which
@@ -66,7 +65,7 @@ scmean <- function(x, celltype,
                    FUN = "logmean", postFUN = NULL,
                    verbose = TRUE,
                    sliceMem = 16, cores = 1L, load_balance = FALSE,
-                   use_future = FALSE, ...) {
+                   use_future = FALSE) {
   start0 <- Sys.time()
   if (!is.factor(celltype)) celltype <- factor(celltype)
   ok <- !is.na(celltype)
@@ -90,7 +89,7 @@ scmean <- function(x, celltype,
     # future
     genemeans <- future_lapply(levels(celltype), function(i) {
       scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
-    }, ...)
+    })
   }
   
   genemeans <- do.call("cbind", genemeans[ro])

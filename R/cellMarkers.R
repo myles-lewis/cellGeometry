@@ -59,7 +59,7 @@
 #' @param cores Integer, number of cores to use for parallelisation using 
 #'   `mclapply()`. Parallelisation is not available on windows. Warning:
 #'   parallelisation has increased memory requirements. See [scmean()].
-#' @param ... Additional arguments passed to [scmean()].
+#' @param ... Additional arguments passed to [scmean()] such as `use_future`.
 #' @returns 
 #' A list object with S3 class 'cellMarkers' containing:
 #'   \item{call}{the matched call}

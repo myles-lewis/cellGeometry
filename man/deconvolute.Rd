@@ -17,8 +17,7 @@ deconvolute(
   use_filter = TRUE,
   arith_mean = FALSE,
   convert_bulk = FALSE,
-  bysample = FALSE,
-  plot_comp = FALSE,
+  check_comp = FALSE,
   n_iter = 5,
   delta = ifelse(count_space, 1, 0.01),
   Lp = 1,
@@ -68,10 +67,7 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
-\item{bysample}{Logical, whether \code{comp_amount} is optimised per sample. This
-is a little slower.}
-
-\item{plot_comp}{logical, whether to analyse compensation values across
+\item{check_comp}{logical, whether to analyse compensation values across
 subclasses.}
 
 \item{n_iter}{Number of iterations for iterative reweighting.}
@@ -112,7 +108,7 @@ as a proportion of cell group outputs.}
 subclass adjusted so that the percentages across subclasses are nested
 within cell group percentages. The total percentage still adds to 100\%.}
 \item{comp_amount}{original argument \code{comp_amount}}
-\item{comp_check}{optional list element returned when \code{plot_comp = TRUE}}
+\item{comp_check}{optional list element returned when \code{check_comp = TRUE}}
 }
 \description{
 Deconvolution of bulk RNA-Seq using vector projection method with adjustable

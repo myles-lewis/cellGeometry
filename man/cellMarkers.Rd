@@ -92,7 +92,7 @@ the long vector limit (>2^31 elements).}
 \code{mclapply()}. Parallelisation is not available on windows. Warning:
 parallelisation has increased memory requirements. See \code{\link[=scmean]{scmean()}}.}
 
-\item{...}{Additional arguments passed to \code{\link[=scmean]{scmean()}}.}
+\item{...}{Additional arguments passed to \code{\link[=scmean]{scmean()}} such as \code{use_future}.}
 }
 \value{
 A list object with S3 class 'cellMarkers' containing:
