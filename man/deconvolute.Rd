@@ -21,7 +21,8 @@ deconvolute(
   n_iter = 5,
   delta = ifelse(count_space, 1, 0.01),
   Lp = 1,
-  verbose = FALSE
+  verbose = TRUE,
+  cores = 1L
 )
 }
 \arguments{
@@ -80,7 +81,9 @@ iteration and control the extremeness of the weighting. Absolute deviation
 of residuals are raised to the power of \code{Lp} as part of the reweighting
 function.}
 
-\item{verbose}{logical, whether to show additional information.}
+\item{verbose}{logical, whether to show messages.}
+
+\item{cores}{Number of cores for parallelisation via \code{parallel::mclapply()}.}
 }
 \value{
 A list object of S3 class 'deconv' containing:
