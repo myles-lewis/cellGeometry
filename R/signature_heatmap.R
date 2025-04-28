@@ -12,6 +12,7 @@
 #'   subclass or cell group signature from a 'cellMarkers' or 'deconv' object.
 #'   "groupsplit" shows the distribution of mean gene expression for the group
 #'   signature across subclasses.
+#' @param top Specifies the number of genes per subclass/group to be displayed.
 #' @param use_filter Logical whether to show denoised gene signature.
 #' @param arith_mean Logical whether to show log2(arithmetic mean), if
 #'   calculated, instead of usual mean(log2(counts +1)).
@@ -39,6 +40,7 @@
 
 signature_heatmap <- function(x,
                               type = c("subclass", "group", "groupsplit"),
+                              top = Inf,
                               use_filter = NULL,
                               arith_mean = FALSE,
                               rank = c("max", "angle"),
@@ -62,6 +64,13 @@ signature_heatmap <- function(x,
   if (inherits(x, "cellMarkers")) {
     if (is.null(use_filter)) use_filter <- TRUE
     gset <- if (type == "subclass") x$geneset else x$group_geneset
+    if (is.finite(top)) {
+      best_angle <- if (type == "subclass") x$best_angle else x$group_angle
+      gset <- lapply(seq_along(best_angle), function(i) {
+        rownames(best_angle[[i]])[seq_len(top)]
+      })
+      gset <- unique(unlist(gset))
+    }
     if (!is.null(add_genes)) {
       ok <- add_genes %in% rownames(x$genemeans)
       if (!all(ok)) {
