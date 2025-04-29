@@ -192,6 +192,7 @@ cellMarkers <- function(scdata,
     rownames(best_angle[[i]])[seq_len(nsubclass2[i])]
   })
   geneset <- unique(unlist(geneset))
+  if (verbose) message(length(geneset), " marker genes")
   
   if (!is.null(cellgroup)) {
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
