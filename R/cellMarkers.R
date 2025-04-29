@@ -192,7 +192,6 @@ cellMarkers <- function(scdata,
     rownames(best_angle[[i]])[seq_len(nsubclass2[i])]
   })
   geneset <- unique(unlist(geneset))
-  if (verbose) message(length(geneset), " marker genes")
   
   if (!is.null(cellgroup)) {
     if (!is.factor(cellgroup)) cellgroup <- factor(cellgroup)
@@ -242,6 +241,8 @@ cellMarkers <- function(scdata,
   # determine spillover
   gene_sig <- genemeans_filtered[geneset, ]
   m_itself <- dotprod(gene_sig, gene_sig)
+  
+  if (verbose) message(length(geneset), " marker genes")
   
   out <- list(call = .call,
               best_angle = best_angle,
