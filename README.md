@@ -220,7 +220,7 @@ function generates a table of results.
 ```
 # mode 1: (perfect deconvolution)
 fit <- deconvolute(mk, sim_pseudo,
-                   count_space = TRUE, convert_bulk = FALSE, use_filter = FALSE)
+                   use_filter = FALSE)
 plot_set(sim_counts, fit$subclass$output)
 plot_set(sim_percent, fit$subclass$percent)
 
@@ -244,8 +244,7 @@ rownames(sim_sampled) <- gene2symbol(rownames(sim_sampled), ensDb_v110)
 
 # near optimal deconvolution of counts sampled from the original scRNA-Seq
 fit2 <- deconvolute(mk, sim_sampled,
-                    count_space = TRUE, convert_bulk = FALSE, use_filter = FALSE,
-                    arith_mean = TRUE)
+                    use_filter = FALSE, arith_mean = TRUE)
 
 # plot results
 plot_set(sim_counts, fit2$subclass$output / 3)  # adjust for 3x oversampling
