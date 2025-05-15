@@ -169,6 +169,7 @@ deconvolute <- function(mk, test, log = TRUE,
       subclass_i / rs * output1
     })
     nest_output <- do.call(cbind, output2)
+    nest_output[is.na(nest_output)] <- 0
     # subclass percent as nested percent of groups
     pc2 <- lapply(levels(mk$cell_table), function(i) {
       pc1 <- gtest$percent[, i]
@@ -178,6 +179,7 @@ deconvolute <- function(mk, test, log = TRUE,
       subclass_i / rs * pc1
     })
     nest_percent <- do.call(cbind, pc2)
+    nest_percent[is.na(nest_percent)] <- 0
   } else nest_output <- nest_percent <- NULL
   
   out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
