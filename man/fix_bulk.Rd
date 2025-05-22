@@ -20,3 +20,10 @@ Fills in missing genes in a bulk RNA-Seq matrix based on the gene signature
 of a 'cellMarkers' objects. Signature is taken from both the subclass gene
 set and group gene set.
 }
+\details{
+This is a convenience function if you have an existing cellMarkers signature
+object and you do not want to remove genes from the existing signatures by
+running \code{\link[=updateMarkers]{updateMarkers()}} with the desired bulk data, and are prepared to
+accept the assumption that genes which are missing in the bulk RNA-Seq
+dataset have zero expression.
+}
