@@ -1,4 +1,15 @@
 
+#' Fix in missing genes in bulk RNA-Seq matrix 
+#'
+#' Fills in missing genes in a bulk RNA-Seq matrix based on the gene signature
+#' of a 'cellMarkers' objects. Signature is taken from both the subclass gene
+#' set and group gene set.
+#' 
+#' @param mk object of class 'cellMarkers'. See [cellMarkers()].
+#' @param bulk matrix of bulk RNA-Seq
+#' @returns Expanded bulk matrix with extra rows for missing genes, filled with
+#'   zeros.
+#' @export
 
 fix_bulk <- function(mk, bulk) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
