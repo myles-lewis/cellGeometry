@@ -11,13 +11,13 @@
 #' accept the assumption that genes which are missing in the bulk RNA-Seq
 #' dataset have zero expression.
 #' 
-#' @param mk object of class 'cellMarkers'. See [cellMarkers()].
 #' @param bulk matrix of bulk RNA-Seq
+#' @param mk object of class 'cellMarkers'. See [cellMarkers()].
 #' @returns Expanded bulk matrix with extra rows for missing genes, filled with
 #'   zeros.
 #' @export
 
-fix_bulk <- function(mk, bulk) {
+fix_bulk <- function(bulk, mk) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   genes <- unique(c(mk$geneset, mk$group_geneset))
   ok <- genes %in% rownames(bulk)

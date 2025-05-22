@@ -4,12 +4,12 @@
 \alias{fix_bulk}
 \title{Fix in missing genes in bulk RNA-Seq matrix}
 \usage{
-fix_bulk(mk, bulk)
+fix_bulk(bulk, mk)
 }
 \arguments{
-\item{mk}{object of class 'cellMarkers'. See \code{\link[=cellMarkers]{cellMarkers()}}.}
-
 \item{bulk}{matrix of bulk RNA-Seq}
+
+\item{mk}{object of class 'cellMarkers'. See \code{\link[=cellMarkers]{cellMarkers()}}.}
 }
 \value{
 Expanded bulk matrix with extra rows for missing genes, filled with
