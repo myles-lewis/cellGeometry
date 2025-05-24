@@ -67,6 +67,17 @@ mergeMarkers <- function(mk1, mk2,
   gm2_ar <- mk2$genemeans_ar[common, ]
   genemeans_ar <- cbind(gm1_ar, gm2_ar)
   
+  # check for duplicate group
+  dup <- duplicated(colnames(groupmeans))
+  if (any(dup)) {
+    dup_nm <- colnames(groupmeans)[dup]
+    message("Duplicated groups: ", paste(dup_nm, collapse = ", "))
+    nm <- paste0(dup_nm, ".1")
+    colnames(groupmeans)[dup] <- nm
+    w <- which(levels(mk2$cell_table) %in% dup_nm)
+    levels(mk2$cell_table)[w] <- paste0(levels(mk2$cell_table)[w], ".1")
+  }
+  
   # remove subclass or group
   cell_table <- c(mk1$cell_table, mk2$cell_table)
   rem_subcl <- colnames(genemeans) %in% remove_subclass |
@@ -80,12 +91,24 @@ mergeMarkers <- function(mk1, mk2,
   if (any(remove_group %in% colnames(groupmeans))) {
     groupmeans <- groupmeans[, !colnames(groupmeans) %in% remove_group]
   }
+  subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
+  subclass_table <- subclass_table[!rem_subcl]
+  
+  # check for duplicate subclass
+  dup <- duplicated(colnames(genemeans))
+  if (any(dup)) {
+    dup_nm <- colnames(genemeans)[dup]
+    message("Duplicated subclasses: ", paste(dup_nm, collapse = ", "))
+    nm <- paste0(dup_nm, ".1")
+    colnames(genemeans)[dup] <- nm
+    colnames(genemeans_ar)[dup] <- nm
+    names(cell_table)[dup] <- nm
+    names(subclass_table)[dup] <- nm
+  }
   
   mk1$genemeans <- genemeans
   mk1$groupmeans <- groupmeans
   mk1$cell_table <- cell_table
-  subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
-  subclass_table <- subclass_table[!rem_subcl]
   mk1$subclass_table <- subclass_table
   mk1$genemeans_ar <- genemeans_ar
   if (!is.null(qfun)) mk1$qqmerge <- qfun
