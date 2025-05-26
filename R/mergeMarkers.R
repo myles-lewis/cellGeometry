@@ -115,3 +115,41 @@ mergeMarkers <- function(mk1, mk2,
   
   updateMarkers(mk1, ...)
 }
+
+#' Collapse groups in cellMarkers object
+#' 
+#' Experimental function for collapsing groups in a cellMarkers objects.
+#' 
+#' @param mk A 'cellMarkers' class object.
+#' @param groups Character vector of groups to be collapsed. The collapsed group
+#'   retains the name of the 1st element.
+#' @param weights Optional vector of weights for calculating the mean gene
+#'   expression across groups. If left as `NULL` weights are determined by the
+#'   total cell count in each group.
+#' @returns An updated cellMarkers class object.
+#' @export
+collapse_group <- function(mk, groups, weights = NULL) {
+  if (!inherits(mk, "cellMarkers")) stop("not a 'cellMarkers' object")
+  if (any(!groups %in% colnames(mk$groupmeans))) stop("incompatible groups")
+  if (length(groups) <= 1) return(mk)
+  
+  groupmeans <- mk$groupmeans
+  gm <- groupmeans[, groups]
+  if (is.null(weights)) {
+    weights <- vapply(groups, function(i) {
+      w <- mk$cell_table == i
+      sum(mk$subclass_table[w])
+    }, numeric(1))
+  }
+  if (length(weights) != length(groups)) stop("incompatible weights")
+  weights <- weights / mean(weights)
+  gm <- t(gm) * weights
+  gm1 <- colMeans(gm)
+  groupmeans[, groups[1]] <- gm1
+  groupmeans <- groupmeans[, !colnames(groupmeans) %in% groups[-1]]
+  mk$groupmeans <- groupmeans
+  w <- which(levels(mk$cell_table) %in% groups[-1])
+  levels(mk$cell_table)[w] <- groups[1]
+  
+  updateMarkers(mk)
+}
