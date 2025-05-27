@@ -25,5 +25,6 @@ This is a convenience function if you have an existing cellMarkers signature
 object and you do not want to remove genes from the existing signatures by
 running \code{\link[=updateMarkers]{updateMarkers()}} with the desired bulk data, and are prepared to
 accept the assumption that genes which are missing in the bulk RNA-Seq
-dataset have zero expression.
+dataset have zero expression. We recommend you check which signature genes
+are missing from the bulk data first.
 }

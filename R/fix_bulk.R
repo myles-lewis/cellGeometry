@@ -9,7 +9,8 @@
 #' object and you do not want to remove genes from the existing signatures by
 #' running [updateMarkers()] with the desired bulk data, and are prepared to
 #' accept the assumption that genes which are missing in the bulk RNA-Seq
-#' dataset have zero expression.
+#' dataset have zero expression. We recommend you check which signature genes
+#' are missing from the bulk data first.
 #' 
 #' @param bulk matrix of bulk RNA-Seq
 #' @param mk object of class 'cellMarkers'. See [cellMarkers()].
