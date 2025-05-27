@@ -89,7 +89,7 @@ mergeMarkers <- function(mk1, mk2,
   gone <- setdiff(old_levels, levels(cell_table))
   remove_group <- c(remove_group, gone)
   if (any(remove_group %in% colnames(groupmeans))) {
-    groupmeans <- groupmeans[, !colnames(groupmeans) %in% remove_group]
+    groupmeans <- groupmeans[, !colnames(groupmeans) %in% remove_group, drop = FALSE]
   }
   subclass_table <- c(mk1$subclass_table, mk2$subclass_table)
   subclass_table <- subclass_table[!rem_subcl]
@@ -142,11 +142,15 @@ collapse_group <- function(mk, groups, weights = NULL) {
     }, numeric(1))
   }
   if (length(weights) != length(groups)) stop("incompatible weights")
+  if (any(weights == 0)) {
+    gm <- gm[, weights != 0, drop = FALSE]
+    weights <- weights[weights != 0]
+  }
   weights <- weights / mean(weights)
   gm <- t(gm) * weights
   gm1 <- colMeans(gm)
   groupmeans[, groups[1]] <- gm1
-  groupmeans <- groupmeans[, !colnames(groupmeans) %in% groups[-1]]
+  groupmeans <- groupmeans[, !colnames(groupmeans) %in% groups[-1], drop = FALSE]
   mk$groupmeans <- groupmeans
   w <- which(levels(mk$cell_table) %in% groups[-1])
   levels(mk$cell_table)[w] <- groups[1]
