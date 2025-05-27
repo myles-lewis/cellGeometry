@@ -89,6 +89,11 @@ First we load the file in HDF5 format so that the full data remains on disc and
 only subsets of the data are loaded/processed when necessary using the HDF5Array
 and DelayedArray packages.
 
+It is strongly recommended that the file is located on a fast local drive,
+preferably an SSD, and not a networked drive. For example, an analysis of a
+midsized dataset only took 10 minutes when the h5 file was stored on a local
+SSD, compared to 3 hours when the file was stored on a NAS.
+
 ```{r eval = FALSE}
 library(zellkonverter)
 library(SingleCellExperiment)
