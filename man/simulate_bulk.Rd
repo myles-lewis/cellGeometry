@@ -18,15 +18,16 @@ simulate_bulk(
 matrix with genes in rows and cells in columns, with rownames representing
 gene IDs/symbols. The matrix can be a sparse matrix or DelayedMatrix.}
 
-\item{samples}{An integer matrix with samples in rows and columns for each
-cell subclass in \code{object}. This can be generated using \code{\link[=generate_samples]{generate_samples()}}.}
+\item{samples}{An integer matrix of cell counts with samples in rows and
+columns for each cell subclass in \code{object}. This can be generated using
+\code{\link[=generate_samples]{generate_samples()}}.}
 
 \item{subclass}{Vector of cell subclasses matching the columns in \code{object}.
 Only used if \code{object} is a single cell count matrix.}
 
-\item{times}{Scaling factor to increase sampling of cells. Each cell in
-\code{samples} is randomly sampled this many times. Only used if \code{object} is a
-single cell count matrix.}
+\item{times}{Scaling factor to increase sampling of cells. Cell counts in
+\code{samples} are scaled up by being multiplied by this number. Only used if
+\code{object} is a single cell count matrix.}
 
 \item{method}{Either "unif" or "dirichlet" to specify whether cells are
 sampled uniformly or based on the Dirichlet distribution.}

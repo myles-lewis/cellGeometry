@@ -65,13 +65,14 @@ generate_samples <- function(object, n, equal_sample = TRUE,
 #' @param object Either a 'cellMarkers' class object, or a single cell count
 #'   matrix with genes in rows and cells in columns, with rownames representing
 #'   gene IDs/symbols. The matrix can be a sparse matrix or DelayedMatrix.
-#' @param samples An integer matrix with samples in rows and columns for each
-#'   cell subclass in `object`. This can be generated using [generate_samples()].
+#' @param samples An integer matrix of cell counts with samples in rows and
+#'   columns for each cell subclass in `object`. This can be generated using
+#'   [generate_samples()].
 #' @param subclass Vector of cell subclasses matching the columns in `object`.
 #'   Only used if `object` is a single cell count matrix.
-#' @param times Scaling factor to increase sampling of cells. Each cell in
-#'   `samples` is randomly sampled this many times. Only used if `object` is a
-#'   single cell count matrix.
+#' @param times Scaling factor to increase sampling of cells. Cell counts in
+#'   `samples` are scaled up by being multiplied by this number. Only used if
+#'   `object` is a single cell count matrix.
 #' @param method Either "unif" or "dirichlet" to specify whether cells are
 #'   sampled uniformly or based on the Dirichlet distribution.
 #' @param alpha Shape parameter for Dirichlet sampling.
