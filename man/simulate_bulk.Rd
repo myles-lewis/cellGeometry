@@ -9,7 +9,7 @@ simulate_bulk(
   samples,
   subclass,
   times = 10,
-  method = c("unif", "dirichlet"),
+  method = c("dirichlet", "unif"),
   alpha = 1
 )
 }
@@ -29,8 +29,12 @@ Only used if \code{object} is a single cell count matrix.}
 \code{samples} are scaled up by being multiplied by this number. Only used if
 \code{object} is a single cell count matrix.}
 
-\item{method}{Either "unif" or "dirichlet" to specify whether cells are
-sampled uniformly or based on the Dirichlet distribution.}
+\item{method}{Either "dirichlet" or "unif" to specify whether cells are
+sampled based on the Dirichlet distribution with K = number of cells in
+each subclass, or sampled uniformly. When cells are oversampled uniformly,
+in the limit the summed gene expression tends to the arithmetic mean of the
+subclass x sample frequency. Dirichlet sampling provides proper randomness
+with sampling.}
 
 \item{alpha}{Shape parameter for Dirichlet sampling.}
 }

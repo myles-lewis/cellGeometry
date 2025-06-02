@@ -73,15 +73,19 @@ generate_samples <- function(object, n, equal_sample = TRUE,
 #' @param times Scaling factor to increase sampling of cells. Cell counts in
 #'   `samples` are scaled up by being multiplied by this number. Only used if
 #'   `object` is a single cell count matrix.
-#' @param method Either "unif" or "dirichlet" to specify whether cells are
-#'   sampled uniformly or based on the Dirichlet distribution.
+#' @param method Either "dirichlet" or "unif" to specify whether cells are
+#'   sampled based on the Dirichlet distribution with K = number of cells in
+#'   each subclass, or sampled uniformly. When cells are oversampled uniformly,
+#'   in the limit the summed gene expression tends to the arithmetic mean of the
+#'   subclass x sample frequency. Dirichlet sampling provides proper randomness
+#'   with sampling.
 #' @param alpha Shape parameter for Dirichlet sampling.
 #' @returns An integer count matrix with genes in rows and cell subclasses in
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()] [add_noise()]
 #' @export
 simulate_bulk <- function(object, samples, subclass, times = 10,
-                          method = c("unif", "dirichlet"), alpha = 1) {
+                          method = c("dirichlet", "unif"), alpha = 1) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
