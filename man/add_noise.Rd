@@ -44,7 +44,7 @@ are square root transformed before Gaussian noise is added, and then
 transformed back. This still has a stronger effect on low expressed genes,
 but the effect is more graduated with a more gradual fall off in effect on
 genes with increasing expression.
-\item With \code{scale_noise} whole gene rows are selected at random then each row is
+\item With \code{shift_noise} whole gene rows are selected at random then each row is
 multiplied by a random amount varying according to 2^rnorm. This simulates
 shifted expression up/down due to differences in chemistry through which some
 genes are more or less detectable.

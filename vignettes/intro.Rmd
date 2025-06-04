@@ -377,17 +377,24 @@ metric_set(sim_percent, fit$subclass$percent)  # table of results
 
 ## Sampled pseudo-bulk
 
-In the 2nd mode, the original scRNA-Seq count dataset is sampled. Here we
-oversample the actual cell counts in `sim_counts` by 3x by setting `times = 3`.
-Cells are sampled with replacement. The desired cell counts are simply
-multiplied by `times` prior to sampling. Users will find that increasing `times`
-from 1 to 30 or more improves the deconvolution as the sum of the gene counts
-per sampled cell approaches the arithmetic mean of gene counts for each cell
-cluster.
+In the 2nd mode, the original scRNA-Seq count dataset is sampled. It is possible
+to increase the sampling rate of the actual cell counts in `sim_counts` by 3x by
+setting `times = 3`. Cells are sampled with replacement. The desired cell counts
+are simply multiplied by `times` prior to sampling. By default, sampling is
+performed using the Dirichlet distribution as this gives better random sampling
+than uniform sampling. When cells are oversampled uniformly, in the limit the
+summed gene expression tends to the arithmetic mean of the subclass x sample
+frequency. This can easily be tested by using uniform sampling and steadily
+increasing `times` from 1 to 30-100 or more. This improves the deconvolution as
+the sum of the gene counts per sampled cell approaches the arithmetic mean of
+gene counts for each cell cluster.
 
 ```{r eval = FALSE}
 # mode 2: sample from original sc count matrix
-sim_sampled <- simulate_bulk(mat, sim_counts, subcl, times = 3)
+# 1.43 mins (Intel); 45 secs (ARM)
+set.seed(99)
+times <- 1  # can be increased
+sim_sampled <- simulate_bulk(mat, sim_counts, subcl, times = times)
 
 # fix rownames
 rownames(sim_sampled) <- gene2symbol(rownames(sim_sampled), ensDb_v110)
@@ -397,7 +404,7 @@ fit2 <- deconvolute(mk, sim_sampled,
                     use_filter = FALSE, arith_mean = TRUE)
 
 # plot results
-plot_set(sim_counts, fit2$subclass$output / 3)  # adjust for 3x oversampling
+plot_set(sim_counts, fit2$subclass$output / times)  # adjust for oversampling using `times`
 plot_set(sim_percent, fit2$subclass$percent)
 
 metric_set(sim_percent, fit2$subclass$percent)
@@ -471,3 +478,97 @@ Also, 2 scRNA-Seq datasets can be merged using the function `mergeMarkers()`.
 This merges the `cellMarkers` objects derived from each single cell dataset. One
 dataset is defined as reference, and the 2nd dataset is merged into it after
 adjustment for its overall distribution based on quantile mapping.
+
+# Tuning deconvolution
+
+The function `tune_deconv()` can be used with the sampled pseudo-bulk matrix
+`sim_sampled` which we generated earlier to see the effect of tuning parameters
+for deconvolution. Note there are important mathematical caveats to understand
+when using tuning. Below we tune over a range of `nsubclass` values from 5 up to
+1000, vary the low expression filter `expfilter` from 0.05 up to 1.5, and also
+tune `weight_method` to either "none" or "equal". But any argument which can be
+passed to `updateMarkers()` can be tuned. Arguments which are not in the tuning
+list specified through the argument `grid` such as `arith_mean` and `use_filter`
+in the example below are applied constantly. Parallelisation is available on
+unix systems but not on windows.
+
+```{r eval = FALSE}
+res <- tune_deconv(mk, sim_sampled, sim_counts * times,
+                   grid = list(nsubclass = c(5, 10, 15, 25, 50, 100, 200, 500, 1000),
+                               expfilter = c(0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.5),
+                               weight_method = c("none", "equal")),
+                   arith_mean = TRUE,
+                   use_filter = FALSE,
+                   cores = 8)
+
+## Tuning parameters: nsubclass, expfilter, weight_method
+##   |==========================================================| 100%, Elapsed 00:07
+## Best tune:
+##   nsubclass  expfilter  weight_method  mean.RMSE
+##        1000       0.25          equal      35.21
+```
+
+When tuning it is important not to forget the effect of `times` in
+`simulate_bulk()`. That is why the supplied true cell counts matrix `sim_counts`
+is multiplied by the oversampling factor `times` in the above example.
+
+The results of tuning can be plotted using the function `plot_tune()`.
+
+```{r eval = FALSE}
+plot_tune(res, xvar = "nsubclass", group = "weight_method")
+plot_tune(res, xvar = "nsubclass", group = "expfilter")
+plot_tune(res, xvar = "expfilter", group = "weight_method")
+plot_tune(res, xvar = "expfilter", group = "nsubclass")
+```
+
+```{r, out.width='90%', echo=FALSE}
+knitr::include_graphics("typist_tune.png")
+```
+
+These plots show that `weight_method = "equal"` is better than `"none"` and that
+`expfilter` for this single cell dataset seems to be optimal at around 0.25. Of
+note, the higher `nsubclass` the better. With deconvolution best with 500-1000
+genes per subclass. In reality we find that this is unlikely to be true for
+real-world bulk RNA-Seq as noise caused by differences in sequencing chemistry
+mean that larger numbers of genes in the signature add increasing noise, so
+there is likely to be a sweetspot. Default `nsubclass` is 25 which seems a
+reasonable compromise.
+
+## Simulating noise
+
+The package provides several noise adding functions which can be applied to the
+sampled simulation dataset.
+
+```{r eval = FALSE}
+# simple gaussian noise applied to counts
+sim_noise <- add_noise(sim_sampled)
+
+# noise applied to log2 counts
+sim_noise <- log_noise(sim_sampled)
+
+# noise applied to sqrt transformed counts
+sim_noise <- sqrt_noise(sim_sampled)
+
+# whole genes are scaled up/down by a random amount
+# this simulates differences in chemistry
+sim_noise <- shift_noise(sim_sampled)
+```
+
+Tuning can then be tested on the simulation data with added noise to see how
+tolerant the deconvolution parameters are to different types of noise.
+
+```{r eval = FALSE}
+res2 <- tune_deconv(mk, sim_noise, sim_counts,
+                   grid = list(nsubclass = c(5, 10, 15, 25, 50, 100, 200, 500, 1000),
+                               expfilter = c(0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.5),
+                               weight_method = c("none", "equal")),
+                   arith_mean = TRUE,
+                   use_filter = FALSE,
+                   cores = 8)
+```
+
+We find that the addition of simple noise to the simulation dataset tends to
+prefer higher `nsubclass` as this averages out the noise across more markers.
+`shift_noise` which simulates differences in chemistry tends to show that the
+low expression filter `expfilter` becomes increasingly important and that there
+is a maximum limit to `nsubclass`.
