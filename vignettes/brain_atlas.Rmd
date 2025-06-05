@@ -123,7 +123,7 @@ mkNN <- gene2symbol(mkNN, ensDb_v110)
 signature_heatmap(mkNN)
 ```
 
-## Merging signatures
+# Merging signatures
 
 Next we merge the cellMarkers objects for both the neuronal and non-neuronal
 datasets. In this example we set `transform` to `"none"` as we know that both
@@ -166,7 +166,7 @@ signature_heatmap(mkm, subset = "Amygdala excitatory")
 knitr::include_graphics("brain_sig_amygdala.png")
 ```
 
-## Simulating pseudobulk
+# Simulating pseudobulk
 
 To generate a simulated pseudobulk dataset, we generate simulation datasets
 based on sampling each of the neuronal and non-neuronal raw single-cell count
@@ -243,22 +243,37 @@ sim_counts_merge <- cbind(sim_counts, sim_countsNN)
 sim_percent_merge <- sim_counts_merge / rowSums(sim_counts_merge) * 100
 ```
 
-## Deconvolution
+# Deconvolution
 
 We run the deconvolution on the merged pseudobulk count matrix.
 
 ```{r eval=FALSE}
 fitm <- deconvolute(mkm, sim_sampled_merge,
-                    arith_mean = TRUE, use_filter = FALSE)
+                    arith_mean = TRUE, use_filter = FALSE, cores = 8)
+# 19.2 secs (ARM, 1 core)
+# 3.22 secs (ARM, 8 cores)
 ```
 
-Finally we compare with ground truth and generate scatter plots comparing ground
-truth cell counts/percentages against the deconvolution predictions.
+Finally we compare with ground truth and generate summary statistics and scatter
+plots comparing ground truth cell counts/percentages against the deconvolution
+predictions.
 
 ```{r eval=FALSE}
 mset <- metric_set(sim_percent_merge, fitm$subclass$percent)
 summary(mset)
+##  pearson.rsq          Rsq               RMSE        
+## Min.   :0.6634   Min.   :-0.5747   Min.   :0.02479  
+## 1st Qu.:0.9298   1st Qu.: 0.9146   1st Qu.:0.05244  
+## Median :0.9789   Median : 0.9718   Median :0.07411  
+## Mean   :0.9452   Mean   : 0.8969   Mean   :0.10484  
+## 3rd Qu.:0.9917   3rd Qu.: 0.9855   3rd Qu.:0.11979  
+## Max.   :0.9999   Max.   : 0.9958   Max.   :0.51257  
+```
 
+We visualise the deconvoluted sample results against the ground truth using
+scatter plots for each cell subclass using the function `plot_set()`.
+
+```{r eval=FALSE}
 # scatter plots
 pdf("../brain_sim_merge.pdf",
     width = 12, height = 12.5)
@@ -267,4 +282,12 @@ plot_set(sim_counts_merge, fitm$subclass$output, show_zero = TRUE,
 plot_set(sim_percent_merge, fitm$subclass$percent, show_zero = TRUE,
          mfrow = c(8, 8))
 dev.off()
+```
+
+Pages 1-2 are cell counts and pages 3-4 are cell percentages. Page 3 of the pdf
+of scatter plots will look as follows, with ground truth on the x axis and
+predicted deconvoluted cell percentages on the y axis.
+
+```{r, out.width='100%', echo=FALSE}
+knitr::include_graphics("brain_plotset.png")
 ```
