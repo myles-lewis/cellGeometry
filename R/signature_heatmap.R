@@ -99,9 +99,10 @@ signature_heatmap <- function(x,
     if (type != "subclass") stop("subset can only be used with subclass heatmaps")
     s <- which(x$cell_table %in% subset)
     if (length(s) == 0) stop("no such subgroup")
-    genes <- lapply(x$best_angle[s], function(i) rownames(i)[1:x$opt$nsubclass])
+    nsub <- min(c(x$opt$nsubclass, top), na.rm = TRUE)
+    genes <- lapply(x$best_angle[s], function(i) rownames(i)[1:nsub])
     genes <- unique(c(unlist(genes), add_genes))
-    gs <- gene_signature[genes, s]
+    gs <- gene_signature[genes, s, drop = FALSE]
     return(signature_heatmap(x = gs, rank = rank, scale = scale, col = col,
                              text = text, fontsize = fontsize,
                              outlines = outlines, outline_col = outline_col,
