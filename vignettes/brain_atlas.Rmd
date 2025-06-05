@@ -160,11 +160,12 @@ based on sampling each of the neuronal and non-neuronal raw single-cell count
 matrices.
 
 ```{r eval=FALSE}
-# simulate bulk
+# generate neuronal cell count samples
 set.seed(3)
 sim_counts <- generate_samples(mk, 30)
 sim_percent <- sim_counts / rowSums(sim_counts) * 100
 
+# simulate neuronal bulk
 # sample from neuronal count matrix
 # 35 mins (Intel)
 sim_sampled <- simulate_bulk(mat, sim_counts, meta$roi,
@@ -197,12 +198,13 @@ dev.off()
 Next we set up the simulated bulk data from the non-neuronal single cell matrix.
 
 ```{r eval=FALSE}
-# set up bulk simulation for non-neuronal
+# generate non-neuronal cell count samples
 set.seed(3)
 sim_countsNN <- generate_samples(mkNN, 30)
 sim_percentNN <- sim_countsNN / rowSums(sim_countsNN) * 100
 
-# sample from original non-neuronal sc dataset
+# simulate non-neuronal bulk
+# sample from non-neuronal count matrix
 # 6.32 mins (Intel)
 sim_sampledNN <- simulate_bulk(mat2, sim_countsNN, meta2$cell_type,
                                times = 1)
@@ -216,15 +218,14 @@ The following code merges the pseudobulk count matrices from neuronal and
 non-neuronal cells and updates the ground truth matrix of cell counts.
 
 ```{r eval=FALSE}
-# merge
 # check genenames are the same in both datasets
 identical(rownames(sim_sampled), rownames(sim_sampledNN))
 ## TRUE
 
-# merge pseudobulk
+# merge pseudobulk counts
 sim_sampled_merge <- sim_sampled + sim_sampledNN
 
-# merge cell counts
+# merge sample cell counts (ground truth)
 sim_counts_merge <- cbind(sim_counts, sim_countsNN)
 sim_percent_merge <- sim_counts_merge / rowSums(sim_counts_merge) * 100
 ```
@@ -245,11 +246,12 @@ truth cell counts/percentages against the deconvolution predictions.
 mset <- metric_set(sim_percent_merge, fitm$subclass$percent)
 summary(mset)
 
+# scatter plots
 pdf("../brain_sim_merge.pdf",
     width = 12, height = 12.5)
-plot_set(sim_counts_merge, fitm$subclass$output, show_zero = T,
+plot_set(sim_counts_merge, fitm$subclass$output, show_zero = TRUE,
          mfrow = c(8, 8))
-plot_set(sim_percent_merge, fitm$subclass$percent, show_zero = T,
+plot_set(sim_percent_merge, fitm$subclass$percent, show_zero = TRUE,
          mfrow = c(8, 8))
 dev.off()
 ```
