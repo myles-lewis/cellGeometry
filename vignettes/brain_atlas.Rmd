@@ -51,7 +51,7 @@ We load the data from the h5ad file and extract the single cell matrix.
 ```{r eval=FALSE}
 # 33 Gb
 # 2,480,956 cells
-brain <- readH5AD("/Users/myles/R/Deconv/c2f66cd5-4ff4-4578-876c-55783a57cf8f.h5ad",
+brain <- readH5AD("../c2f66cd5-4ff4-4578-876c-55783a57cf8f.h5ad",
                   use_hdf5 = TRUE, reader = "R")
 
 mat <- brain@assays@data$X
@@ -91,7 +91,8 @@ mk <- gene2symbol(mk, ensDb_v110)
 We can visualise the signature heatmap as follows.
 
 ```{r eval=FALSE}
-signature_heatmap(mk, show_row_names = F, row_title_rot = 0, column_title_rot = 45)
+signature_heatmap(mk, text = FALSE, show_row_names = FALSE,
+                  row_title_rot = 0, column_title_rot = 45)
 ```
 
 ## Non-neuronal cells
@@ -102,8 +103,8 @@ Next we generate cellMarkers for the non-neuronal cells.
 # non-neuronal cells
 # 888,263 cells
 # 4 Gb
-brainNN <- readH5AD("/Users/myles/R/Deconv/99f27be8-9fac-451e-9723-9e4c7191589e.h5ad",
-                  use_hdf5 = TRUE, reader = "R")
+brainNN <- readH5AD("../99f27be8-9fac-451e-9723-9e4c7191589e.h5ad",
+                    use_hdf5 = TRUE, reader = "R")
 
 mat2 <- brainNN@assays@data$X
 rownames(mat2) <- rownames(brainNN)  # add rownames (genes)
@@ -119,7 +120,7 @@ mkNN <- cellMarkers(mat2, subclass = meta2$cell_type,
 
 mkNN <- gene2symbol(mkNN, ensDb_v110)
 
-signature_heatmap(mkNN, use_filter = F)
+signature_heatmap(mkNN)
 ```
 
 ## Merging signatures
@@ -136,21 +137,33 @@ across the subclasses.
 ```{r eval=FALSE}
 mkm <- mergeMarkers(mk, mkNN, transform = "none")
 mkm <- updateMarkers(mkm, expfilter = 0.2)
+```
 
-signature_heatmap(mkm, top = 5, text = F,
-                  show_row_names = F, row_title_rot = 0, column_title_rot = 45)
+We can view whole merged gene signature from both single cell datasets using 
+`signature_heatmap()`. Here genes are scaled using sphere scaling to highlight 
+the differences between subclasses. This mimics the signature matrix applied 
+when `weight_method = "equal"`.
 
-signature_heatmap(mkm, text = F, outlines = T, outline_col = "purple2",
-                  show_row_names = F, row_title_rot = 0, column_title_rot = 45,
+```{r eval=FALSE}
+signature_heatmap(mkm, text = FALSE, show_row_names = FALSE,
+                  row_title_rot = 0, column_title_rot = 75,
                   scale = "sphere")
+```
 
-mk <- updateMarkers(mk, expfilter = 0.1)
-signature_heatmap(mk, text = F, outlines = T, outline_col = "purple2",
-                  show_row_names = F, row_title_rot = 0, column_title_rot = 45,
-                  scale = "sphere")
+```{r, out.width='100%', echo=FALSE}
+knitr::include_graphics("brain_sig.png")
+```
 
+The full signature matrix is very large containing 1542 genes across 116 
+subclasses. So we can focus in on a particular group of cell types as follows.
+
+```{r eval=FALSE}
+# view signature for just the Amygdata excitatory group
 signature_heatmap(mkm, subset = "Amygdala excitatory")
-signature_heatmap(mkm, type = "group")
+```
+
+```{r, out.width='50%', fig.align = 'center', echo=FALSE}
+knitr::include_graphics("brain_sig_amygdala.png")
 ```
 
 ## Simulating pseudobulk
