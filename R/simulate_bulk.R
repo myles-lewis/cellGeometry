@@ -84,7 +84,7 @@ generate_samples <- function(object, n, equal_sample = TRUE,
 #'   columns. This can be used as `test` with the [deconvolute()] function.
 #' @seealso [generate_samples()] [deconvolute()] [add_noise()]
 #' @export
-simulate_bulk <- function(object, samples, subclass, times = 10,
+simulate_bulk <- function(object, samples, subclass, times = 1,
                           method = c("dirichlet", "unif"), alpha = 1) {
   if (inherits(object, "cellMarkers")) {
     genemean_counts <- 2^object$genemeans -1
