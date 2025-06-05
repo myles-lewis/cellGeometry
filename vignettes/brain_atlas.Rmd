@@ -1,0 +1,255 @@
+---
+title: "Brain atlas deconvolution"
+author: "Myles Lewis"
+date: "2025-06-05"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+    toc_depth: 2
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Deconvolution with the brain atlas}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE
+)
+```
+
+# Brain Atlas
+
+We use the Human Brain Atlas 1.0 dataset as an example of deconvolution of a
+large single cell dataset. The brain atlas data is split into 2 files, one
+containing neurons only whih has roughly 2.5 million cells, while the other
+dataset contains the remaining non-neuronal cells. For a smaller, simpler
+example see the cellGeometry quickstart vignette. The data is available on the
+CZ cellxgene repository, described here:
+https://cellxgene.cziscience.com/collections/283d65eb-dd53-496d-adb7-7570c7caa443
+
+The h5ad file for all neurons (33 Gb) can be downloaded directly using this link:
+https://datasets.cellxgene.cziscience.com/c2f66cd5-4ff4-4578-876c-55783a57cf8f.h5ad
+
+The h5ad file for the remaining 888,263 non-neuronal cells (4 Gb) can be
+downloaded from this link:
+https://datasets.cellxgene.cziscience.com/99f27be8-9fac-451e-9723-9e4c7191589e.h5ad
+
+```{r eval=FALSE}
+library(zellkonverter)
+library(SingleCellExperiment)
+library(cellGeometry)
+```
+
+## Neurons
+
+We load the data from the h5ad file and extract the single cell matrix.
+
+```{r eval=FALSE}
+# 33 Gb
+# 2,480,956 cells
+brain <- readH5AD("/Users/myles/R/Deconv/c2f66cd5-4ff4-4578-876c-55783a57cf8f.h5ad",
+                  use_hdf5 = TRUE, reader = "R")
+
+mat <- brain@assays@data$X
+rownames(mat) <- rownames(brain)  # need to add rownames (genes)
+meta <- brain@colData@listData
+```
+
+We then define the cellMarkers objects. This is the most time consuming part of
+the analysis. There are options here for which metadata column to use for
+defining subclasses and groups. Here we use `roi` and `supercluster_term` as
+subclass and group respectively. Other possible columns in `meta` are
+`dissection` (fine subregions) and `ROIgroupfine` (similar to tissue region).
+
+```{r eval=FALSE}
+# shows possible cell cluster subclasses and groups
+sort(table(meta$roi))
+sort(table(meta$supercluster_term))
+
+mk <- cellMarkers(mat, subclass = meta$roi,
+                  cellgroup = meta$supercluster_term, 
+                  dual_mean = TRUE, cores = 8)
+# 27 mins (intel 8 cores)
+```
+
+We load a recent ensembl database to convert ensembl ids to gene names. This is
+optional and can be done at a later stage for users that prefer to use ensembl
+ids for analysis and only convert to gene names only during plotting.
+
+```{r eval=FALSE}
+library(AnnotationHub)
+ah <- AnnotationHub()
+ensDb_v110 <- ah[["AH113665"]]
+
+mk <- gene2symbol(mk, ensDb_v110)
+```
+
+We can visualise the signature heatmap as follows.
+
+```{r eval=FALSE}
+signature_heatmap(mk, show_row_names = F, row_title_rot = 0, column_title_rot = 45)
+```
+
+## Non-neuronal cells
+
+Next we generate cellMarkers for the non-neuronal cells.
+
+```{r eval=FALSE}
+# non-neuronal cells
+# 888,263 cells
+# 4 Gb
+brainNN <- readH5AD("/Users/myles/R/Deconv/99f27be8-9fac-451e-9723-9e4c7191589e.h5ad",
+                  use_hdf5 = TRUE, reader = "R")
+
+mat2 <- brainNN@assays@data$X
+rownames(mat2) <- rownames(brainNN)  # add rownames (genes)
+meta2 <- brainNN@colData@listData
+
+sort(table(meta2$supercluster_term))
+sort(table(meta2$cell_type))
+
+mkNN <- cellMarkers(mat2, subclass = meta2$cell_type,
+                    cellgroup = meta2$supercluster_term,
+                    dual_mean = TRUE, cores = 8)
+# 9 mins (intel 8 cores)
+
+mkNN <- gene2symbol(mkNN, ensDb_v110)
+
+signature_heatmap(mkNN, use_filter = F)
+```
+
+## Merging signatures
+
+Next we merge the cellMarkers objects for both the neuronal and non-neuronal
+datasets. In this example we set `transform` to `"none"` as we know that both
+single-cell datasets were performed using the same chemistry and same setup, so
+there is no major difference in scaling between the datasets. When merging other
+single cell datasets which are more disparate then we recommend leaving
+`transform` as its default `"qq"`, which uses quantile mapping to map one
+single-cell dataset to another based on the distribution of the gene means
+across the subclasses.
+
+```{r eval=FALSE}
+mkm <- mergeMarkers(mk, mkNN, transform = "none")
+mkm <- updateMarkers(mkm, expfilter = 0.2)
+
+signature_heatmap(mkm, top = 5, text = F,
+                  show_row_names = F, row_title_rot = 0, column_title_rot = 45)
+
+signature_heatmap(mkm, text = F, outlines = T, outline_col = "purple2",
+                  show_row_names = F, row_title_rot = 0, column_title_rot = 45,
+                  scale = "sphere")
+
+mk <- updateMarkers(mk, expfilter = 0.1)
+signature_heatmap(mk, text = F, outlines = T, outline_col = "purple2",
+                  show_row_names = F, row_title_rot = 0, column_title_rot = 45,
+                  scale = "sphere")
+
+signature_heatmap(mkm, subset = "Amygdala excitatory")
+signature_heatmap(mkm, type = "group")
+```
+
+## Simulating pseudobulk
+
+To generate a simulated pseudobulk dataset, we generate simulation datasets
+based on sampling each of the neuronal and non-neuronal raw single-cell count
+matrices.
+
+```{r eval=FALSE}
+# simulate bulk
+set.seed(3)
+sim_counts <- generate_samples(mk, 30)
+sim_percent <- sim_counts / rowSums(sim_counts) * 100
+
+# sample from neuronal count matrix
+# 35 mins (Intel)
+sim_sampled <- simulate_bulk(mat, sim_counts, meta$roi,
+                             times = 1)
+
+rownames(sim_sampled) <- gene2symbol(rownames(sim_sampled), ensDb_v110)
+```
+
+Once we have generated the simulation dataset from the neuronal matrix, the code
+below shows how to deconvolute it alone without the merging of the non-neuronal
+cells. This can be skipped if you want to merge with the non-neuronal cells and
+deconvolute the whole lot.
+
+```{r eval=FALSE}
+fit <- deconvolute(mk, sim_sampled,
+                   arith_mean = TRUE,
+                   use_filter = FALSE)
+mset <- metric_set(sim_percent, fit$subclass$percent)
+summary(mset)
+
+pdf("../brain_sim_neuron.pdf",
+    width = 12, height = 12.5)
+plot_set(sim_counts, fit$subclass$output, show_zero = T,
+         mfrow = c(8, 8))
+plot_set(sim_percent, fit$subclass$percent, show_zero = T,
+         mfrow = c(8, 8))
+dev.off()
+```
+
+Next we set up the simulated bulk data from the non-neuronal single cell matrix.
+
+```{r eval=FALSE}
+# set up bulk simulation for non-neuronal
+set.seed(3)
+sim_countsNN <- generate_samples(mkNN, 30)
+sim_percentNN <- sim_countsNN / rowSums(sim_countsNN) * 100
+
+# sample from original non-neuronal sc dataset
+# 6.32 mins (Intel)
+sim_sampledNN <- simulate_bulk(mat2, sim_countsNN, meta2$cell_type,
+                               times = 1)
+
+rownames(sim_sampledNN) <- gene2symbol(rownames(sim_sampledNN), ensDb_v110)
+```
+
+## Merging simulated data
+
+The following code merges the pseudobulk count matrices from neuronal and
+non-neuronal cells and updates the ground truth matrix of cell counts.
+
+```{r eval=FALSE}
+# merge
+# check genenames are the same in both datasets
+identical(rownames(sim_sampled), rownames(sim_sampledNN))
+## TRUE
+
+# merge pseudobulk
+sim_sampled_merge <- sim_sampled + sim_sampledNN
+
+# merge cell counts
+sim_counts_merge <- cbind(sim_counts, sim_countsNN)
+sim_percent_merge <- sim_counts_merge / rowSums(sim_counts_merge) * 100
+```
+
+## Deconvolution
+
+We run the deconvolution on the merged pseudobulk count matrix.
+
+```{r eval=FALSE}
+fitm <- deconvolute(mkm, sim_sampled_merge,
+                    arith_mean = TRUE, use_filter = FALSE)
+```
+
+Finally we compare with ground truth and generate scatter plots comparing ground
+truth cell counts/percentages against the deconvolution predictions.
+
+```{r eval=FALSE}
+mset <- metric_set(sim_percent_merge, fitm$subclass$percent)
+summary(mset)
+
+pdf("../brain_sim_merge.pdf",
+    width = 12, height = 12.5)
+plot_set(sim_counts_merge, fitm$subclass$output, show_zero = T,
+         mfrow = c(8, 8))
+plot_set(sim_percent_merge, fitm$subclass$percent, show_zero = T,
+         mfrow = c(8, 8))
+dev.off()
+```
