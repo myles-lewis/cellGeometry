@@ -74,7 +74,7 @@ signature_heatmap <- function(x,
     if (!is.null(add_genes)) {
       ok <- add_genes %in% rownames(x$genemeans)
       if (!all(ok)) {
-        message("Genes not found: ", paste(add_genes[!ok], collapse = ", "))
+        cat("Genes not found:", paste(add_genes[!ok], collapse = ", "), "\n")
       }
       add_genes <- add_genes[ok]
       gset <- unique(c(gset, add_genes))

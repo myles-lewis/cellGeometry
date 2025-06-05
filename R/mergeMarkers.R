@@ -38,7 +38,7 @@ mergeMarkers <- function(mk1, mk2,
   transform <- match.arg(transform)
   qfun <- NULL
   if (transform == "qq") {
-    message("Quantile transforming '", xlab, "'")
+    cat(paste0("Quantile transforming '", xlab, "'\n"))
     qfun <- quantile_map(mk2, mk1, respace = TRUE) |> suppressMessages()
     mk2$genemeans <- qfun$map(mk2$genemeans)
     mk2$groupmeans <- qfun$map(mk2$groupmeans)
@@ -47,7 +47,7 @@ mergeMarkers <- function(mk1, mk2,
     qfun$ylab <- ylab
   } else if (transform %in% c("scale", "linear.qq")) {
     if (transform == "linear.qq") {
-      message("Quantile transformation, linear approximation")
+      cat("Quantile transformation, linear approximation\n")
       scale <- linear_qq(mk2, mk1)
     }
     mk2$genemeans <- mk2$genemeans * scale
@@ -56,7 +56,7 @@ mergeMarkers <- function(mk1, mk2,
   }
   
   common <- intersect(rownames(mk1$genemeans), rownames(mk2$genemeans))
-  message(length(common), " common genes")
+  cat(length(common), "common genes\n")
   gm1 <- mk1$genemeans[common, ]
   gm2 <- mk2$genemeans[common, ]
   genemeans <- cbind(gm1, gm2)
@@ -71,7 +71,7 @@ mergeMarkers <- function(mk1, mk2,
   dup <- duplicated(colnames(groupmeans))
   if (any(dup)) {
     dup_nm <- colnames(groupmeans)[dup]
-    message("Duplicated groups: ", paste(dup_nm, collapse = ", "))
+    cat("Duplicated groups:", paste(dup_nm, collapse = ", "), "\n")
     nm <- paste0(dup_nm, ".1")
     colnames(groupmeans)[dup] <- nm
     w <- which(levels(mk2$cell_table) %in% dup_nm)
@@ -99,7 +99,7 @@ mergeMarkers <- function(mk1, mk2,
   dup <- duplicated(colnames(genemeans))
   if (any(dup)) {
     dup_nm <- colnames(genemeans)[dup]
-    message("Duplicated subclasses: ", paste(dup_nm, collapse = ", "))
+    cat("Duplicated subclasses:", paste(dup_nm, collapse = ", "), "\n")
     nm <- paste0(dup_nm, ".1")
     colnames(genemeans)[dup] <- nm
     colnames(genemeans_ar)[dup] <- nm

@@ -104,7 +104,7 @@ simulate_bulk <- function(object, samples, subclass, times = 1,
   method <- match.arg(method)
   
   start <- Sys.time()
-  message("Creating sampling matrix", appendLF = FALSE)
+  cat("Creating sampling matrix")
   samples <- samples * times
   subclass_lev <- levels(subclass)
   subclass_lev <- subclass_lev[subclass_lev %in% colnames(samples)]
@@ -121,14 +121,14 @@ simulate_bulk <- function(object, samples, subclass, times = 1,
     }))
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
-  message(" (", format(Sys.time() - start, digits = 3), ")")
+  cat(paste0(" (", format(Sys.time() - start, digits = 3), ")\n"))
   
   start <- Sys.time()
-  message("Matrix multiplication", appendLF = FALSE)
+  cat("Matrix multiplication")
   sim_pseudo <- as.matrix(object %*% cmat)
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
-  message(" (", format(Sys.time() - start, digits = 3), ")")
+  cat(paste0(" (", format(Sys.time() - start, digits = 3), ")\n"))
   
   sim_pseudo
 }
@@ -168,7 +168,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
                      title = "", cex.title = 1, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
-    message("`pred` contains NA")
+    cat("`pred` contains NA\n")
     pred[is.na(pred)] <- 0
   }
   if (is.null(cols)) cols <- TRUE
@@ -228,7 +228,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
 metric_set <- function(obs, pred) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
-    message("`pred` contains NA")
+    cat("`pred` contains NA\n")
     pred[is.na(pred)] <- 0
   }
   

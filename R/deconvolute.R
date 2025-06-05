@@ -118,7 +118,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
   if (convert_bulk == "qqmap") {
-    if (verbose) message("Quantile map bulk to sc, ", appendLF = FALSE)
+    if (verbose) cat("Quantile map bulk to sc, ")
     qqmap <- quantile_map(log2(test +1), mk$genemeans, remove_zeros = TRUE)
   }
   bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = qqmap$map)
@@ -187,7 +187,7 @@ deconvolute <- function(mk, test, log = TRUE,
               comp_amount = comp_amount)
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
-    if (verbose) message("analysing compensation")
+    if (verbose) cat("analysing compensation\n")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
                                  weights, count_space)
   }
@@ -204,13 +204,16 @@ deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method
                          count_space, weight_method, cores, verbose))
   }
   
-  if (verbose) message("iterative reweighting ", appendLF = FALSE)
+  if (verbose) cat("iterative reweighting ")
   fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                                adjust_comp, count_space, cores = cores,
                                verbose = FALSE)
   
   for (i in seq_len(n_iter)) {
-    if (verbose) message(".", appendLF = (i == n_iter))
+    if (verbose) {
+      cat(".")
+      if (i == n_iter) cat("\n")
+    }
     abs_dev <- rowMeans(abs(fit$residuals)^Lp)
     w <- 1 / pmax(abs_dev, delta)
     w <- w / mean(w)
@@ -251,7 +254,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     if (adjust_comp) {
       minout <- colMins(atest$output)
       w <- which(minout < 0)
-      if (verbose) message("optimising compensation (", length(w), ")")
+      if (verbose) cat(paste0("optimising compensation (", length(w), ")\n"))
       
       newcomps <- pmclapply(seq_along(w), function(i) {
         wi <- w[i]
@@ -270,7 +273,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
-    } else if (verbose) message("negative cell proportion projection detected")
+    } else if (verbose) cat("negative cell proportion projection detected\n")
   }
   if (resid) atest$residuals <- residuals_deconv(test, cellmat, atest$output)
   atest
