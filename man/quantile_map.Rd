@@ -13,7 +13,8 @@ quantile_map(
   smooth = "loess",
   span = 0.15,
   knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-  respace = FALSE
+  respace = FALSE,
+  silent = FALSE
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ it will clip for values > \code{max(x)}.}
 
 \item{respace}{Logical whether to respace quantile points so their x axis
 density is more even. Can help spline fitting.}
+
+\item{silent}{Logical whether to suppress messages.}
 }
 \value{
 A list object of class 'qqmap' containing:

@@ -28,6 +28,7 @@
 #' @param knots Vector of quantile points for knots for fitting natural splines.
 #' @param respace Logical whether to respace quantile points so their x axis
 #'   density is more even. Can help spline fitting.
+#' @param silent Logical whether to suppress messages.
 #' @returns A list object of class 'qqmap' containing:
 #' \item{quantiles}{Dataframe containing matching quantiles of `x` and `y`}
 #' \item{map}{A function of form `FUN(x)` where `x` can be supplied as a numeric
@@ -48,7 +49,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
                          smooth = "loess",
                          span = 0.15,
                          knots = c(0.25, 0.75, 0.85, 0.95, 0.97, 0.99, 0.999),
-                         respace = FALSE) {
+                         respace = FALSE, silent = FALSE) {
   xlab <- deparse(substitute(x))
   ylab <- deparse(substitute(y))
   if (inherits(x, "cellMarkers")) x <- x$genemeans
@@ -57,7 +58,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   if (inherits(y, "data.frame")) y <- as.matrix(y)
   common <- intersect(rownames(x), rownames(y))
   if (remove_noncoding) common <- common[!grepl("-|\\.", common)]
-  cat(length(common), "common genes\n")
+  if (!silent) cat(length(common), "common genes\n")
   x <- x[common, ]
   y <- y[common, ]
   if (remove_zeros) {
