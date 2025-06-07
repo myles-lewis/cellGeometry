@@ -527,13 +527,13 @@ knitr::include_graphics("typist_tune.png")
 ```
 
 These plots show that `weight_method = "equal"` is better than `"none"` and that
-`expfilter` for this single cell dataset seems to be optimal at around 0.25. Of
-note, the higher `nsubclass` the better. With deconvolution best with 500-1000
-genes per subclass. In reality we find that this is unlikely to be true for
-real-world bulk RNA-Seq as noise caused by differences in sequencing chemistry
-mean that larger numbers of genes in the signature add increasing noise, so
-there is likely to be a sweetspot. Default `nsubclass` is 25 which seems a
-reasonable compromise.
+`expfilter` for this single cell dataset seems to be optimal at around 0.25. In
+this simulation the higher `nsubclass` is the better, with deconvolution best
+with 500-1000 genes per subclass. In reality we find that this is unlikely to be
+true for real-world bulk RNA-Seq as noise caused by differences in sequencing
+chemistry mean that larger numbers of genes in the signature add increasing
+noise, so there is likely to be a sweetspot. The default `nsubclass` is 25 which
+has been chosen as a plausible compromise which should work in most situations.
 
 ## Simulating noise
 
