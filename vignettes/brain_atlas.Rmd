@@ -139,13 +139,14 @@ mkm <- mergeMarkers(mk, mkNN, transform = "none")
 mkm <- updateMarkers(mkm, expfilter = 0.2)
 ```
 
-We can view whole merged gene signature from both single cell datasets using 
+We can view merged gene signature from both single cell datasets using 
 `signature_heatmap()`. Here genes are scaled using sphere scaling to highlight 
 the differences between subclasses. This mimics the signature matrix applied 
 when `weight_method = "equal"`.
 
 ```{r eval=FALSE}
-signature_heatmap(mkm, text = FALSE, show_row_names = FALSE,
+signature_heatmap(mkm, top = 5,
+                  text = FALSE, show_row_names = FALSE,
                   row_title_rot = 0, column_title_rot = 75,
                   scale = "sphere")
 ```
