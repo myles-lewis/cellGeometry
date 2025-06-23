@@ -146,7 +146,7 @@ specificity_plot <- function(mk, subclass = NULL,
     ggplot(df, aes(x = .data$x, y = .data$y, color = .data$rank,
                    label = .data$label)) +
       (if (label_pos == "left") geom_vline(xintercept = 0, lty = 2)) +
-      geom_point() +
+      geom_point(show.legend = TRUE) +
       scale_color_manual(values = scheme, drop = FALSE) +
       (if (label_pos == "left") {
         geom_label_repel(size = 3, color = "black",
@@ -171,7 +171,7 @@ specificity_plot <- function(mk, subclass = NULL,
     
     ggplot(df, aes(x = .data$angle.deg, y = .data$mean, color = .data$rank,
                    label = .data$label)) +
-      geom_point() +
+      geom_point(show.legend = TRUE) +
       scale_color_manual(values = scheme, drop = FALSE) +
       geom_text_repel(size = 3, color = "black",
                       nudge_x = nudge_x, nudge_y = nudge_y, ...) +
