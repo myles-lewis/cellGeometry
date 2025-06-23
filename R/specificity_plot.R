@@ -107,7 +107,8 @@ specificity_plot <- function(mk, subclass = NULL,
   gene_rank <- factor(floor(gene_rank), levels = 1:nrank)
   if (type == 1) {
     if (is.null(expfilter)) expfilter <- mk$opt$expfilter
-    gene_rank[genemeans[, subc] < expfilter] <- nrank
+    low <- genemeans[, subc] < expfilter & !rownames(genemeans) %in% labs
+    gene_rank[low] <- nrank
     levels(gene_rank)[nrank] <- paste0(nrank, "+/low")
   } else {
     levels(gene_rank)[nrank] <- paste0(nrank, "+")
@@ -226,7 +227,8 @@ specificity_plotly <- function(mk, subclass = NULL,
   gene_rank <- factor(floor(gene_rank))
   if (type == 1) {
     if (is.null(expfilter)) expfilter <- mk$opt$expfilter
-    gene_rank[genemeans[, subc] < expfilter] <- nrank
+    low <- genemeans[, subc] < expfilter & !rownames(genemeans) %in% labs
+    gene_rank[low] <- nrank
     levels(gene_rank)[nrank] <- paste0(nrank, "+/low")
   } else {
     levels(gene_rank)[nrank] <- paste0(nrank, "+")
