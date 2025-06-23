@@ -104,7 +104,7 @@ specificity_plot <- function(mk, subclass = NULL,
   gene_rank <- apply(-genemeans, 1, rank)[subc, ]
   nrank <- pmin(ncol(genemeans), nrank)
   gene_rank[gene_rank > nrank] <- nrank
-  gene_rank <- factor(floor(gene_rank))
+  gene_rank <- factor(floor(gene_rank), levels = 1:nrank)
   if (type == 1) {
     if (is.null(expfilter)) expfilter <- mk$opt$expfilter
     gene_rank[genemeans[, subc] < expfilter] <- nrank
