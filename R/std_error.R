@@ -5,12 +5,12 @@
 #' [deconvolute()].
 #' 
 #' This is based on viewing the deconvolution of each sample as a regression
-#' \eqn{y = \beta X + \varepsilon } in which, \eqn{y} is the gene expression in
-#' a sample, \eqn{X} is the gene signature matrix and cell types as regressors
+#' \eqn{y = \beta X + \varepsilon } in which \eqn{y} is the gene expression in a
+#' sample, \eqn{X} is the gene signature matrix with cell types as regressors,
 #' and \eqn{\hat{\beta}} are the fitted coefficients which represent the
-#' deconvoluted cell counts. Note that here genes are viewed as 'samples'.
-#' Based on OLS, the standard error of \eqn{\beta} is calculated as:
-#' \deqn{\hat{se}(\hat{\beta}) = \sqrt{s^2 (X^T X)^{-1}}}
+#' deconvoluted cell counts. Note that here genes are viewed as 'samples'. Based
+#' on OLS, the standard errors of \eqn{\hat{\beta}} are calculated as:
+#' \deqn{\hat{se}(\hat{\beta_{j}}) = \sqrt{s^2 (X^T X)^{-1}_{jj}}}
 #' where \eqn{s^2} is the estimate of the sample variance. Instead of using the
 #' exact OLS form, here \eqn{(X^T X)^{-1}} is derived from the compensation
 #' matrix which has been regularised to prevent non-negative \eqn{\hat{\beta}}.
