@@ -80,9 +80,10 @@
 #'       across each cell subclass after adjustment to prevent negative values
 #'       \item `residuals`, residuals, that is gene expression minus fitted 
 #'       values
-#'       \item `resvar`, \eqn{s^2} the estimate of the gene expression variance
+#'       \item `resvar`, \eqn{s^2} the estimate of the gene expression variance 
+#'       for each sample
 #'       \item `diag_XTX`, \eqn{(X^T X)^{-1}_{jj}} the diagonal values of the 
-#'       inverse of the Gram matrix obtained from the regularised compensation 
+#'       inverse of the Gram matrix derived from the regularised compensation 
 #'       matrix
 #'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
