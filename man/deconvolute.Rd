@@ -101,6 +101,12 @@ incorporates \code{comp_amount}
 \item \code{rawcomp}, the original unadjusted compensation matrix
 \item \code{comp_amount}, the final values for the amount of compensation
 across each cell subclass after adjustment to prevent negative values
+\item \code{residuals}, residuals, that is gene expression minus fitted
+values
+\item \code{resvar}, \eqn{s^2} the estimate of the gene expression variance
+\item \code{diag_XTX}, \eqn{(X^T X)^{-1}_{jj}} the diagonal values of the
+inverse of the Gram matrix obtained from the regularised compensation
+matrix
 }}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}
