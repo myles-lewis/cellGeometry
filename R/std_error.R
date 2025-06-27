@@ -20,7 +20,7 @@
 #' @export
 std_error <- function(object) {
   if (!inherits(object, "deconv")) stop("not a 'deconv' class object")
-  se <- sqrt(obj$subclass$resvar %*% t(obj$subclass$diag_XTX))
-  rownames(se) <- names(obj$subclass$resvar)
+  se <- sqrt(object$subclass$resvar %*% t(object$subclass$diag_XTX))
+  rownames(se) <- names(object$subclass$resvar)
   se
 }
