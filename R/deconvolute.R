@@ -275,7 +275,19 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       atest$percent[atest$percent < 0] <- 0
     } else if (verbose) cat("negative cell proportion projection detected\n")
   }
-  if (resid) atest$residuals <- residuals_deconv(test, cellmat, atest$output)
+  if (resid) {
+    atest$residuals <- r <- residuals_deconv(test, cellmat, atest$output)
+    if (!is.null(weights)) {
+      # adjust for gene weights
+      r <- r * weights
+      cellmat <- cellmat * weights
+    }
+    rss <- colSums(r^2)
+    rdf <- nrow(r) - ncol(cellmat)
+    atest$resvar <- rss/rdf
+    Lv <- colSums(cellmat^2)
+    atest$diag_XTX <- diag(atest$compensation) / Lv
+  }
   atest
 }
 
