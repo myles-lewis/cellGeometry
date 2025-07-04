@@ -23,9 +23,9 @@
 #'   the gene signature matrix affects the deconvolution.
 #' @param weight_method Optional. Choices include "equal" in which case weights
 #'   are calculated so that each gene has equal weighting in the vector
-#'   projection. Or "irw" which enables iterative reweighting of genes based on
-#'   residuals (see details). Setting this overrules any vector supplied by
-#'   `weights`.
+#'   projection; "none"; or "irw" which enables iterative reweighting of genes
+#'   based on residuals (see details). Setting this overrules any vector
+#'   supplied by `weights`.
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
 #' @param use_filter logical, whether to use denoised signature matrix.
@@ -285,15 +285,30 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
   if (resid) {
     atest$residuals <- r <- residuals_deconv(test, cellmat, atest$output)
     if (!is.null(weights)) {
-      # adjust for gene weights
+      # adjust residuals & X by gene weights
       r <- r * weights
       cellmat <- cellmat * weights
     }
     rss <- colSums(r^2)
     rdf <- nrow(r) - ncol(cellmat)
-    atest$resvar <- rss/rdf
+    atest$resvar <- resvar <- rss/rdf
     Lv <- colSums(cellmat^2)
-    atest$diag_XTX <- diag(atest$compensation) / Lv
+    diag_XTX <- diag(atest$compensation) / Lv
+    atest$se1 <- sqrt(resvar %*% t(diag_XTX))
+    # based on van Wieringen
+    iXTX <- atest$compensation / Lv
+    XTX <- crossprod(cellmat)
+    diag2 <- diag(iXTX %*% XTX %*% t(iXTX))
+    atest$se2 <- sqrt(resvar %*% t(diag2))
+    # heteroscedasticity-consistent SE = HC0
+    atest$se3 <- t(apply(r, 2, function(i) {
+      XTXse <- crossprod(cellmat, i^2 * cellmat)
+      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    }))
+    # novel based on estimate s^2 from residuals row variance
+    var.e <- matrixStats::rowVars(r)
+    XTXse <- crossprod(cellmat, var.e * cellmat)
+    atest$se4 <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
   }
   atest
 }
