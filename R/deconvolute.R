@@ -305,10 +305,13 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       XTXse <- crossprod(cellmat, i^2 * cellmat)
       sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     }))
-    # novel based on estimate s^2 from residuals row variance
+    # empirical Bayes estimate employing residuals row variance
     var.e <- matrixStats::rowVars(r)
-    XTXse <- crossprod(cellmat, var.e * cellmat)
-    atest$se4 <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    atest$se4 <- t(apply(r, 2, function(i) {
+      vbsq <- (i^2 + var.e) /2
+      XTXse <- crossprod(cellmat, vbsq * cellmat)
+      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    }))
   }
   atest
 }
