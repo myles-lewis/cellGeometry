@@ -31,6 +31,8 @@
 #' @param use_filter logical, whether to use denoised signature matrix.
 #' @param arith_mean logical, whether to use arithmetic means (if available) for
 #'   signature matrix. Mainly useful with pseudo-bulk simulation.
+#' @param SE_method method for calculating standard errors of deconvoluted cell
+#'   counts, see details.
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
@@ -82,9 +84,8 @@
 #'       values
 #'       \item `resvar`, \eqn{s^2} the estimate of the gene expression variance 
 #'       for each sample
-#'       \item `diag_XTX`, \eqn{(X^T X)^{-1}_{jj}} the diagonal values of the 
-#'       inverse of the Gram matrix derived from the regularised compensation 
-#'       matrix
+#'       \item `se`, standard errors of cell counts
+#'       \item `SE_method`, standard error method
 #'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
 #'   cell group analysis.}
@@ -312,6 +313,9 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       XTXse <- crossprod(cellmat, vbsq * cellmat)
       sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     }))
+    
+    XTXse <- crossprod(cellmat, var.e * cellmat)
+    atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
   }
   atest
 }

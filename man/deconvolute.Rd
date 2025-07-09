@@ -52,9 +52,9 @@ the gene signature matrix affects the deconvolution.}
 
 \item{weight_method}{Optional. Choices include "equal" in which case weights
 are calculated so that each gene has equal weighting in the vector
-projection. Or "irw" which enables iterative reweighting of genes based on
-residuals (see details). Setting this overrules any vector supplied by
-\code{weights}.}
+projection; "none"; or "irw" which enables iterative reweighting of genes
+based on residuals (see details). Setting this overrules any vector
+supplied by \code{weights}.}
 
 \item{adjust_comp}{logical, whether to optimise \code{comp_amount} to prevent
 negative cell proportion projections.}
@@ -84,6 +84,9 @@ function.}
 \item{verbose}{logical, whether to show messages.}
 
 \item{cores}{Number of cores for parallelisation via \code{parallel::mclapply()}.}
+
+\item{SE_method}{method for calculating standard errors of deconvoluted cell
+counts, see details.}
 }
 \value{
 A list object of S3 class 'deconv' containing:
@@ -105,9 +108,8 @@ across each cell subclass after adjustment to prevent negative values
 values
 \item \code{resvar}, \eqn{s^2} the estimate of the gene expression variance
 for each sample
-\item \code{diag_XTX}, \eqn{(X^T X)^{-1}_{jj}} the diagonal values of the
-inverse of the Gram matrix derived from the regularised compensation
-matrix
+\item \code{se}, standard errors of cell counts
+\item \code{SE_method}, standard error method
 }}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}

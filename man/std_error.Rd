@@ -25,7 +25,31 @@ and \eqn{\hat{\beta}} are the fitted coefficients which represent the
 deconvoluted cell counts. Note that here genes are viewed as 'samples'. Based
 on OLS, the standard errors of \eqn{\hat{\beta}} are calculated as:
 \deqn{\hat{se}(\hat{\beta_{j}}) = \sqrt{s^2 (X^T X)^{-1}_{jj}}}
-where \eqn{s^2} is the estimate of the sample variance. Instead of using the
-exact OLS form, here \eqn{(X^T X)^{-1}} is derived from the compensation
-matrix which has been regularised to prevent non-negative \eqn{\hat{\beta}}.
+where \eqn{s^2} is the estimate of the sample variance. A correction to the
+exact OLS form, involves using \eqn{W} the modified version of \eqn{(X^T
+X)^{-1}} derived from the compensation matrix which has been regularised to
+prevent non-negative \eqn{\hat{\beta}}:
+\deqn{Var[\hat{\beta}] = s^2 W X^T X W^T}
+Bulk RNA-Seq is count data, which breaks the OLS assumption of
+homoscedasticity. Hence the third method available is White's
+heteroscedasticity-consistent SE (HC0):
+\deqn{Var_{HCE}[\hat{\beta}] = (X^TX)^{-1} (X^Tdiag(\hat{\varepsilon}^2_1, ..., 
+\hat{\varepsilon}^2_n)X) (X^TX)^{-1}}
+
+except that \eqn{W} replaces \eqn{(X^TX)^{-1}}. White's method estimates the
+regression error variances as
+\eqn{\hat{\sigma}^2_i = \hat{\varepsilon}^2_i}.
+The above three methods view each sample separately. The default method uses
+empirical Bayes to improve the estimate of the regression error variances, by
+incorporating the variance of the residuals across all samples.
+\deqn{\hat{\sigma}^2_{ij} = \cfrac{\hat{\varepsilon}^2_{ij} + Var(\hat{\varepsilon}_i)}{2}}
+
+where \eqn{i} varies across genes and \eqn{j} varies across samples.
+This replaces the term \eqn{diag(\hat{\varepsilon}^2_1, ..., \hat{\varepsilon}^2_n)}
+in the HC0 estimator.
+}
+\references{
+White, Halbert (1980). "A Heteroskedasticity-Consistent
+Covariance Matrix Estimator and a Direct Test for Heteroskedasticity".
+Econometrica. 48 (4): 817–838.
 }
