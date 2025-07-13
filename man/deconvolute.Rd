@@ -18,9 +18,6 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = FALSE,
   check_comp = FALSE,
-  n_iter = 5,
-  delta = ifelse(count_space, 1, 0.01),
-  Lp = 1,
   verbose = TRUE,
   cores = 1L
 )
@@ -70,16 +67,6 @@ scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses.}
-
-\item{n_iter}{Number of iterations for iterative reweighting.}
-
-\item{delta}{Regularisation term for the weighting function (to avoid
-division by zero).}
-
-\item{Lp}{p-norm value. Recommended value is from 0-1. Lower values slow down
-iteration and control the extremeness of the weighting. Absolute deviation
-of residuals are raised to the power of \code{Lp} as part of the reweighting
-function.}
 
 \item{verbose}{logical, whether to show messages.}
 

@@ -38,13 +38,6 @@
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses.
-#' @param n_iter Number of iterations for iterative reweighting.
-#' @param delta Regularisation term for the weighting function (to avoid
-#'   division by zero).
-#' @param Lp p-norm value. Recommended value is from 0-1. Lower values slow down
-#'   iteration and control the extremeness of the weighting. Absolute deviation
-#'   of residuals are raised to the power of `Lp` as part of the reweighting
-#'   function.
 #' @param verbose logical, whether to show messages.
 #' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
 #' @details
@@ -114,13 +107,10 @@ deconvolute <- function(mk, test, log = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
                         check_comp = FALSE,
-                        n_iter = 5,
-                        delta = ifelse(count_space, 1, 0.01),
-                        Lp = 1,
                         verbose = TRUE, cores = 1L) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
-  weight_method <- match.arg(weight_method, c("none", "equal", "irw"))
+  weight_method <- match.arg(weight_method, c("none", "equal", "2pass"))
   test <- as.matrix(test)
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
@@ -162,9 +152,9 @@ deconvolute <- function(mk, test, log = TRUE,
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
-  atest <- deconv_adjust_irw(logtest2, cellmat, comp_amount, weights,
-                             weight_method, adjust_comp, count_space,
-                             n_iter, delta, Lp, verbose, cores)
+  atest <- deconv_adjust_2pass(logtest2, cellmat, comp_amount, weights,
+                               weight_method, adjust_comp, count_space,
+                               verbose, cores)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -204,39 +194,32 @@ deconvolute <- function(mk, test, log = TRUE,
 }
 
 
-deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method,
-                              adjust_comp, count_space, n_iter, delta, Lp,
-                              verbose, cores) {
-  if (weight_method != "irw") {
+deconv_adjust_2pass <- function(test, cellmat, comp_amount, weights, weight_method,
+                                adjust_comp, count_space,
+                                verbose, cores) {
+  if (weight_method != "2pass") {
     return(deconv_adjust(test, cellmat, comp_amount, weights, adjust_comp,
                          count_space, weight_method, cores, verbose))
   }
   
-  if (verbose) cat("iterative reweighting ")
-  fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                               adjust_comp, count_space, cores = cores,
-                               verbose = FALSE)
-  
-  for (i in seq_len(n_iter)) {
-    if (verbose) {
-      cat(".")
-      if (i == n_iter) cat("\n")
-    }
-    abs_dev <- rowMeans(abs(fit$residuals)^Lp)
-    w <- 1 / pmax(abs_dev, delta)
-    w <- w / mean(w)
-    fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
-                             adjust_comp, count_space, cores = cores,
-                             verbose = FALSE),
-               silent = TRUE)
-    if (inherits(fit, "try-error")) {
-      warning(fit)
-      fit1$weights <- w
-      return(fit1)
-    }
-    fit1 <- fit
+  fit <- deconv_adjust(test, cellmat, comp_amount, weights,
+                       adjust_comp, count_space, weight_method = "equal",
+                       cores = cores, verbose = verbose)
+  var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
+  scale.var.e <- scale(var.e)
+  bigvar <- scale.var.e > 3.5
+  if (any(bigvar)) {
+    # 2nd pass
+    cat("2 pass\nHigh variance genes:", paste(names(var.e)[bigvar], collapse = ", "),
+        "\n")
+    test <- test[!bigvar, , drop = FALSE]
+    cellmat <- cellmat[!bigvar, , drop = FALSE]
+    weights <- weights[!bigvar]
+    fit <- deconv_adjust(test, cellmat, comp_amount, weights,
+                         adjust_comp, count_space, weight_method = "equal",
+                         cores = cores, verbose = verbose)
   }
-  fit$weights <- w
+  
   fit
 }
 
@@ -316,6 +299,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     
     XTXse <- crossprod(cellmat, var.e * cellmat)
     atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    atest$var.e <- var.e
   }
   atest
 }
