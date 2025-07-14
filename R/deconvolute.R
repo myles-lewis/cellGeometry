@@ -284,31 +284,12 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     rss <- colSums(r^2)
     rdf <- nrow(r) - ncol(cellmat)
     atest$resvar <- resvar <- rss/rdf
-    Lv <- colSums(cellmat^2)
-    diag_XTX <- diag(atest$compensation) / Lv
-    atest$se1 <- sqrt(resvar %*% t(diag_XTX))
-    # based on van Wieringen
-    iXTX <- atest$compensation / Lv
-    XTX <- crossprod(cellmat)
-    diag2 <- diag(iXTX %*% XTX %*% t(iXTX))
-    atest$se2 <- sqrt(resvar %*% t(diag2))
-    # heteroscedasticity-consistent SE = HC0
-    atest$se3 <- t(apply(r, 2, function(i) {
-      XTXse <- crossprod(cellmat, i^2 * cellmat)
-      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
-    }))
-    # empirical Bayes estimate employing residuals row variance
-    var.e <- matrixStats::rowVars(r)
-    atest$se4 <- t(apply(r, 2, function(i) {
-      vbsq <- (i^2 + var.e) /2
-      XTXse <- crossprod(cellmat, vbsq * cellmat)
-      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
-    }))
     # deploy residuals row variance
+    Lv <- colSums(cellmat^2)
+    iXTX <- atest$compensation / Lv
+    atest$var.e <- var.e <- matrixStats::rowVars(r)
     XTXse <- crossprod(cellmat, var.e * cellmat)
-    atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
-    atest$var.e <- var.e
-    atest$mean.e <- rowMeans(r)
+    atest$se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
   }
   atest
 }
