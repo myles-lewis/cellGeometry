@@ -18,6 +18,8 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = FALSE,
   check_comp = FALSE,
+  npass = 1,
+  var_cutoff = 4,
   verbose = TRUE,
   cores = 1L
 )
@@ -68,12 +70,16 @@ scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses.}
 
+\item{npass}{Number of passes. If \code{npass} set to 2 or more this activates
+removal of genes with excess variance of the residuals.}
+
+\item{var_cutoff}{Cutoff as Z-score for removing genes with high variance of
+residuals. Variances of residuals for each gene are first log2 transformed
+and then Z-score standardised.}
+
 \item{verbose}{logical, whether to show messages.}
 
 \item{cores}{Number of cores for parallelisation via \code{parallel::mclapply()}.}
-
-\item{SE_method}{method for calculating standard errors of deconvoluted cell
-counts, see details.}
 }
 \value{
 A list object of S3 class 'deconv' containing:
@@ -115,21 +121,13 @@ compensation for spillover.
 }
 \details{
 Equal weighting of genes by setting \code{weight_method = "equal"} can help
-devolution of subclusters whose signature genes have low expression.
-Iterative reweighting (IRW) is an experimental method which is conceptually
-similar to IRWLS (iteratively reweighted least squares). Weights are
-iteratively updated based on the reciprocal of the residual gene expression.
-Residuals are calculated by subtracting the actual gene expression in the
-\code{test} matrix from predicted gene expression based on deconvolved cell
-quantities. Default settings are 5 iterations and p-norm of 1 which
-corresponds to mean absolute deviation per gene. The concept is that noisy
-genes which are less informative for the deconvolution are downweighted.
-However, since residuals are strongly proportional to mean gene expression,
-most of the reweighting effect of IRW is due to the rebalancing of the genes
-based on gene expression in the test matrix.
+devolution of subclusters whose signature genes have low expression. It is
+enabled by default.
 
-Note that \code{weight_method = "equal"} is applied to both subclass and group
-deconvolution, whereas IRW is only applied to subclass deconvolution.
+Multipass deconvolution can be activated by setting \code{npass} to 2 or higher.
+This calculates the variance of the residuals across samples for each gene.
+Genes whose variance of residuals are outliers based on Z-score
+standardisation are removed during successive passes.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}}
