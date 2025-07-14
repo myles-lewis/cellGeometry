@@ -202,22 +202,28 @@ deconv_adjust_2pass <- function(test, cellmat, comp_amount, weights, weight_meth
                          count_space, weight_method, cores, verbose))
   }
   
+  n_iter <- 1
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                        adjust_comp, count_space, weight_method = "equal",
                        cores = cores, verbose = verbose)
   var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
-  scale.var.e <- scale(var.e)
-  bigvar <- scale.var.e > 3
-  if (any(bigvar)) {
-    # 2nd pass
-    cat("2 pass\nHigh variance genes:", paste(names(var.e)[bigvar], collapse = ", "),
+  scale.var.e <- scale(var.e)[, 1]
+  var_cut <- 3
+  bigvar <- scale.var.e > var_cut
+  while (any(bigvar) & n_iter < 3) {
+    n_iter <- n_iter +1
+    cat("Pass", n_iter, "- removed:", paste(names(var.e)[bigvar], collapse = ", "),
         "\n")
+    # print(scale.var.e[bigvar], digits = 3)
     test <- test[!bigvar, , drop = FALSE]
     cellmat <- cellmat[!bigvar, , drop = FALSE]
     weights <- weights[!bigvar]
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                          adjust_comp, count_space, weight_method = "equal",
                          cores = cores, verbose = verbose)
+    var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
+    scale.var.e <- scale(var.e)[, 1]
+    bigvar <- scale.var.e > var_cut
   }
   
   fit
