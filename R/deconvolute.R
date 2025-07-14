@@ -45,21 +45,13 @@
 #' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
 #' @details
 #' Equal weighting of genes by setting `weight_method = "equal"` can help
-#' devolution of subclusters whose signature genes have low expression.
-#' Iterative reweighting (IRW) is an experimental method which is conceptually
-#' similar to IRWLS (iteratively reweighted least squares). Weights are
-#' iteratively updated based on the reciprocal of the residual gene expression.
-#' Residuals are calculated by subtracting the actual gene expression in the
-#' `test` matrix from predicted gene expression based on deconvolved cell
-#' quantities. Default settings are 5 iterations and p-norm of 1 which
-#' corresponds to mean absolute deviation per gene. The concept is that noisy
-#' genes which are less informative for the deconvolution are downweighted.
-#' However, since residuals are strongly proportional to mean gene expression,
-#' most of the reweighting effect of IRW is due to the rebalancing of the genes
-#' based on gene expression in the test matrix.
+#' devolution of subclusters whose signature genes have low expression. It is
+#' enabled by default.
 #' 
-#' Note that `weight_method = "equal"` is applied to both subclass and group
-#' deconvolution, whereas IRW is only applied to subclass deconvolution.
+#' Multipass deconvolution can be activated by setting `npass` to 2 or higher.
+#' This calculates the variance of the residuals across samples for each gene.
+#' Genes whose variance of residuals are outliers based on Z-score
+#' standardisation are removed during successive passes.
 #' 
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
