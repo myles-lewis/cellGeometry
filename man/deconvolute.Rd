@@ -80,9 +80,6 @@ and then Z-score standardised.}
 \item{verbose}{logical, whether to show messages.}
 
 \item{cores}{Number of cores for parallelisation via \code{parallel::mclapply()}.}
-
-\item{SE_method}{method for calculating standard errors of deconvoluted cell
-counts, see details.}
 }
 \value{
 A list object of S3 class 'deconv' containing:

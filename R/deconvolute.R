@@ -31,8 +31,6 @@
 #' @param use_filter logical, whether to use denoised signature matrix.
 #' @param arith_mean logical, whether to use arithmetic means (if available) for
 #'   signature matrix. Mainly useful with pseudo-bulk simulation.
-#' @param SE_method method for calculating standard errors of deconvoluted cell
-#'   counts, see details.
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
@@ -310,7 +308,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       XTXse <- crossprod(cellmat, vbsq * cellmat)
       sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     }))
-    
+    # deploy residuals row variance
     XTXse <- crossprod(cellmat, var.e * cellmat)
     atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     atest$var.e <- var.e
