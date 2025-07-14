@@ -210,7 +210,7 @@ deconv_adjust_2pass <- function(test, cellmat, comp_amount, weights, weight_meth
   bigvar <- scale.var.e > 3
   if (any(bigvar)) {
     # 2nd pass
-    cat("2 pass\nHigh variance genes:", paste(names(var.e)[bigvar], collapse = ", "),
+    cat("Pass 2 - removed:", paste(names(var.e)[bigvar], collapse = ", "),
         "\n")
     test <- test[!bigvar, , drop = FALSE]
     cellmat <- cellmat[!bigvar, , drop = FALSE]
