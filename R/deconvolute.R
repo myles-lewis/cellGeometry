@@ -207,7 +207,7 @@ deconv_adjust_2pass <- function(test, cellmat, comp_amount, weights, weight_meth
                        cores = cores, verbose = verbose)
   var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
   scale.var.e <- scale(var.e)
-  bigvar <- scale.var.e > 3.5
+  bigvar <- scale.var.e > 3
   if (any(bigvar)) {
     # 2nd pass
     cat("2 pass\nHigh variance genes:", paste(names(var.e)[bigvar], collapse = ", "),
