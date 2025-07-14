@@ -18,6 +18,8 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = FALSE,
   check_comp = FALSE,
+  npass = 1,
+  var_cutoff = 4,
   verbose = TRUE,
   cores = 1L
 )
@@ -67,6 +69,13 @@ scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses.}
+
+\item{npass}{Number of passes. If \code{npass} set to 2 or more this activates
+removal of genes with excess variance of the residuals.}
+
+\item{var_cutoff}{Cutoff as Z-score for removing genes with high variance of
+residuals. Variances of residuals for each gene are first log2 transformed
+and then Z-score standardised.}
 
 \item{verbose}{logical, whether to show messages.}
 

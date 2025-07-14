@@ -38,6 +38,11 @@
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses.
+#' @param npass Number of passes. If `npass` set to 2 or more this activates
+#'   removal of genes with excess variance of the residuals.
+#' @param var_cutoff Cutoff as Z-score for removing genes with high variance of
+#'   residuals. Variances of residuals for each gene are first log2 transformed
+#'   and then Z-score standardised.
 #' @param verbose logical, whether to show messages.
 #' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
 #' @details
@@ -107,6 +112,8 @@ deconvolute <- function(mk, test, log = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
                         check_comp = FALSE,
+                        npass = 1,
+                        var_cutoff = 4,
                         verbose = TRUE, cores = 1L) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
@@ -152,9 +159,10 @@ deconvolute <- function(mk, test, log = TRUE,
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
-  atest <- deconv_adjust_2pass(logtest2, cellmat, comp_amount, weights,
-                               weight_method, adjust_comp, count_space,
-                               verbose, cores)
+  atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
+                            weight_method, adjust_comp, count_space,
+                            var_cutoff, npass,
+                            verbose, cores)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -194,36 +202,31 @@ deconvolute <- function(mk, test, log = TRUE,
 }
 
 
-deconv_adjust_2pass <- function(test, cellmat, comp_amount, weights, weight_method,
-                                adjust_comp, count_space,
-                                verbose, cores) {
-  if (weight_method != "2pass") {
-    return(deconv_adjust(test, cellmat, comp_amount, weights, adjust_comp,
-                         count_space, weight_method, cores, verbose))
-  }
-  
-  n_iter <- 1
+deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
+                             adjust_comp, count_space,
+                             var_cutoff, npass,
+                             verbose, cores) {
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                       adjust_comp, count_space, weight_method = "equal",
-                       cores = cores, verbose = verbose)
+                       adjust_comp, count_space, weight_method,
+                       cores, verbose)
   var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
   scale.var.e <- scale(var.e)[, 1]
-  var_cut <- 3
-  bigvar <- scale.var.e > var_cut
-  while (any(bigvar) & n_iter < 3) {
-    n_iter <- n_iter +1
-    cat("Pass", n_iter, "- removed:", paste(names(var.e)[bigvar], collapse = ", "),
+  bigvar <- scale.var.e > var_cutoff
+  i <- 1
+  while (any(bigvar) & i < npass) {
+    i <- i +1
+    cat("Pass", i, "- removed", paste(names(var.e)[bigvar], collapse = ", "),
         "\n")
     # print(scale.var.e[bigvar], digits = 3)
     test <- test[!bigvar, , drop = FALSE]
     cellmat <- cellmat[!bigvar, , drop = FALSE]
     weights <- weights[!bigvar]
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, weight_method = "equal",
-                         cores = cores, verbose = verbose)
+                         adjust_comp, count_space, weight_method,
+                         cores, verbose)
     var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
     scale.var.e <- scale(var.e)[, 1]
-    bigvar <- scale.var.e > var_cut
+    bigvar <- scale.var.e > var_cutoff
   }
   
   fit
