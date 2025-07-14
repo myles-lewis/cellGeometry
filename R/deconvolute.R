@@ -31,39 +31,27 @@
 #' @param use_filter logical, whether to use denoised signature matrix.
 #' @param arith_mean logical, whether to use arithmetic means (if available) for
 #'   signature matrix. Mainly useful with pseudo-bulk simulation.
-#' @param SE_method method for calculating standard errors of deconvoluted cell
-#'   counts, see details.
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses.
-#' @param n_iter Number of iterations for iterative reweighting.
-#' @param delta Regularisation term for the weighting function (to avoid
-#'   division by zero).
-#' @param Lp p-norm value. Recommended value is from 0-1. Lower values slow down
-#'   iteration and control the extremeness of the weighting. Absolute deviation
-#'   of residuals are raised to the power of `Lp` as part of the reweighting
-#'   function.
+#' @param npass Number of passes. If `npass` set to 2 or more this activates
+#'   removal of genes with excess variance of the residuals.
+#' @param var_cutoff Cutoff as Z-score for removing genes with high variance of
+#'   residuals. Variances of residuals for each gene are first log2 transformed
+#'   and then Z-score standardised.
 #' @param verbose logical, whether to show messages.
 #' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
 #' @details
 #' Equal weighting of genes by setting `weight_method = "equal"` can help
-#' devolution of subclusters whose signature genes have low expression.
-#' Iterative reweighting (IRW) is an experimental method which is conceptually
-#' similar to IRWLS (iteratively reweighted least squares). Weights are
-#' iteratively updated based on the reciprocal of the residual gene expression.
-#' Residuals are calculated by subtracting the actual gene expression in the
-#' `test` matrix from predicted gene expression based on deconvolved cell
-#' quantities. Default settings are 5 iterations and p-norm of 1 which
-#' corresponds to mean absolute deviation per gene. The concept is that noisy
-#' genes which are less informative for the deconvolution are downweighted.
-#' However, since residuals are strongly proportional to mean gene expression,
-#' most of the reweighting effect of IRW is due to the rebalancing of the genes
-#' based on gene expression in the test matrix.
+#' devolution of subclusters whose signature genes have low expression. It is
+#' enabled by default.
 #' 
-#' Note that `weight_method = "equal"` is applied to both subclass and group
-#' deconvolution, whereas IRW is only applied to subclass deconvolution.
+#' Multipass deconvolution can be activated by setting `npass` to 2 or higher.
+#' This calculates the variance of the residuals across samples for each gene.
+#' Genes whose variance of residuals are outliers based on Z-score
+#' standardisation are removed during successive passes.
 #' 
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
@@ -114,13 +102,12 @@ deconvolute <- function(mk, test, log = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
                         check_comp = FALSE,
-                        n_iter = 5,
-                        delta = ifelse(count_space, 1, 0.01),
-                        Lp = 1,
+                        npass = 1,
+                        var_cutoff = 4,
                         verbose = TRUE, cores = 1L) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
-  weight_method <- match.arg(weight_method, c("none", "equal", "irw"))
+  weight_method <- match.arg(weight_method, c("none", "equal", "2pass"))
   test <- as.matrix(test)
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
@@ -162,9 +149,10 @@ deconvolute <- function(mk, test, log = TRUE,
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
-  atest <- deconv_adjust_irw(logtest2, cellmat, comp_amount, weights,
-                             weight_method, adjust_comp, count_space,
-                             n_iter, delta, Lp, verbose, cores)
+  atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
+                            weight_method, adjust_comp, count_space,
+                            var_cutoff, npass,
+                            verbose, cores)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -204,39 +192,37 @@ deconvolute <- function(mk, test, log = TRUE,
 }
 
 
-deconv_adjust_irw <- function(test, cellmat, comp_amount, weights, weight_method,
-                              adjust_comp, count_space, n_iter, delta, Lp,
-                              verbose, cores) {
-  if (weight_method != "irw") {
-    return(deconv_adjust(test, cellmat, comp_amount, weights, adjust_comp,
-                         count_space, weight_method, cores, verbose))
+deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
+                             adjust_comp, count_space,
+                             var_cutoff, npass,
+                             verbose, cores) {
+  fit <- deconv_adjust(test, cellmat, comp_amount, weights,
+                       adjust_comp, count_space, weight_method,
+                       cores, verbose)
+  var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
+  scale.var.e <- scale(var.e)[, 1]
+  bigvar <- scale.var.e > var_cutoff
+  if (verbose && npass == 1 && any(bigvar)) {
+    cat("Detected genes with extreme residuals:",
+        paste(names(var.e)[bigvar], collapse = ", "), "\n")
+  }
+  i <- 1
+  while (any(bigvar) & i < npass) {
+    i <- i +1
+    if (verbose) cat("Pass", i, "- removed", paste(names(var.e)[bigvar],
+                                                   collapse = ", "), "\n")
+    # print(scale.var.e[bigvar], digits = 3)
+    test <- test[!bigvar, , drop = FALSE]
+    cellmat <- cellmat[!bigvar, , drop = FALSE]
+    weights <- weights[!bigvar]
+    fit <- deconv_adjust(test, cellmat, comp_amount, weights,
+                         adjust_comp, count_space, weight_method,
+                         cores, verbose)
+    var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
+    scale.var.e <- scale(var.e)[, 1]
+    bigvar <- scale.var.e > var_cutoff
   }
   
-  if (verbose) cat("iterative reweighting ")
-  fit1 <- fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                               adjust_comp, count_space, cores = cores,
-                               verbose = FALSE)
-  
-  for (i in seq_len(n_iter)) {
-    if (verbose) {
-      cat(".")
-      if (i == n_iter) cat("\n")
-    }
-    abs_dev <- rowMeans(abs(fit$residuals)^Lp)
-    w <- 1 / pmax(abs_dev, delta)
-    w <- w / mean(w)
-    fit <- try(deconv_adjust(test, cellmat, comp_amount, weights = w,
-                             adjust_comp, count_space, cores = cores,
-                             verbose = FALSE),
-               silent = TRUE)
-    if (inherits(fit, "try-error")) {
-      warning(fit)
-      fit1$weights <- w
-      return(fit1)
-    }
-    fit1 <- fit
-  }
-  fit$weights <- w
   fit
 }
 
@@ -256,6 +242,11 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
   if (!is.null(weights) && length(weights) != nrow(cellmat))
     stop("incorrect weights length")
   if (weight_method == "equal") weights <- equalweight(cellmat)
+  if (any(nok <- weights == 0)) {
+    test <- test[!nok, , drop = FALSE]
+    cellmat <- cellmat[!nok, , drop = FALSE]
+    weights <- weights[!nok] 
+  }
   
   atest <- deconv(test, cellmat, comp_amount, weights)
   if (any(atest$output < 0)) {
@@ -313,9 +304,11 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       XTXse <- crossprod(cellmat, vbsq * cellmat)
       sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     }))
-    
+    # deploy residuals row variance
     XTXse <- crossprod(cellmat, var.e * cellmat)
     atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    atest$var.e <- var.e
+    atest$mean.e <- rowMeans(r)
   }
   atest
 }
