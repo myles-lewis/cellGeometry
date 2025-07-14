@@ -1,10 +1,11 @@
 News
 =====
 
-# cellGeometry 0.4.0
-###### 19/03/2025
+# cellGeometry 0.5.0
+###### 14/07/2025
 
-* Added iterative gene reweighting in `deconvolute()`.
+* Calculation of SE
+* Detection and multipass removal of problematic genes with extreme residuals
 
 # cellGeometry 0.2.0
 ###### 24/01/2025
