@@ -239,6 +239,11 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
   if (!is.null(weights) && length(weights) != nrow(cellmat))
     stop("incorrect weights length")
   if (weight_method == "equal") weights <- equalweight(cellmat)
+  if (any(nok <- weights == 0)) {
+    test <- test[!nok, , drop = FALSE]
+    cellmat <- cellmat[!nok, , drop = FALSE]
+    weights <- weights[!nok] 
+  }
   
   atest <- deconv(test, cellmat, comp_amount, weights)
   if (any(atest$output < 0)) {
@@ -300,6 +305,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     XTXse <- crossprod(cellmat, var.e * cellmat)
     atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     atest$var.e <- var.e
+    atest$mean.e <- rowMeans(r)
   }
   atest
 }
