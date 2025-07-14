@@ -202,15 +202,15 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
   var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
   scale.var.e <- scale(var.e)[, 1]
   bigvar <- scale.var.e > var_cutoff
-  if (npass == 1 & any(bigvar)) {
+  if (verbose && npass == 1 && any(bigvar)) {
     cat("Detected genes with extreme residuals:",
         paste(names(var.e)[bigvar], collapse = ", "), "\n")
   }
   i <- 1
   while (any(bigvar) & i < npass) {
     i <- i +1
-    cat("Pass", i, "- removed", paste(names(var.e)[bigvar], collapse = ", "),
-        "\n")
+    if (verbose) cat("Pass", i, "- removed", paste(names(var.e)[bigvar],
+                                                   collapse = ", "), "\n")
     # print(scale.var.e[bigvar], digits = 3)
     test <- test[!bigvar, , drop = FALSE]
     cellmat <- cellmat[!bigvar, , drop = FALSE]
