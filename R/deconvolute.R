@@ -72,8 +72,8 @@
 #'       values
 #'       \item `resvar`, \eqn{s^2} the estimate of the gene expression variance 
 #'       for each sample
+#'       \item `var.e`, variance of residuals for each gene
 #'       \item `se`, standard errors of cell counts
-#'       \item `SE_method`, standard error method
 #'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
 #'   cell group analysis.}

@@ -101,8 +101,8 @@ across each cell subclass after adjustment to prevent negative values
 values
 \item \code{resvar}, \eqn{s^2} the estimate of the gene expression variance
 for each sample
+\item \code{var.e}, variance of residuals for each gene
 \item \code{se}, standard errors of cell counts
-\item \code{SE_method}, standard error method
 }}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}
