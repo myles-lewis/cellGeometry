@@ -307,6 +307,20 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     # deploy residuals row variance
     XTXse <- crossprod(cellmat, var.e * cellmat)
     atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    atest$hat <- hat <- diag(cellmat %*% iXTX %*% t(cellmat))
+    # HC2
+    atest$se6 <- t(apply(r, 2, function(i) {
+      omega <- i^2 / (1 - hat)
+      XTXse <- crossprod(cellmat, omega * cellmat)
+      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    }))
+    # HC3
+    atest$se7 <- t(apply(r, 2, function(i) {
+      omega <- i^2 / (1 - hat)^2
+      XTXse <- crossprod(cellmat, omega * cellmat)
+      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    }))
+    
     atest$var.e <- var.e
     atest$mean.e <- rowMeans(r)
   }
