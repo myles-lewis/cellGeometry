@@ -9,6 +9,7 @@
 #' @param ... retained for class compatibility
 #' @returns Matrix of adjusted residuals or Cook's distance.
 #' @seealso [stats::influence.measures()]
+#' @importFrom stats rstudent rstandard cooks.distance
 #' @export
 
 rstudent.deconv <- function(model, ...) {
