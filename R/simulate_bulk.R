@@ -121,18 +121,21 @@ simulate_bulk <- function(object, samples, subclass, times = 1,
     }))
     tabulate(s, nbins = length(subclass))
   }, numeric(length(subclass)))
-  cat(paste0(" (", format(Sys.time() - start, digits = 3), ")\n"))
+  cat_timer(start)
   
   start <- Sys.time()
   cat("Matrix multiplication")
   sim_pseudo <- as.matrix(object %*% cmat)
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
-  cat(paste0(" (", format(Sys.time() - start, digits = 3), ")\n"))
+  cat_timer(start)
   
   sim_pseudo
 }
 
+cat_timer <- function(start) {
+  cat(paste0(" (", format(Sys.time() - start, digits = 3), ")\n"))
+}
 
 #' Scatter plots to compare deconvoluted subclasses
 #' 

@@ -99,10 +99,14 @@ incorporates \code{comp_amount}
 across each cell subclass after adjustment to prevent negative values
 \item \code{residuals}, residuals, that is gene expression minus fitted
 values
+\item \code{var.e}, variance of weighted residuals for each gene
+\item \code{weights}, vector of weights
 \item \code{resvar}, \eqn{s^2} the estimate of the gene expression variance
 for each sample
-\item \code{var.e}, variance of residuals for each gene
 \item \code{se}, standard errors of cell counts
+\item \code{hat}, diagonal elements of the hat matrix
+\item \code{removed}, vector of outlying genes removed during successive
+passes
 }}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}

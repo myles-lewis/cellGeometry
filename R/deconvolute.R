@@ -70,10 +70,14 @@
 #'       across each cell subclass after adjustment to prevent negative values
 #'       \item `residuals`, residuals, that is gene expression minus fitted 
 #'       values
+#'       \item `var.e`, variance of weighted residuals for each gene
+#'       \item `weights`, vector of weights
 #'       \item `resvar`, \eqn{s^2} the estimate of the gene expression variance 
 #'       for each sample
-#'       \item `var.e`, variance of residuals for each gene
 #'       \item `se`, standard errors of cell counts
+#'       \item `hat`, diagonal elements of the hat matrix
+#'       \item `removed`, vector of outlying genes removed during successive 
+#'       passes
 #'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
 #'   cell group analysis.}
@@ -207,9 +211,12 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
         paste(names(var.e)[bigvar], collapse = ", "), "\n")
   }
   i <- 1
+  removed <- NULL
   while (any(bigvar) & i < npass) {
     i <- i +1
-    if (verbose) cat("Pass", i, "- removed", paste(names(var.e)[bigvar],
+    remove_genes <- names(var.e)[bigvar]
+    removed <- c(removed, remove_genes)
+    if (verbose) cat("Pass", i, "- removed", paste(remove_genes,
                                                    collapse = ", "), "\n")
     # print(scale.var.e[bigvar], digits = 3)
     test <- test[!bigvar, , drop = FALSE]
@@ -222,8 +229,9 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     scale.var.e <- scale(var.e)[, 1]
     bigvar <- scale.var.e > var_cutoff
   }
+  fit$removed <- removed
   
-  fit
+  resid_stats(fit, cellmat, weights, count_space, weight_method)
 }
 
 
@@ -276,20 +284,10 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
   }
   if (resid) {
     atest$residuals <- r <- residuals_deconv(test, cellmat, atest$output)
-    if (!is.null(weights)) {
-      # adjust residuals & X by gene weights
-      r <- r * weights
-      cellmat <- cellmat * weights
-    }
-    rss <- colSums(r^2)
-    rdf <- nrow(r) - ncol(cellmat)
-    atest$resvar <- resvar <- rss/rdf
-    # deploy residuals row variance
-    Lv <- colSums(cellmat^2)
-    iXTX <- atest$compensation / Lv
-    atest$var.e <- var.e <- matrixStats::rowVars(r)
-    XTXse <- crossprod(cellmat, var.e * cellmat)
-    atest$se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    # adjust residuals & X by gene weights
+    if (!is.null(weights)) r <- r * weights
+    # residuals row variance
+    atest$var.e <- matrixStats::rowVars(r)
   }
   atest
 }
@@ -313,6 +311,33 @@ quick_deconv <- function(test, cellmat, comp_amount, weights) {
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   dotprod(test, cellmat, weights) %*% mixcomp
 }
+
+
+resid_stats <- function(fit, X, weights, count_space, weight_method) {
+  r <- fit$residuals
+  if (count_space) X <- 2^X -1
+  if (weight_method == "equal") weights <- equalweight(X)
+  fit$weights <- weights
+  if (!is.null(weights)) {
+    # adjust residuals & X by gene weights
+    r <- r * weights
+    X <- X * weights
+  }
+  rss <- colSums(r^2)
+  rdf <- nrow(r) - ncol(X)
+  fit$resvar <- rss/rdf
+  # residuals row variance
+  Lv <- colSums(X^2)
+  iXTX <- fit$compensation / Lv
+  XTXse <- crossprod(X, fit$var.e * X)
+  # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
+  fit$se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+  # calculate hat matrix
+  # X (X' X)^-1 X'
+  fit$hat <- diag(X %*% iXTX %*% t(X))
+  fit
+}
+
 
 approxfun.matrix <- function(x, FUN) {
   if (is.data.frame(x)) x <- as.matrix(x)
