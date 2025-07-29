@@ -77,19 +77,21 @@ tune_deconv <- function(mk, test, samples, grid,
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
+    cores2 <- 1  # nested
+    if (nrow(grid1) < cores) cores2 <- floor(cores / nrow(grid1))
     res <- pbmclapply(seq_len(nrow(grid1)), function(i) {
       args <- list(object = mk)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
-      df2 <- tune_dec(mk_update, test, samples, grid2, output, ...)
+      df2 <- tune_dec(mk_update, test, samples, grid2, output, cores2, ...)
       data.frame(grid1_row, df2, row.names = NULL)
     }, mc.cores = cores, mc.preschedule = FALSE)
     res <- do.call(rbind, res)
   } else {
     # null grid1
     if (is.null(grid2)) stop("No parameters to tune")
-    res <- tune_dec(mk, test, samples, grid2, output, ...)
+    res <- tune_dec(mk, test, samples, grid2, output, cores, ...)
   }
   res$subclass <- factor(res$subclass, levels = names(mk$cell_table))
   
@@ -125,7 +127,7 @@ tune_deconv <- function(mk, test, samples, grid,
 
 
 # tune inner grid of arguments for deconvolute()
-tune_dec <- function(mk, test, samples, grid2, output, ...) {
+tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
   if (is.null(grid2)) {
     fit <- deconvolute(mk, test, verbose = FALSE, ...) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
@@ -136,7 +138,7 @@ tune_dec <- function(mk, test, samples, grid2, output, ...) {
     return(df)
   }
   # loop grid2
-  res <- lapply(seq_len(nrow(grid2)), function(i) {
+  res <- pbmclapply(seq_len(nrow(grid2)), function(i) {
     dots <- list(...)
     grid2_row <- grid2[i, , drop = FALSE]
     args <- list(mk = mk, test = test, verbose = FALSE)
@@ -149,7 +151,7 @@ tune_dec <- function(mk, test, samples, grid2, output, ...) {
     df <- data.frame(grid2_row, subclass = rownames(out), ngene,
                      row.names = NULL)
     cbind(df, out)
-  })
+  }, mc.cores = cores, mc.preschedule = FALSE)
   do.call(rbind, res)
 }
 
