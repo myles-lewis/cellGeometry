@@ -235,8 +235,10 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
   metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
   outlier <- metric > outlier_cutoff
   if (verbose && npass == 1 && any(outlier)) {
-    cat("Detected genes with extreme residuals:",
-        paste(names(metric)[outlier], collapse = ", "), "\n")
+    nm <- names(sort(metric[outlier], decreasing = TRUE))
+    if (length(nm) > 20) nm <- c(nm[1:20], "...")
+    cat("Detected genes with extreme residuals:", paste(nm, collapse = ", "),
+        "\n")
   }
   i <- 1
   removed <- NULL
@@ -245,8 +247,8 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     remove_genes <- sort(metric[outlier], decreasing = TRUE)
     removed <- c(removed, remove_genes)
     rem_names <- names(remove_genes)
-    if (length(remove_genes) > 25) {
-      rem_names <- c(rem_names[1:25],
+    if (length(remove_genes) > 20) {
+      rem_names <- c(rem_names[1:20],
                     paste0("... [", length(remove_genes), " genes]"))
     }
     if (verbose) cat("Pass", i, "- removed", paste(rem_names, collapse = ", "),
