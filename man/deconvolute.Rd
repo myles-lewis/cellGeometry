@@ -19,7 +19,9 @@ deconvolute(
   convert_bulk = FALSE,
   check_comp = FALSE,
   npass = 1,
-  var_cutoff = 4,
+  outlier_method = c("var.e", "cooks", "rstudent"),
+  outlier_cutoff = switch(outlier_method, var.e = 4, cooks = 1, rstudent = 10),
+  outlier_quantile = 0.9,
   verbose = TRUE,
   cores = 1L
 )
@@ -73,9 +75,15 @@ subclasses.}
 \item{npass}{Number of passes. If \code{npass} set to 2 or more this activates
 removal of genes with excess variance of the residuals.}
 
-\item{var_cutoff}{Cutoff as Z-score for removing genes with high variance of
-residuals. Variances of residuals for each gene are first log2 transformed
-and then Z-score standardised.}
+\item{outlier_method}{Method for identifying outlying genes. Options are to
+use the variance of the residuals for each genes, Cook's distance or
+absolute Studentized residuals (see details).}
+
+\item{outlier_cutoff}{Cutoff for removing genes which are outliers based on
+method selected by \code{outlier_method}.}
+
+\item{outlier_quantile}{Controls quantile for the cutoff for identifying
+outliers for \code{outlier_method = "cook"} or \code{"rstudent"}.}
 
 \item{verbose}{logical, whether to show messages.}
 
@@ -129,12 +137,31 @@ devolution of subclusters whose signature genes have low expression. It is
 enabled by default.
 
 Multipass deconvolution can be activated by setting \code{npass} to 2 or higher.
-This calculates the variance of the residuals across samples for each gene.
-Genes whose variance of residuals are outliers based on Z-score
+Three methods are available for identifying outlier genes (i.e. whose
+residuals are too noisy) controlled by \code{outlier_method}:
+\itemize{
+\item \code{var.e}, this calculates the variance of the residuals across samples for
+each gene. Genes whose variance of residuals are outliers based on Z-score
 standardisation are removed during successive passes.
+\item \code{cooks}, this considers the deconvolution as if it were a regression and
+applies Cook's distance to the residuals and the hat matrix. This seems to be
+the most stringent method.
+\item \code{rstudent}, externally Studentized residuals are used.
+}
+
+The cutoff specified by \code{outlier_cutoff} which is used to determine which
+genes are outliers is very sensitive to the outlier method. With \code{var.e} the
+variances are Z-score scaled. With Cook's distance it is typical to consider
+a value of >1 as fairly strong indication of an outlier, while 0.5 is
+considered a possible outlier. With Studentized residuals, these are expected
+to be on a t distribution scale. However, since gene expression itself does
+not derive from a normal distribution, the errors and residuals are not
+normally distributed either, which probably explains the need for a very high
+cut-off. In practice the choice of settings seems to be dataset dependent.
 }
 \seealso{
-\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}}
+\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
+\code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}}
 }
 \author{
 Myles Lewis
