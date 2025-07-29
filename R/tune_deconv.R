@@ -132,7 +132,7 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
     fit <- deconvolute(mk, test, verbose = FALSE, ...) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
-    ngene <- length(fit$mk$geneset)
+    ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
     df <- data.frame(subclass = rownames(out), ngene, row.names = NULL)
     df <- cbind(df, out)
     return(df)
@@ -147,7 +147,7 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
     fit <- do.call("deconvolute", args) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
-    ngene <- length(fit$mk$geneset)
+    ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
     df <- data.frame(grid2_row, subclass = rownames(out), ngene,
                      row.names = NULL)
     cbind(df, out)
