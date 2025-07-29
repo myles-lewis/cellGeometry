@@ -240,11 +240,17 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     i <- i +1
     remove_genes <- sort(metric[outlier], decreasing = TRUE)
     removed <- c(removed, remove_genes)
-    if (verbose) cat("Pass", i, "- removed", paste(names(remove_genes),
-                                                   collapse = ", "), "\n")
+    rem_names <- names(remove_genes)
+    if (length(remove_genes) > 25) {
+      rem_names <- c(rem_names[1:25],
+                    paste0("... [", length(remove_genes), " genes]"))
+    }
+    if (verbose) cat("Pass", i, "- removed", paste(rem_names, collapse = ", "),
+                     "\n")
     test <- test[!outlier, , drop = FALSE]
     cellmat <- cellmat[!outlier, , drop = FALSE]
     weights <- weights[!outlier]
+    if (nrow(cellmat) < ncol(cellmat)) stop("insufficient genes")
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                          adjust_comp, count_space, weight_method,
                          cores, verbose)
@@ -265,6 +271,7 @@ outlier_metric <- function(fit, outlier_method, outlier_quantile, count_space) {
     if (count_space) metric <- log2(metric +1)
     return(scale(metric)[, 1])
   }
+  metric[is.nan(metric)] <- 0
   rowQuantiles(metric, probs = outlier_quantile)
 }
 
