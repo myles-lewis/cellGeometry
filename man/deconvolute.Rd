@@ -137,15 +137,19 @@ devolution of subclusters whose signature genes have low expression. It is
 enabled by default.
 
 Multipass deconvolution can be activated by setting \code{npass} to 2 or higher.
-Three methods are available for identifying outlier genes (i.e. whose
-residuals are too noisy) controlled by \code{outlier_method}:
+This is designed to remove genes which behave inconsistently due to noise in
+either the sc or bulk datasets, which is increasingly likely if you have
+larger signature geneset, i.e. if \code{nsubclass} is large. Or you may receive a
+warning message "Detected genes with extreme residuals". Three methods are
+available for identifying outlier genes (i.e. whose residuals are too noisy)
+controlled by \code{outlier_method}:
 \itemize{
 \item \code{var.e}, this calculates the variance of the residuals across samples for
 each gene. Genes whose variance of residuals are outliers based on Z-score
 standardisation are removed during successive passes.
 \item \code{cooks}, this considers the deconvolution as if it were a regression and
 applies Cook's distance to the residuals and the hat matrix. This seems to be
-the most stringent method.
+the most stringent method (removes fewest genes).
 \item \code{rstudent}, externally Studentized residuals are used.
 }
 
