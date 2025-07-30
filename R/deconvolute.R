@@ -297,26 +297,26 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       XTXse <- crossprod(cellmat, i^2 * cellmat)
       sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     }))
-    # empirical Bayes estimate employing residuals row variance
-    var.e <- matrixStats::rowVars(r)
-    atest$se4 <- t(apply(r, 2, function(i) {
-      vbsq <- (i^2 + var.e) /2
-      XTXse <- crossprod(cellmat, vbsq * cellmat)
-      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
-    }))
-    # deploy residuals row variance
-    XTXse <- crossprod(cellmat, var.e * cellmat)
-    atest$se5 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     atest$hat <- hat <- diag(cellmat %*% iXTX %*% t(cellmat))
     # HC2
-    atest$se6 <- t(apply(r, 2, function(i) {
+    atest$se4 <- t(apply(r, 2, function(i) {
       omega <- i^2 / (1 - hat)
       XTXse <- crossprod(cellmat, omega * cellmat)
       sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     }))
     # HC3
-    atest$se7 <- t(apply(r, 2, function(i) {
+    atest$se5 <- t(apply(r, 2, function(i) {
       omega <- i^2 / (1 - hat)^2
+      XTXse <- crossprod(cellmat, omega * cellmat)
+      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    }))
+    # deploy residuals row variance
+    var.e <- matrixStats::rowVars(r)
+    XTXse <- crossprod(cellmat, var.e * cellmat)
+    atest$se6 <-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    # empirical Bayes estimate employing residuals row variance HC3
+    atest$se7 <- t(apply(r, 2, function(i) {
+      omega <- ((i^2 / (1 - hat)^2) + var.e) /2
       XTXse <- crossprod(cellmat, omega * cellmat)
       sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
     }))
