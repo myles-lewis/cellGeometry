@@ -1,17 +1,8 @@
 
 dotprod <- function(test, cellmat, weights = NULL) {
-  msc <- cellmat
-  if (!is.null(weights)) {
-    msc <- cellmat * weights
-    test <- test * weights
-  }
-  md <- colSums(msc^2)
-  t( crossprod(msc, test) / md )
+  md <- colSums(cellmat^2)
+  t( crossprod(cellmat, test) / md )
 }
-
-# original
-# t( t(t(test) %*% msc) / md )
-# t( t(crossprod(test, msc)) / md )
 
 equalweight <- function(cellmat) {
   vecLength <- sqrt(rowSums(cellmat^2))
