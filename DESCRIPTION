@@ -1,6 +1,6 @@
 Package: cellGeometry
 Title: Geometric Single Cell Deconvolution
-Version: 0.5.0
+Version: 0.5.1
 Authors@R: 
     c(person(given = "Myles",family = "Lewis",
     role = c("aut", "cre"),
