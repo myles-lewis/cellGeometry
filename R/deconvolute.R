@@ -38,9 +38,13 @@
 #'   subclasses.
 #' @param npass Number of passes. If `npass` set to 2 or more this activates
 #'   removal of genes with excess variance of the residuals.
-#' @param var_cutoff Cutoff as Z-score for removing genes with high variance of
-#'   residuals. Variances of residuals for each gene are first log2 transformed
-#'   and then Z-score standardised.
+#' @param outlier_method Method for identifying outlying genes. Options are to
+#'   use the variance of the residuals for each genes, Cook's distance or
+#'   absolute Studentized residuals (see details).
+#' @param outlier_cutoff Cutoff for removing genes which are outliers based on
+#'   method selected by `outlier_method`.
+#' @param outlier_quantile Controls quantile for the cutoff for identifying
+#'   outliers for `outlier_method = "cook"` or `"rstudent"`.
 #' @param verbose logical, whether to show messages.
 #' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
 #' @details
@@ -49,9 +53,29 @@
 #' enabled by default.
 #' 
 #' Multipass deconvolution can be activated by setting `npass` to 2 or higher.
-#' This calculates the variance of the residuals across samples for each gene.
-#' Genes whose variance of residuals are outliers based on Z-score
+#' This is designed to remove genes which behave inconsistently due to noise in
+#' either the sc or bulk datasets, which is increasingly likely if you have
+#' larger signature geneset, i.e. if `nsubclass` is large. Or you may receive a
+#' warning message "Detected genes with extreme residuals". Three methods are
+#' available for identifying outlier genes (i.e. whose residuals are too noisy)
+#' controlled by `outlier_method`:
+#' - `var.e`, this calculates the variance of the residuals across samples for 
+#' each gene. Genes whose variance of residuals are outliers based on Z-score
 #' standardisation are removed during successive passes.
+#' - `cooks`, this considers the deconvolution as if it were a regression and 
+#' applies Cook's distance to the residuals and the hat matrix. This seems to be
+#' the most stringent method (removes fewest genes).
+#' - `rstudent`, externally Studentized residuals are used.
+#' 
+#' The cutoff specified by `outlier_cutoff` which is used to determine which
+#' genes are outliers is very sensitive to the outlier method. With `var.e` the
+#' variances are Z-score scaled. With Cook's distance it is typical to consider
+#' a value of >1 as fairly strong indication of an outlier, while 0.5 is
+#' considered a possible outlier. With Studentized residuals, these are expected
+#' to be on a t distribution scale. However, since gene expression itself does
+#' not derive from a normal distribution, the errors and residuals are not
+#' normally distributed either, which probably explains the need for a very high
+#' cut-off. In practice the choice of settings seems to be dataset dependent.
 #' 
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
@@ -89,9 +113,10 @@
 #'   within cell group percentages. The total percentage still adds to 100%.}
 #'   \item{comp_amount}{original argument `comp_amount`}
 #'   \item{comp_check}{optional list element returned when `check_comp = TRUE`}
-#' @seealso [cellMarkers()] [updateMarkers()]
+#' @seealso [cellMarkers()] [updateMarkers()] [rstudent.deconv()]
+#'   [cooks.distance.deconv()]
 #' @author Myles Lewis
-#' @importFrom matrixStats colMins rowMins
+#' @importFrom matrixStats colMins rowMins rowQuantiles
 #' @importFrom stats optimise
 #' @export
 #'
@@ -107,11 +132,15 @@ deconvolute <- function(mk, test, log = TRUE,
                         convert_bulk = FALSE,
                         check_comp = FALSE,
                         npass = 1,
-                        var_cutoff = 4,
+                        outlier_method = c("var.e", "cooks", "rstudent"),
+                        outlier_cutoff = switch(outlier_method, var.e = 4,
+                                                cooks = 1, rstudent = 10),
+                        outlier_quantile = 0.9,
                         verbose = TRUE, cores = 1L) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
   weight_method <- match.arg(weight_method, c("none", "equal", "2pass"))
+  outlier_method <- match.arg(outlier_method)
   test <- as.matrix(test)
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
@@ -154,8 +183,8 @@ deconvolute <- function(mk, test, log = TRUE,
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
-                            weight_method, adjust_comp, count_space,
-                            var_cutoff, npass,
+                            weight_method, adjust_comp, count_space, npass,
+                            outlier_method, outlier_cutoff, outlier_quantile,
                             verbose, cores)
   
   # subclass nested within group output/percent
@@ -197,41 +226,59 @@ deconvolute <- function(mk, test, log = TRUE,
 
 
 deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
-                             adjust_comp, count_space,
-                             var_cutoff, npass,
+                             adjust_comp, count_space, npass,
+                             outlier_method, outlier_cutoff, outlier_quantile,
                              verbose, cores) {
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                        adjust_comp, count_space, weight_method,
                        cores, verbose)
-  var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
-  scale.var.e <- scale(var.e)[, 1]
-  bigvar <- scale.var.e > var_cutoff
-  if (verbose && npass == 1 && any(bigvar)) {
-    cat("Detected genes with extreme residuals:",
-        paste(names(var.e)[bigvar], collapse = ", "), "\n")
+  metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
+  outlier <- metric > outlier_cutoff
+  if (verbose && npass == 1 && any(outlier)) {
+    nm <- names(sort(metric[outlier], decreasing = TRUE))
+    if (length(nm) > 20) nm <- c(nm[1:20], "...")
+    cat("Detected genes with extreme residuals:", paste(nm, collapse = ", "),
+        "\n")
   }
   i <- 1
   removed <- NULL
-  while (any(bigvar) & i < npass) {
+  while (any(outlier) & i < npass) {
     i <- i +1
-    remove_genes <- names(var.e)[bigvar]
+    remove_genes <- sort(metric[outlier], decreasing = TRUE)
     removed <- c(removed, remove_genes)
-    if (verbose) cat("Pass", i, "- removed", paste(remove_genes,
-                                                   collapse = ", "), "\n")
-    # print(scale.var.e[bigvar], digits = 3)
-    test <- test[!bigvar, , drop = FALSE]
-    cellmat <- cellmat[!bigvar, , drop = FALSE]
-    weights <- weights[!bigvar]
+    rem_names <- names(remove_genes)
+    if (length(remove_genes) > 20) {
+      rem_names <- c(rem_names[1:20],
+                    paste0("... [", length(remove_genes), " genes]"))
+    }
+    if (verbose) cat("Pass", i, "- removed", paste(rem_names, collapse = ", "),
+                     "\n")
+    test <- test[!outlier, , drop = FALSE]
+    cellmat <- cellmat[!outlier, , drop = FALSE]
+    weights <- weights[!outlier]
+    if (nrow(cellmat) < ncol(cellmat)) stop("insufficient genes")
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                          adjust_comp, count_space, weight_method,
                          cores, verbose)
-    var.e <- if (count_space) log2(fit$var.e +1) else fit$var.e
-    scale.var.e <- scale(var.e)[, 1]
-    bigvar <- scale.var.e > var_cutoff
+    metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
+    outlier <- metric > outlier_cutoff
   }
   fit$removed <- removed
-  
-  resid_stats(fit, cellmat, weights, count_space, weight_method)
+  fit
+}
+
+
+outlier_metric <- function(fit, outlier_method, outlier_quantile, count_space) {
+  metric <- switch(outlier_method,
+                   cooks = cooks_distance_fit(fit),
+                   rstudent = abs(rstudent_fit(fit)),
+                   fit$var.e)
+  if (outlier_method == "var.e") {
+    if (count_space) metric <- log2(metric +1)
+    return(scale(metric)[, 1])
+  }
+  metric[is.nan(metric)] <- 0
+  rowQuantiles(metric, probs = outlier_quantile)
 }
 
 
@@ -283,11 +330,31 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     } else if (verbose) cat("negative cell proportion projection detected\n")
   }
   if (resid) {
+    X <- cellmat
     atest$residuals <- r <- residuals_deconv(test, cellmat, atest$output)
     # adjust residuals & X by gene weights
-    if (!is.null(weights)) r <- r * weights
+    if (!is.null(weights)) {
+      # adjust residuals & X by gene weights
+      r <- r * weights
+      X <- X * weights
+    }
     # residuals row variance
-    atest$var.e <- matrixStats::rowVars(r)
+    atest$var.e <- var.e <- matrixStats::rowVars(r)
+    atest$weights <- weights
+    # adjust residuals & X by gene weights
+    if (!is.null(weights)) r <- r * weights
+    rss <- colSums(r^2)
+    rdf <- nrow(r) - ncol(X)
+    atest$resvar <- rss/rdf
+    # residuals row variance
+    Lv <- colSums(X^2)
+    iXTX <- atest$compensation / Lv
+    XTXse <- crossprod(X, var.e * X)
+    # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
+    atest$se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    # calculate hat matrix
+    # X (X' X)^-1 X'
+    atest$hat <- diag(X %*% iXTX %*% t(X))
   }
   atest
 }
@@ -310,32 +377,6 @@ quick_deconv <- function(test, cellmat, comp_amount, weights) {
   m_itself <- dotprod(cellmat, cellmat, weights)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   dotprod(test, cellmat, weights) %*% mixcomp
-}
-
-
-resid_stats <- function(fit, X, weights, count_space, weight_method) {
-  r <- fit$residuals
-  if (count_space) X <- 2^X -1
-  if (weight_method == "equal") weights <- equalweight(X)
-  fit$weights <- weights
-  if (!is.null(weights)) {
-    # adjust residuals & X by gene weights
-    r <- r * weights
-    X <- X * weights
-  }
-  rss <- colSums(r^2)
-  rdf <- nrow(r) - ncol(X)
-  fit$resvar <- rss/rdf
-  # residuals row variance
-  Lv <- colSums(X^2)
-  iXTX <- fit$compensation / Lv
-  XTXse <- crossprod(X, fit$var.e * X)
-  # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
-  fit$se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
-  # calculate hat matrix
-  # X (X' X)^-1 X'
-  fit$hat <- diag(X %*% iXTX %*% t(X))
-  fit
 }
 
 
