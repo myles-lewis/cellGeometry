@@ -218,7 +218,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (check_comp) {
     if (verbose) cat("analysing compensation\n")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
-                                 weights, count_space)
+                                 weights, weight_method, count_space)
   }
   class(out) <- "deconv"
   out
@@ -302,8 +302,14 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     cellmat <- cellmat[!nok, , drop = FALSE]
     weights <- weights[!nok] 
   }
+  oldcellmat <- cellmat
+  oldtest <- test
+  if (!is.null(weights)) {
+    cellmat <- cellmat * weights
+    test <- test * weights
+  }
   
-  atest <- deconv(test, cellmat, comp_amount, weights)
+  atest <- deconv(test, cellmat, comp_amount)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
@@ -315,7 +321,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
-          ntest <- quick_deconv(test, cellmat, comp_amount = newcomp, weights)
+          ntest <- quick_deconv(test, cellmat, comp_amount = newcomp)
           min(ntest[, wi], na.rm = TRUE)^2
         }
         if (comp_amount[wi] == 0) return(0)
@@ -323,7 +329,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         xmin$minimum
       }, progress = verbose, mc.cores = cores)
       comp_amount[w] <- unlist(newcomps)
-      atest <- deconv(test, cellmat, comp_amount = comp_amount, weights)
+      atest <- deconv(test, cellmat, comp_amount = comp_amount)
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
@@ -331,18 +337,12 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
   }
   if (resid) {
     X <- cellmat
-    atest$residuals <- r <- residuals_deconv(test, cellmat, atest$output)
+    atest$residuals <- r <- residuals_deconv(oldtest, oldcellmat, atest$output)
     # adjust residuals & X by gene weights
-    if (!is.null(weights)) {
-      # adjust residuals & X by gene weights
-      r <- r * weights
-      X <- X * weights
-    }
+    if (!is.null(weights)) r <- r * weights
     # residuals row variance
     atest$var.e <- var.e <- matrixStats::rowVars(r)
     atest$weights <- weights
-    # adjust residuals & X by gene weights
-    if (!is.null(weights)) r <- r * weights
     rss <- colSums(r^2)
     rdf <- nrow(r) - ncol(X)
     atest$resvar <- rss/rdf
@@ -360,11 +360,11 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
 }
 
 
-deconv <- function(test, cellmat, comp_amount, weights) {
-  m_itself <- dotprod(cellmat, cellmat, weights)
+deconv <- function(test, cellmat, comp_amount) {
+  m_itself <- dotprod(cellmat, cellmat)
   rawcomp <- solve(m_itself)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
-  output <- dotprod(test, cellmat, weights) %*% mixcomp
+  output <- dotprod(test, cellmat) %*% mixcomp
   percent <- output / rowSums(output) * 100
   
   list(output = output, percent = percent, spillover = m_itself,
@@ -373,10 +373,10 @@ deconv <- function(test, cellmat, comp_amount, weights) {
 }
 
 
-quick_deconv <- function(test, cellmat, comp_amount, weights) {
-  m_itself <- dotprod(cellmat, cellmat, weights)
+quick_deconv <- function(test, cellmat, comp_amount) {
+  m_itself <- dotprod(cellmat, cellmat)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
-  dotprod(test, cellmat, weights) %*% mixcomp
+  dotprod(test, cellmat) %*% mixcomp
 }
 
 
@@ -405,7 +405,7 @@ bulk2sc <- function(x) {
 }
 
 
-comp_check <- function(test, cellmat, comp_amount, weights,
+comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
                        count_space) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
@@ -413,13 +413,23 @@ comp_check <- function(test, cellmat, comp_amount, weights,
     test <- 2^test -1
     cellmat <- 2^cellmat -1
   }
+  if (weight_method == "equal") weights <- equalweight(cellmat)
+  if (any(nok <- weights == 0)) {
+    test <- test[!nok, , drop = FALSE]
+    cellmat <- cellmat[!nok, , drop = FALSE]
+    weights <- weights[!nok]
+  }
+  if (!is.null(weights)) {
+    cellmat <- cellmat * weights
+    test <- test * weights
+  }
   px <- seq(0, 1, 0.05)
   
   out <- lapply(seq_len(ncol(cellmat)), function(i) {
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- quick_deconv(test, cellmat, newcomp, weights)
+      ntest <- quick_deconv(test, cellmat, newcomp)
       min(ntest[, i], na.rm = TRUE)
     }, numeric(1))
   })
