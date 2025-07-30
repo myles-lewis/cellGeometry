@@ -218,7 +218,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (check_comp) {
     if (verbose) cat("analysing compensation\n")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
-                                 weights, count_space)
+                                 weights, weight_method, count_space)
   }
   class(out) <- "deconv"
   out
@@ -405,7 +405,7 @@ bulk2sc <- function(x) {
 }
 
 
-comp_check <- function(test, cellmat, comp_amount, weights,
+comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
                        count_space) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)

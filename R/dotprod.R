@@ -1,5 +1,5 @@
 
-dotprod <- function(test, cellmat, weights = NULL) {
+dotprod <- function(test, cellmat) {
   md <- colSums(cellmat^2)
   t( crossprod(cellmat, test) / md )
 }

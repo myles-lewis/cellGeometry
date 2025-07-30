@@ -1,12 +1,13 @@
 News
 =====
 
-# cellGeometry 0.5.1
+# cellGeometry 0.5.2
 ###### 30/07/2025
 
 * Expanded to 3 methods for identifying outlier genes (var.e, Cook's distance,
 Studentized residuals)
 * Improved (nested) parallelisation of `tune_deconv()`
+* Rewrite weights code (faster)
 
 # cellGeometry 0.5.0
 ###### 14/07/2025
