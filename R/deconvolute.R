@@ -341,8 +341,6 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     # residuals row variance
     atest$var.e <- var.e <- matrixStats::rowVars(r)
     atest$weights <- weights
-    # adjust residuals & X by gene weights
-    if (!is.null(weights)) r <- r * weights
     rss <- colSums(r^2)
     rdf <- nrow(r) - ncol(X)
     atest$resvar <- rss/rdf
