@@ -34,7 +34,7 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
                 res)
   ylab <- switch(type, student = "Studentized residuals",
                  weight = "Weighted residuals",
-                 "Residuals")
+                 "Raw residuals")
   col <- adjustcolor("black", 0.2)
   dat <- data.frame(expr = as.vector(ge), res = as.vector(res),
                     gene = rownames(res))
@@ -44,7 +44,8 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
                                                           cooks = 1, rstudent = 10)
     outlier_quantile <- fit$call$outlier_quantile %||% 0.9
     count_space <- fit$call$count_space %||% TRUE
-    metric <- outlier_metric(fit$subclass, outlier_method, outlier_quantile, count_space)
+    metric <- outlier_metric(fit$subclass, outlier_method, outlier_quantile,
+                             count_space)
     outlier <- metric > outlier_cutoff
     nm <- names(metric[outlier])
     dat$outlier <- FALSE
@@ -57,10 +58,13 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
   args <- list(x = dat$expr, y = dat$res, log = "x",
                xlim = c(pmax(1, min(ge, na.rm = TRUE)), max(ge, na.rm = TRUE)),
                cex = 0.7, col = col, pch = 16, bty = "l",
-               xlab = "Bulk gene expression", ylab = ylab)
+               xlab = "", ylab = ylab)
   if (length(new.args)) args[names(new.args)] <- new.args     
   do.call("plot", args) |>
     suppressWarnings()
+  if (is.null(new.args$xlab)) {
+    mtext("Bulk gene expression", 1, line = 2.2, cex = par("cex.lab") * par("cex"))
+  }
   abline(0, 0, col = "blue")
   invisible(dat)
 }
