@@ -4,7 +4,13 @@
 \alias{plot_residuals}
 \title{Residuals plot}
 \usage{
-plot_residuals(fit, test, type = c("reg", "student", "weight"), ...)
+plot_residuals(
+  fit,
+  test,
+  type = c("reg", "student", "weight"),
+  show_outliers = TRUE,
+  ...
+)
 }
 \arguments{
 \item{fit}{'deconv' class deconvolution object}
@@ -12,6 +18,9 @@ plot_residuals(fit, test, type = c("reg", "student", "weight"), ...)
 \item{test}{bulk gene expression matrix assumed to be in raw counts}
 
 \item{type}{Specifies type of residuals to be plotted}
+
+\item{show_outliers}{Logical whether to show any remaining outlying extreme
+genes in red}
 
 \item{...}{Optional arguments passed to \code{\link[=plot]{plot()}}}
 }

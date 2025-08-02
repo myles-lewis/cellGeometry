@@ -9,6 +9,8 @@
 #' @param fit 'deconv' class deconvolution object
 #' @param test bulk gene expression matrix assumed to be in raw counts
 #' @param type Specifies type of residuals to be plotted
+#' @param show_outliers Logical whether to show any remaining outlying extreme
+#'   genes in red
 #' @param ... Optional arguments passed to [plot()]
 #' @returns Produces a scatter plot in base graphics. Returns invisibly a
 #'   dataframe of the coordinates of the points.
