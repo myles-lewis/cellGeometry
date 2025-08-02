@@ -14,6 +14,7 @@
 #'   dataframe of the coordinates of the points.
 #' @export
 plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
+                           show_outliers = TRUE,
                            ...) {
   if (!inherits(fit, "deconv")) stop("not a 'deconv' class object")
   nm <- fit$call$test
@@ -32,15 +33,32 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
   ylab <- switch(type, student = "Studentized residuals",
                  weight = "Weighted residuals",
                  "Residuals")
+  col <- adjustcolor("black", 0.2)
+  dat <- data.frame(expr = as.vector(ge), res = as.vector(res),
+                    gene = rownames(res))
+  if (show_outliers) {
+    outlier_method <- fit$call$outlier_method %||% "var.e"
+    outlier_cutoff <- fit$call$outlier_cutoff %||% switch(outlier_method, var.e = 4,
+                                                          cooks = 1, rstudent = 10)
+    outlier_quantile <- fit$call$outlier_quantile %||% 0.9
+    count_space <- fit$call$count_space %||% TRUE
+    metric <- outlier_metric(fit$subclass, outlier_method, outlier_quantile, count_space)
+    outlier <- metric > outlier_cutoff
+    nm <- names(metric[outlier])
+    dat$outlier <- FALSE
+    dat$outlier[dat$gene %in% nm] <- TRUE
+    dat <- dat[order(dat$outlier), ]
+    col <- rep(col, nrow(dat))
+    col[dat$outlier] <- adjustcolor("red", 0.7)
+  }
   new.args <- list(...)
-  args <- list(x = ge, y = res, log = "x",
-               xlim = c(1, max(ge, na.rm = TRUE)),
-               cex = 0.7, col = adjustcolor("black", 0.2), pch = 16, bty = "l",
+  args <- list(x = dat$expr, y = dat$res, log = "x",
+               xlim = c(pmax(1, min(ge, na.rm = TRUE)), max(ge, na.rm = TRUE)),
+               cex = 0.7, col = col, pch = 16, bty = "l",
                xlab = "Bulk gene expression", ylab = ylab)
   if (length(new.args)) args[names(new.args)] <- new.args     
   do.call("plot", args) |>
     suppressWarnings()
-  abline(0, 0, col = "red")
-  invisible(data.frame(expr = as.vector(ge), res = as.vector(res),
-                       gene = rownames(res)))
+  abline(0, 0, col = "blue")
+  invisible(dat)
 }
