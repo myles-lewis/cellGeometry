@@ -2,6 +2,7 @@
 % Please edit documentation in R/scedasticity.R
 \name{plot_residuals}
 \alias{plot_residuals}
+\alias{ggplot_residuals}
 \title{Residuals plot}
 \usage{
 plot_residuals(
@@ -9,7 +10,15 @@ plot_residuals(
   test,
   type = c("reg", "student", "weight"),
   show_outliers = TRUE,
+  show_plot = TRUE,
   ...
+)
+
+ggplot_residuals(
+  fit,
+  test,
+  type = c("reg", "student", "weight"),
+  show_outliers = TRUE
 )
 }
 \arguments{

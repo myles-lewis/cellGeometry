@@ -16,7 +16,7 @@
 #'   dataframe of the coordinates of the points.
 #' @export
 plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
-                           show_outliers = TRUE,
+                           show_outliers = TRUE, show_plot = TRUE,
                            ...) {
   if (!inherits(fit, "deconv")) stop("not a 'deconv' class object")
   nm <- fit$call$test
@@ -54,17 +54,42 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     col <- rep(col, nrow(dat))
     col[dat$outlier] <- adjustcolor("red", 0.7)
   }
-  new.args <- list(...)
-  args <- list(x = dat$expr, y = dat$res, log = "x",
-               xlim = c(pmax(1, min(ge, na.rm = TRUE)), max(ge, na.rm = TRUE)),
-               cex = 0.7, col = col, pch = 16, bty = "l",
-               xlab = "", ylab = ylab)
-  if (length(new.args)) args[names(new.args)] <- new.args     
-  do.call("plot", args) |>
-    suppressWarnings()
-  if (is.null(new.args$xlab)) {
-    mtext("Bulk gene expression", 1, line = 2.2, cex = par("cex.lab") * par("cex"))
+  if (show_plot) {
+    new.args <- list(...)
+    args <- list(x = dat$expr, y = dat$res, log = "x",
+                 xlim = c(pmax(1, min(ge, na.rm = TRUE)), max(ge, na.rm = TRUE)),
+                 cex = 0.7, col = col, pch = 16, bty = "l",
+                 xlab = "", ylab = ylab)
+    if (length(new.args)) args[names(new.args)] <- new.args     
+    do.call("plot", args) |>
+      suppressWarnings()
+    if (is.null(new.args$xlab)) {
+      mtext("Bulk gene expression", 1, line = 2.2, cex = par("cex.lab") * par("cex"))
+    }
+    abline(0, 0, col = "blue")
   }
-  abline(0, 0, col = "blue")
   invisible(dat)
+}
+
+
+#' @rdname plot_residuals
+#' @importFrom ggplot2 scale_x_log10 scale_colour_manual
+#' @export
+ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
+                             show_outliers = TRUE) {
+  dat <- plot_residuals(fit, test, type, show_outliers, show_plot = FALSE)
+  type <- match.arg(type)
+  dat$expr[dat$expr < 1] <- NA
+  ylab <- switch(type, student = "Studentized residuals",
+                 weight = "Weighted residuals",
+                 "Raw residuals")
+  ggplot(dat, aes(x = .data$expr, y = .data$res)) +
+    geom_point(aes(colour = .data$outlier), na.rm = TRUE) +
+    scale_x_log10(guide = "axis_logticks") +
+    scale_colour_manual(values = c(adjustcolor("black", 0.2),
+                                            adjustcolor("red", 0.7))) +
+    xlab("Bulk gene expression") + ylab(ylab) +
+    theme_classic() +
+    theme(axis.text = element_text(colour = "black"),
+          legend.position = "none")
 }
