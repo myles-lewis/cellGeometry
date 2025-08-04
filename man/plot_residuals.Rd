@@ -31,6 +31,9 @@ ggplot_residuals(
 \item{show_outliers}{Logical whether to show any remaining outlying extreme
 genes in red}
 
+\item{show_plot}{Logical whether to show plot using base graphics (used to
+allow return of dataframe of points without plotting)}
+
 \item{...}{Optional arguments passed to \code{\link[=plot]{plot()}}}
 }
 \value{

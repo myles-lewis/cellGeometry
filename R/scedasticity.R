@@ -11,6 +11,8 @@
 #' @param type Specifies type of residuals to be plotted
 #' @param show_outliers Logical whether to show any remaining outlying extreme
 #'   genes in red
+#' @param show_plot Logical whether to show plot using base graphics (used to
+#'   allow return of dataframe of points without plotting)
 #' @param ... Optional arguments passed to [plot()]
 #' @returns Produces a scatter plot in base graphics. Returns invisibly a
 #'   dataframe of the coordinates of the points.
