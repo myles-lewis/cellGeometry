@@ -15,7 +15,8 @@
 #'   allow return of dataframe of points without plotting)
 #' @param ... Optional arguments passed to [plot()]
 #' @returns Produces a scatter plot in base graphics. Returns invisibly a
-#'   dataframe of the coordinates of the points.
+#'   dataframe of the coordinates of the points. The ggplot version returns a
+#'   ggplot2 plotting object.
 #' @export
 plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
                            show_outliers = TRUE, show_plot = TRUE,

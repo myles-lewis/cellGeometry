@@ -38,7 +38,8 @@ allow return of dataframe of points without plotting)}
 }
 \value{
 Produces a scatter plot in base graphics. Returns invisibly a
-dataframe of the coordinates of the points.
+dataframe of the coordinates of the points. The ggplot version returns a
+ggplot2 plotting object.
 }
 \description{
 Plots residuals from a deconvolution result object against bulk gene
