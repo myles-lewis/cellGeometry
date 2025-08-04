@@ -19,12 +19,6 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
                            show_outliers = TRUE, show_plot = TRUE,
                            ...) {
   if (!inherits(fit, "deconv")) stop("not a 'deconv' class object")
-  nm <- fit$call$test
-  .call <- match.call()
-  if (nm != .call$test) {
-    message("`", .call$test, "` does not match the bulk dataset `", nm,
-            "` used in `", .call$fit, "`")
-  }
   type <- match.arg(type)
   geneset <- rownames(fit$subclass$residuals)
   ge <- test[geneset, ]
@@ -55,6 +49,12 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     col[dat$outlier] <- adjustcolor("red", 0.7)
   }
   if (show_plot) {
+    nm <- fit$call$test
+    .call <- match.call()
+    if (nm != .call$test) {
+      message("`", .call$test, "` does not match the bulk dataset `", nm,
+              "` used in `", .call$fit, "`")
+    }
     new.args <- list(...)
     args <- list(x = dat$expr, y = dat$res, log = "x",
                  xlim = c(pmax(1, min(ge, na.rm = TRUE)), max(ge, na.rm = TRUE)),
@@ -77,6 +77,12 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
 #' @export
 ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
                              show_outliers = TRUE) {
+  nm <- fit$call$test
+  .call <- match.call()
+  if (nm != .call$test) {
+    message("`", .call$test, "` does not match the bulk dataset `", nm,
+            "` used in `", .call$fit, "`")
+  }
   dat <- plot_residuals(fit, test, type, show_outliers, show_plot = FALSE)
   type <- match.arg(type)
   dat$expr[dat$expr < 1] <- NA
@@ -87,7 +93,7 @@ ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     geom_point(aes(colour = .data$outlier), na.rm = TRUE) +
     scale_x_log10(guide = "axis_logticks") +
     scale_colour_manual(values = c(adjustcolor("black", 0.2),
-                                            adjustcolor("red", 0.7))) +
+                                   adjustcolor("red", 0.7))) +
     xlab("Bulk gene expression") + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
