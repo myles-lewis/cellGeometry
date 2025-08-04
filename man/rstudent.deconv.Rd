@@ -21,11 +21,22 @@
 Matrix of adjusted residuals or Cook's distance.
 }
 \description{
-Functions for computing regression diagnostics.
+Functions for computing regression diagnostics including standardised or
+Studentized residuals as well as Cook's distance.
 }
 \details{
-\code{rstandard} and \code{rstudent} give standardized and Studentized residuals
-respectively.
+Residuals are first adjusted for gene weights (if used). \code{rstandard} and
+\code{rstudent} give standardized and Studentized residuals respectively.
+Standardised residuals are calculated based on the hat matrix:
+\deqn{H = X (X^T X)^{-1} X^T}
+Leverage \eqn{h_{ii} = diag(H)} is used to standardise the residuals:
+\deqn{t_i = \cfrac{\hat{\varepsilon_i}}{\hat{\sigma} \sqrt{1 - h_{ii}}}}
+Studentized residuals are calculated based on excluding the \eqn{i} th case.
+Note this corresponds to refitting the regression, but without recomputing
+the non-negative compensation matrix. Cook's distance is calculated as:
+\deqn{D_i = \cfrac{e_i^2}{ps^2} \left[\cfrac{h_{ii}}{(1 - h_{ii})^2} \right]}
+where \eqn{p} is the number of predictors (cell subclasses) and \eqn{s^2} is
+the mean squared error. In this model the intercept is not included.
 }
 \seealso{
 \code{\link[stats:influence.measures]{stats::influence.measures()}}
