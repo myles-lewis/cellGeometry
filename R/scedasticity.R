@@ -26,8 +26,9 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
   geneset <- rownames(fit$subclass$residuals)
   ge <- test[geneset, ]
   res <- fit$subclass$residuals
+  w <- fit$subclass$weights %||% 1
   res <- switch(type, student = rstudent(fit),
-                weight = res * fit$subclass$weights,
+                weight = res * w,
                 res)
   ylab <- switch(type, student = "Studentized residuals",
                  weight = "Weighted residuals",
