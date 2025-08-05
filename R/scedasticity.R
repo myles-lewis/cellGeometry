@@ -70,14 +70,14 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     if (is.null(new.args$xlab)) {
       mtext("Bulk gene expression", 1, line = 2.2, cex = par("cex.lab") * par("cex"))
     }
-    abline(0, 0, col = "blue")
+    abline(0, 0, col = "royalblue")
   }
   invisible(dat)
 }
 
 
 #' @rdname plot_residuals
-#' @importFrom ggplot2 scale_x_log10 scale_colour_manual
+#' @importFrom ggplot2 scale_x_log10 scale_colour_manual geom_hline
 #' @export
 ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
                              show_outliers = TRUE) {
@@ -95,6 +95,7 @@ ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
                  "Raw residuals")
   ggplot(dat, aes(x = .data$expr, y = .data$res)) +
     geom_point(aes(colour = .data$outlier), na.rm = TRUE) +
+    geom_hline(yintercept = 0, color = "royalblue") +
     scale_x_log10(guide = "axis_logticks") +
     scale_colour_manual(values = c(adjustcolor("black", 0.2),
                                    adjustcolor("red", 0.7))) +
