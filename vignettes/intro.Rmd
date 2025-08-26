@@ -72,6 +72,13 @@ dimensional gene marker space using the vector dot product. In order to adjust
 for spillover in the vector projection between cell clusters, a compensation
 matrix is applied.
 
+After each of these stages, diagnostics can be performed and either the gene
+signature or deconvolution can be updated.
+
+```{r, out.width='100%', echo=FALSE}
+knitr::include_graphics("workflow.png")
+```
+
 # Example dataset
 
 ## h5ad file
