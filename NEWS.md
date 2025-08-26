@@ -1,6 +1,10 @@
 News
 =====
 
+# cellGeometry 0.5.3
+###### 26/08/2025
+* Massive speed up (4-5x) in compensation optimisation
+
 # cellGeometry 0.5.2
 ###### 30/07/2025
 
