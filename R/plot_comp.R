@@ -26,12 +26,15 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
   n <- length(x) -1
   px <- x$px
   x <- x[1:n]
+  new.args <- list(...)
   
   if (overlay) {
     yr <- range(x)
     scheme <- hue_pal(h = c(0, 270), c = 120)(n)
-    plot(NA, las = 1, xlim = c(0, 1), ylim = yr,
-         xlab = "Compensation", ylab = "min output", ...)
+    args <- list(x = NA, las = 1, xlim = c(0, 1), ylim = yr,
+                 xlab = "Compensation", ylab = "min output")
+    if (length(new.args)) args[names(new.args)] <- new.args
+    do.call(plot, args)
     abline(h = 0)
     for (i in seq_len(n)) {
       lines(px, x[[i]], col = scheme[i])

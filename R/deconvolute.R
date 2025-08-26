@@ -35,7 +35,7 @@
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param check_comp logical, whether to analyse compensation values across
-#'   subclasses.
+#'   subclasses. See [plot_comp()].
 #' @param npass Number of passes. If `npass` set to 2 or more this activates
 #'   removal of genes with excess variance of the residuals.
 #' @param outlier_method Method for identifying outlying genes. Options are to

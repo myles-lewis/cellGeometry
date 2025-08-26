@@ -70,7 +70,7 @@ using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
-subclasses.}
+subclasses. See \code{\link[=plot_comp]{plot_comp()}}.}
 
 \item{npass}{Number of passes. If \code{npass} set to 2 or more this activates
 removal of genes with excess variance of the residuals.}
