@@ -218,7 +218,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (check_comp) {
     if (verbose) cat("analysing compensation\n")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
-                                 weights, weight_method, count_space)
+                                 weights, weight_method, count_space, cores)
   }
   class(out) <- "deconv"
   out
@@ -316,12 +316,13 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       w <- which(minout < 0)
       if (verbose) cat(paste0("optimising compensation (", length(w), ")\n"))
       
+      m_itself <- dotprod(cellmat, cellmat)
       newcomps <- pmclapply(seq_along(w), function(i) {
         wi <- w[i]
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
-          ntest <- quick_deconv(test, cellmat, comp_amount = newcomp)
+          ntest <- quick_deconv(test, cellmat, newcomp, m_itself)
           min(ntest[, wi], na.rm = TRUE)^2
         }
         if (comp_amount[wi] == 0) return(0)
@@ -373,8 +374,7 @@ deconv <- function(test, cellmat, comp_amount) {
 }
 
 
-quick_deconv <- function(test, cellmat, comp_amount) {
-  m_itself <- dotprod(cellmat, cellmat)
+quick_deconv <- function(test, cellmat, comp_amount, m_itself) {
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   dotprod(test, cellmat) %*% mixcomp
 }
@@ -406,7 +406,7 @@ bulk2sc <- function(x) {
 
 
 comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
-                       count_space) {
+                       count_space, cores) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (count_space) {
@@ -425,14 +425,15 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
   }
   px <- seq(0, 1, 0.05)
   
-  out <- lapply(seq_len(ncol(cellmat)), function(i) {
+  m_itself <- dotprod(cellmat, cellmat)
+  out <- mclapply(seq_len(ncol(cellmat)), function(i) {
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- quick_deconv(test, cellmat, newcomp)
+      ntest <- quick_deconv(test, cellmat, newcomp, m_itself)
       min(ntest[, i], na.rm = TRUE)
     }, numeric(1))
-  })
+  }, mc.cores = cores)
   names(out) <- colnames(cellmat)
   out$px <- px
   out
