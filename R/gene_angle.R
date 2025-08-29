@@ -12,13 +12,14 @@
 #'   element containing a dataframe with genes in rows, sorted by best marker
 #'   status as determined by minimum vector angle and highest maximum gene
 #'   expression per celltype/tissue.
+#' @importFrom matrixStats rowRanks
 #' @export
 #' 
 gene_angle <- function(genemeans) {
   genemeans_scaled <- scaleSphere(genemeans)
   genemeans_angle <- acos(genemeans_scaled)
   genemeans_max <- rowMaxs(genemeans)
-  gene_rank <- t(apply(-genemeans, 1, rank))
+  gene_rank <- rowRanks(-genemeans, ties.method = "average")
   best_angle <- lapply(colnames(genemeans_angle), function(i) {
     df <- data.frame(angle = genemeans_angle[, i],
                      angle.deg = genemeans_angle[, i] * 180 / pi,
