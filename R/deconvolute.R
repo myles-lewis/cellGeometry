@@ -21,11 +21,9 @@
 #'   length as the number of cell groups to deconvolute.
 #' @param weights Optional vector of weights which affects how much each gene in
 #'   the gene signature matrix affects the deconvolution.
-#' @param weight_method Optional. Choices include "equal" in which case weights
-#'   are calculated so that each gene has equal weighting in the vector
-#'   projection; "none"; or "irw" which enables iterative reweighting of genes
-#'   based on residuals (see details). Setting this overrules any vector
-#'   supplied by `weights`.
+#' @param weight_method Optional. Choices include "none" or "equal" in which
+#'   gene weights are calculated so that each gene has equal weighting in the
+#'   vector projection; "equal" overrules any vector supplied by `weights`.
 #' @param adjust_comp logical, whether to optimise `comp_amount` to prevent
 #'   negative cell proportion projections.
 #' @param use_filter logical, whether to use denoised signature matrix.
@@ -139,7 +137,7 @@ deconvolute <- function(mk, test, log = TRUE,
                         verbose = TRUE, cores = 1L) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
-  weight_method <- match.arg(weight_method, c("none", "equal", "2pass"))
+  weight_method <- match.arg(weight_method, c("none", "equal"))
   outlier_method <- match.arg(outlier_method)
   test <- as.matrix(test)
   

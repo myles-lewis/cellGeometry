@@ -51,11 +51,9 @@ length as the number of cell groups to deconvolute.}
 \item{weights}{Optional vector of weights which affects how much each gene in
 the gene signature matrix affects the deconvolution.}
 
-\item{weight_method}{Optional. Choices include "equal" in which case weights
-are calculated so that each gene has equal weighting in the vector
-projection; "none"; or "irw" which enables iterative reweighting of genes
-based on residuals (see details). Setting this overrules any vector
-supplied by \code{weights}.}
+\item{weight_method}{Optional. Choices include "none" or "equal" in which
+gene weights are calculated so that each gene has equal weighting in the
+vector projection; "equal" overrules any vector supplied by \code{weights}.}
 
 \item{adjust_comp}{logical, whether to optimise \code{comp_amount} to prevent
 negative cell proportion projections.}
