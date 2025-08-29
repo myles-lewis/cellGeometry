@@ -315,13 +315,12 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       if (verbose) cat(paste0("optimising compensation (", length(w), ")\n"))
       
       m_itself <- dotprod(cellmat, cellmat)
-      newcomps <- pmclapply(seq_along(w), function(i) {
-        wi <- w[i]
+      newcomps <- pmclapply(w, function(wi) {
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
-          ntest <- quick_deconv(test, cellmat, newcomp, m_itself)
-          min(ntest[, wi], na.rm = TRUE)^2
+          ntest <- quick_deconv(test, cellmat, newcomp, m_itself, wi)
+          min(ntest, na.rm = TRUE)^2
         }
         if (comp_amount[wi] == 0) return(0)
         xmin <- optimise(f, c(0, comp_amount[wi]))
@@ -372,9 +371,9 @@ deconv <- function(test, cellmat, comp_amount) {
 }
 
 
-quick_deconv <- function(test, cellmat, comp_amount, m_itself) {
+quick_deconv <- function(test, cellmat, comp_amount, m_itself, wi) {
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
-  dotprod(test, cellmat) %*% mixcomp
+  dotprod(test, cellmat) %*% mixcomp[, wi, drop = FALSE]
 }
 
 
@@ -428,8 +427,8 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- quick_deconv(test, cellmat, newcomp, m_itself)
-      min(ntest[, i], na.rm = TRUE)
+      ntest <- quick_deconv(test, cellmat, newcomp, m_itself, i)
+      min(ntest, na.rm = TRUE)
     }, numeric(1))
   }, mc.cores = cores)
   names(out) <- colnames(cellmat)
