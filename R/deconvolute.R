@@ -114,7 +114,7 @@
 #' @seealso [cellMarkers()] [updateMarkers()] [rstudent.deconv()]
 #'   [cooks.distance.deconv()]
 #' @author Myles Lewis
-#' @importFrom matrixStats colMins rowMins rowQuantiles
+#' @importFrom matrixStats colMins rowQuantiles rowVars
 #' @importFrom stats optimise
 #' @export
 #'
@@ -339,7 +339,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     # adjust residuals & X by gene weights
     if (!is.null(weights)) r <- r * weights
     # residuals row variance
-    atest$var.e <- var.e <- matrixStats::rowVars(r)
+    atest$var.e <- var.e <- rowVars(r)
     atest$weights <- weights
     rss <- colSums(r^2)
     rdf <- nrow(r) - ncol(X)
