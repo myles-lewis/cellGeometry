@@ -307,14 +307,14 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     test <- test * weights
   }
   
-  atest <- deconv(test, cellmat, comp_amount)
+  m_itself <- dotprod(cellmat, cellmat)
+  atest <- deconv(test, cellmat, comp_amount, m_itself)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
       w <- which(minout < 0)
       if (verbose) cat(paste0("optimising compensation (", length(w), ")\n"))
       
-      m_itself <- dotprod(cellmat, cellmat)
       newcomps <- pmclapply(w, function(wi) {
         f <- function(x) {
           newcomp <- comp_amount
@@ -327,7 +327,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         xmin$minimum
       }, progress = verbose, mc.cores = cores)
       comp_amount[w] <- unlist(newcomps)
-      atest <- deconv(test, cellmat, comp_amount = comp_amount)
+      atest <- deconv(test, cellmat, comp_amount, m_itself)
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
@@ -358,8 +358,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
 }
 
 
-deconv <- function(test, cellmat, comp_amount) {
-  m_itself <- dotprod(cellmat, cellmat)
+deconv <- function(test, cellmat, comp_amount, m_itself) {
   rawcomp <- solve(m_itself)
   mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   output <- dotprod(test, cellmat) %*% mixcomp
