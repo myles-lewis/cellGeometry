@@ -2,10 +2,13 @@ Package: cellGeometry
 Title: Geometric Single Cell Deconvolution
 Version: 0.5.3
 Authors@R: 
-    c(person(given = "Myles",family = "Lewis",
+    c(person(given = "Myles", family = "Lewis",
     role = c("aut", "cre"),
     email = "myles.lewis@qmul.ac.uk",
-    comment = c(ORCID = "0000-0001-9365-5345")))
+    comment = c(ORCID = "0000-0001-9365-5345")),
+    person(given = "Rachel", family = "Lau",
+    role = c("ctb"),
+    comment = c(ORCID = "0000-0002-8330-8048")))
 Description: Deconvolution of bulk RNA-Sequencing data into proportions of cells based on a reference single-cell RNA-Sequencing dataset using high-dimensional geometric methodology. 
 License: GPL (>= 3)
 Encoding: UTF-8
