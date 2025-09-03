@@ -27,7 +27,6 @@ Imports:
     mcprogress,
     parallel,
     pbmcapply,
-    plotly,
     rlang,
     scales
 Roxygen: list(markdown = TRUE)
@@ -38,6 +37,7 @@ Suggests:
     future.apply,
     ggsci,
     knitr,
+    plotly,
     Rfast2,
     rmarkdown,
     seriation

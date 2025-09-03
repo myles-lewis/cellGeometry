@@ -59,7 +59,6 @@
 #' @importFrom ggplot2 geom_point geom_vline scale_color_manual xlim ylim
 #' @importFrom ggrepel geom_label_repel geom_text_repel
 #' @importFrom grDevices adjustcolor
-#' @importFrom plotly plot_ly layout `%>%`
 #' @export
 
 specificity_plot <- function(mk, subclass = NULL,
@@ -254,23 +253,25 @@ specificity_plotly <- function(mk, subclass = NULL,
   }
   scheme <- rev(scheme)
   
+  if (!requireNamespace("plotly", quietly = TRUE)) 
+    stop("Package 'plotly' is not installed", call. = FALSE)
   if (type == 2) {
     # use actual angle; radius is vecLength
-    plot_ly(df, x = ~x, y = ~y, color = ~rank, colors = scheme,
+    plotly::plot_ly(df, x = ~x, y = ~y, color = ~rank, colors = scheme,
             mode = "markers", type = "scattergl", hoverinfo = "text",
             marker = list(size = 6.5, line = list(width = 0.2, color = "white")),
             text = ~text, ...) |>
-      layout(legend = list(traceorder = "reversed"),
+      plotly::layout(legend = list(traceorder = "reversed"),
              xaxis = list(title = "Non-specific gene expression"),
              yaxis = list(title = paste(subc, "mean expression")))
   } else {
     # angle on x, mean exp on y
-    plot_ly(df, x = ~angle.deg, y = ~mean, color = ~rank,
+    plotly::plot_ly(df, x = ~angle.deg, y = ~mean, color = ~rank,
             colors = scheme,
             mode = "markers", type = "scattergl", hoverinfo = "text",
             marker = list(size = 6.5, line = list(width = 0.2, color = "white")),
             text = ~text, ...) |>
-    layout(legend = list(traceorder = "reversed"),
+      plotly::layout(legend = list(traceorder = "reversed"),
            xaxis = list(title = "Angle"),
            yaxis = list(title = paste(subc, "mean expression")))
   }
