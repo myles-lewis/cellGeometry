@@ -10,9 +10,10 @@
 #' `logmean` applies `log2(x+1)` then calculates `rowMeans`.
 #'
 #' `trimmean` applies a trimmed mean to each row of gene counts, excluding the
-#' top and bottom 5% of values which helps to exclude outliers. When `trimmean`
-#' is used with [scmean()], `postFUN` is typically set to `log2s`. This simply
-#' applies log2(x+1) after the trimmed mean of counts has been calculated.
+#' top and bottom 5% of values which helps to exclude outliers. Note, this needs
+#' the `Rfast2` package to be installed. When `trimmean` is used with
+#' [scmean()], `postFUN` is typically set to `log2s`. This simply applies
+#' log2(x+1) after the trimmed mean of counts has been calculated.
 #' @importFrom DelayedArray rowMeans
 #' @export
 

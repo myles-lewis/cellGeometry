@@ -19,7 +19,6 @@ Imports:
     DelayedArray,
     dplyr,
     ensembldb,
-    future.apply,
     ggplot2,
     ggrepel,
     grid,
@@ -29,7 +28,6 @@ Imports:
     parallel,
     pbmcapply,
     plotly,
-    Rfast2,
     rlang,
     scales
 Roxygen: list(markdown = TRUE)
@@ -37,8 +35,10 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.1.0)
 Suggests:
+    future.apply,
     ggsci,
     knitr,
+    Rfast2,
     rmarkdown,
     seriation
 VignetteBuilder: knitr

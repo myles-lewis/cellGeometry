@@ -33,7 +33,8 @@
 #'   across cores (experimental).
 #' @param use_future Logical, whether to use the future backend for
 #'   parallelisation via `future_lapply()` instead of the default which is
-#'   `mclapply()`.
+#'   `mclapply()`. Note, the `future.apply` package needs to be installed to
+#'   enable this.
 #' @details 
 #' Mean functions which can be applied by setting `FUN` include `logmean` (the
 #' default) which applies row means to log2(counts+1), or `trimmean` which
@@ -58,7 +59,6 @@
 #'   mean applied.
 #' @author Myles Lewis
 #' @importFrom parallel mclapply
-#' @importFrom future.apply future_lapply
 #' @export
 
 scmean <- function(x, celltype,
@@ -87,7 +87,9 @@ scmean <- function(x, celltype,
     }, mc.cores = cores, mc.preschedule = FALSE)
   } else {
     # future
-    genemeans <- future_lapply(levels(celltype), function(i) {
+    if (!requireNamespace("future.apply", quietly = TRUE)) 
+      stop("Package 'future.apply' is not installed", call. = FALSE)
+    genemeans <- future.apply::future_lapply(levels(celltype), function(i) {
       scmeanCore(i, x, celltype, FUN, ok, dimx, sliceMem, verbose)
     })
   }
@@ -168,23 +170,6 @@ timer <- function(start, msg = NULL) {
     }
   }
 }
-
-
-# balance_cores <- function(tab, cores) {
-#   o <- order(tab, decreasing = TRUE)
-#   le <- length(tab)
-#   nc <- ceiling(le / cores)
-#   m <- matrix(1:(nc * cores), nrow = cores)
-#   for (i in seq(2, cores, 2)) {
-#     m1 <- m[i, ]
-#     if (any(m1 > le)) m1 <- c(NA, m1[-nc]) 
-#     m[i, ] <- rev(m1)
-#   }
-#   m[m > le] <- NA
-#   core_set <- as.vector(m)
-#   core_set <- core_set[!is.na(core_set)]
-#   o[core_set]
-# }
 
 
 balance_cores <- function(tab, cores) {

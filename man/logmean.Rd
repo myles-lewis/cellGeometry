@@ -21,9 +21,10 @@ Numeric vector of mean values.
 \code{logmean} applies \code{log2(x+1)} then calculates \code{rowMeans}.
 
 \code{trimmean} applies a trimmed mean to each row of gene counts, excluding the
-top and bottom 5\% of values which helps to exclude outliers. When \code{trimmean}
-is used with \code{\link[=scmean]{scmean()}}, \code{postFUN} is typically set to \code{log2s}. This simply
-applies log2(x+1) after the trimmed mean of counts has been calculated.
+top and bottom 5\% of values which helps to exclude outliers. Note, this needs
+the \code{Rfast2} package to be installed. When \code{trimmean} is used with
+\code{\link[=scmean]{scmean()}}, \code{postFUN} is typically set to \code{log2s}. This simply applies
+log2(x+1) after the trimmed mean of counts has been calculated.
 }
 \description{
 Functions designed for use with \code{\link[=scmean]{scmean()}} to calculate mean gene expression

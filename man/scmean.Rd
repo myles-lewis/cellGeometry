@@ -51,7 +51,8 @@ across cores (experimental).}
 
 \item{use_future}{Logical, whether to use the future backend for
 parallelisation via \code{future_lapply()} instead of the default which is
-\code{mclapply()}.}
+\code{mclapply()}. Note, the \code{future.apply} package needs to be installed to
+enable this.}
 }
 \value{
 a matrix of mean log2 gene expression across cell types with genes
