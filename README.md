@@ -15,7 +15,7 @@ symbols.
 
 ```
 # Bioconductor must be installed +/- updated first
-BiocManager::install(version = "3.20")
+BiocManager::install(version = "3.xx")  # set to latest version
 
 # minimum necessary Bioconductor packages to install cellGeometry package
 BiocManager::install(c("ensembldb", "DelayedArray"))
