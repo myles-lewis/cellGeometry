@@ -76,7 +76,7 @@ updateMarkers <- function(object = NULL,
   if (!is.null(bulkdata)) {
     ok <- rownames(genemeans) %in% rownames(bulkdata)
     if (any(!ok)) {
-      if (verbose) cat(sum(ok), "genes overlap with bulkdata\n")
+      if (verbose) message(sum(ok), " genes overlap with bulkdata")
     }
   }
   
@@ -100,7 +100,7 @@ updateMarkers <- function(object = NULL,
   }
   
   # subclass analysis
-  if (verbose) cat("Subclass analysis\n")
+  if (verbose) message("Subclass analysis")
   nsub <- length(object$subclass_table)
   nsubclass2 <- rep_len(nsubclass, nsub)
   highexp <- ok & rowMaxs(genemeans) > expfilter |
@@ -114,13 +114,13 @@ updateMarkers <- function(object = NULL,
   geneset <- unique(c(unlist(geneset), add_gene))
   if (!is.null(remove_gene)) geneset <- geneset[!geneset %in% remove_gene]
   geneset <- geneset[!is.na(geneset)]
-  if (verbose) cat(length(geneset), "marker genes\n")
+  if (verbose) message(length(geneset), " marker genes")
   
   # group analysis
   if (!is.null(groupmeans)) {
     if (any(duplicated(rownames(groupmeans))))
       stop("Duplicated rownames in groupmeans")
-    if (verbose) cat("Basic cell group analysis\n")
+    if (verbose) message("Basic cell group analysis")
     
     highexp <- ok & rowMaxs(groupmeans) > expfilter |
       rownames(groupmeans) %in% add_groupgene
