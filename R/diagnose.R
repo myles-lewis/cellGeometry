@@ -24,7 +24,7 @@ diagnose <- function(object, group = NULL, angle_cutoff = 30, weak = 2) {
   } else if (inherits(object, "deconv")) {
     mk <- object$mk
     s1 <- object$subclass$spillover
-  }
+  } else stop("incompatible object")
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   nsubclass <- mk$opt$nsubclass
   if (is.null(nsubclass)) nsubclass <- 5
