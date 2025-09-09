@@ -58,7 +58,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
   if (inherits(y, "data.frame")) y <- as.matrix(y)
   common <- intersect(rownames(x), rownames(y))
   if (remove_noncoding) common <- common[!grepl("-|\\.", common)]
-  if (!silent) cat(length(common), "common genes\n")
+  if (!silent) message(length(common), " common genes")
   x <- x[common, ]
   y <- y[common, ]
   if (remove_zeros) {
@@ -89,7 +89,7 @@ quantile_map <- function(x, y, n = 1e4, remove_noncoding = TRUE,
       qy[qy < 0] <- 0
     } else {
       # loess error
-      cat("Error in loess. Switching to lowess.\n")
+      message("Error in loess. Switching to lowess.")
       smooth <- "lowess"
     }
   }

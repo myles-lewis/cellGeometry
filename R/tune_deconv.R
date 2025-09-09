@@ -72,7 +72,7 @@ tune_deconv <- function(mk, test, samples, grid,
   w2 <- which(params %in% arg_set2)
   grid2 <- if (length(w2) > 0) expand.grid(grid[w2], stringsAsFactors = FALSE) else NULL
   if (verbose) {
-    cat("Tuning parameters:", paste(params, collapse = ", "), "\n")
+    message("Tuning parameters: ", paste(params, collapse = ", "))
   }
   
   if (length(w1) > 0) {
@@ -113,7 +113,7 @@ tune_deconv <- function(mk, test, samples, grid,
     colnames(best_tune) <- params
   }
   if (verbose) {
-    cat("Best tune:\n")
+    message("Best tune:")
     print(best_tune, row.names = FALSE, digits = max(3, getOption("digits")-3),
           print.gap = 2L)
   }
@@ -205,7 +205,7 @@ summary.tune_deconv <- function(object,
     colnames(best_tune) <- params
   }
   
-  cat("Best tune:\n")
+  message("Best tune:")
   print(best_tune, row.names = FALSE, digits = max(3, getOption("digits") -3),
         print.gap = 2L)
   invisible(mres)
@@ -330,7 +330,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       })
       p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
                  collapse = ", ")
-      cat("Fix", p, "\n")
+      message("Fix ", p)
       if (is.null(title)) title <- p
       fix <- do.call(cbind, fix)
       if (ncol(fix) > 1) fix <- rowSums(fix) == ncol(fix)
@@ -362,7 +362,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       })
       p <- paste(paste(fix_params, best_tune[, fix_params], sep = " = "),
                  collapse = ", ")
-      cat("Fix", p, "\n")
+      message("Fix ", p)
       if (is.null(title)) title <- p
       fix <- do.call(cbind, fix)
       if (ncol(fix) > 1) fix <- rowSums(fix) == ncol(fix)

@@ -144,7 +144,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
   if (convert_bulk == "qqmap") {
-    if (verbose) cat("Quantile map bulk to sc, ")
+    if (verbose) message("Quantile map bulk to sc, ", appendLF = FALSE)
     qqmap <- quantile_map(log2(test +1), mk$genemeans, remove_zeros = TRUE)
   }
   bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = qqmap$map)
@@ -214,7 +214,7 @@ deconvolute <- function(mk, test, log = TRUE,
               comp_amount = comp_amount)
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
-    if (verbose) cat("analysing compensation\n")
+    if (verbose) message("analysing compensation")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
                                  weights, weight_method, count_space, cores)
   }
@@ -235,8 +235,8 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
   if (verbose && npass == 1 && any(outlier)) {
     nm <- names(sort(metric[outlier], decreasing = TRUE))
     if (length(nm) > 20) nm <- c(nm[1:20], "...")
-    cat("Detected genes with extreme residuals:", paste(nm, collapse = ", "),
-        "\n")
+    message("Detected genes with extreme residuals: ",
+            paste(nm, collapse = ", "))
   }
   i <- 1
   removed <- NULL
@@ -249,8 +249,8 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
       rem_names <- c(rem_names[1:20],
                     paste0("... [", length(remove_genes), " genes]"))
     }
-    if (verbose) cat("Pass", i, "- removed", paste(rem_names, collapse = ", "),
-                     "\n")
+    if (verbose) message("Pass ", i, " - removed ",
+                         paste(rem_names, collapse = ", "))
     test <- test[!outlier, , drop = FALSE]
     cellmat <- cellmat[!outlier, , drop = FALSE]
     weights <- weights[!outlier]
@@ -313,7 +313,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     if (adjust_comp) {
       minout <- colMins(atest$output)
       w <- which(minout < 0)
-      if (verbose) cat(paste0("optimising compensation (", length(w), ")\n"))
+      if (verbose) message("optimising compensation (", length(w), ")")
       
       newcomps <- pmclapply(w, function(wi) {
         f <- function(x) {
@@ -331,7 +331,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       # fix floating point errors
       atest$output[atest$output < 0] <- 0
       atest$percent[atest$percent < 0] <- 0
-    } else if (verbose) cat("negative cell proportion projection detected\n")
+    } else if (verbose) message("negative cell proportion projection detected")
   }
   if (resid) {
     X <- cellmat

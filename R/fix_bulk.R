@@ -24,8 +24,8 @@ fix_bulk <- function(bulk, mk) {
   ok <- genes %in% rownames(bulk)
   if (all(ok)) return(bulk)
   pc <- format(sum(!ok) / length(genes) *100, digits = 2)
-  cat(paste0(sum(!ok), "/", length(genes), " (", pc, 
-             "%) signature genes missing from bulk\n"))
+  message(sum(!ok), "/", length(genes), " (", pc, 
+          "%) signature genes missing from bulk")
   miss <- genes[!ok]
   extra <- matrix(0, nrow = length(miss), ncol = ncol(bulk))
   rownames(extra) <- miss

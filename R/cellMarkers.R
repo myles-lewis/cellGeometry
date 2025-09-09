@@ -142,7 +142,7 @@ cellMarkers <- function(scdata,
     subclass <- factor(subclass)
   }
   if (verbose) {
-    cat("Dataset:", dimx[2], "cells,", dimx[1], "genes\n")
+    message("Dataset: ", dimx[2], " cells, ", dimx[1], " genes")
     if (!inherits(scdata, "DelayedMatrix")) {
       mem_estimate(dimx, subclass, cellgroup, sliceMem, cores)
     }
@@ -152,14 +152,14 @@ cellMarkers <- function(scdata,
   if (!is.null(bulkdata)) {
     if (inherits(bulkdata, "data.frame")) bulkdata <- as.matrix(bulkdata)
     ok <- rownames(scdata) %in% rownames(bulkdata)
-    if (verbose) cat("Removing", sum(!ok), "genes not found in bulkdata\n")
+    if (verbose) message("Removing ", sum(!ok), " genes not found in bulkdata")
   }
   nsub <- nlevels(subclass)
   if (verbose) {
     if (dimx[2] != sum(!is.na(subclass))) {
-      cat("Analysing", sum(!is.na(subclass)), "cells,")
+      message("Analysing ", sum(!is.na(subclass)), " cells, ", appendLF = FALSE)
     }
-    cat(nsub, "cell subclasses\nSubclass analysis\n")
+    message(nsub, " cell subclasses\nSubclass analysis")
   }
   nsubclass2 <- rep_len(nsubclass, nsub)
   
@@ -204,7 +204,7 @@ cellMarkers <- function(scdata,
         cellgroup <- factor(cellgroup)
       }
     }
-    if (verbose) cat("Basic cell group analysis\n")
+    if (verbose) message("Basic cell group analysis")
     
     # test nesting
     tab <- table(subclass, cellgroup)
@@ -242,7 +242,7 @@ cellMarkers <- function(scdata,
   gene_sig <- genemeans_filtered[geneset, ]
   m_itself <- dotprod(gene_sig, gene_sig)
   
-  if (verbose) cat(length(geneset), "marker genes\n")
+  if (verbose) message(length(geneset), " marker genes")
   
   out <- list(call = .call,
               best_angle = best_angle,
@@ -295,10 +295,10 @@ mem_estimate <- function(dimx, subclass, cellgroup, sliceMem, cores) {
   dimmax <- as.numeric(max(c(tab, tab2), na.rm = TRUE)) * dimx[1]
   mem <- structure(dimmax * 8, class = "object_size")
   if (mem > 1e9)
-    cat("Largest subclass/group object", format(mem, units = "GB"), "\n")
+    message("Largest subclass/group object ", format(mem, units = "GB"))
   if (mem > sliceMem * 1e9) {
-    cat("Slicing above", sliceMem, "Gb\n")
-  } else cat("No slicing\n")
+    message("Slicing above ", sliceMem, " Gb")
+  } else message("No slicing")
   
   nsubcl <- sort(tab, decreasing = TRUE)[1:pmin(cores, length(tab))]
   ngroup <- sort(tab2, decreasing = TRUE)[1:pmin(cores, length(tab2))]
@@ -307,5 +307,5 @@ mem_estimate <- function(dimx, subclass, cellgroup, sliceMem, cores) {
   msubcl[msubcl > sliceMem] <- sliceMem
   mgroup[mgroup > sliceMem] <- sliceMem
   mem <- max(c(sum(msubcl), sum(mgroup)))
-  cat("Estimated minimum RAM required", format(mem, digits = 2), "Gb\n")
+  message("Estimated minimum RAM required ", format(mem, digits = 2), " Gb")
 }

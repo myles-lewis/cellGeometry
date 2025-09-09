@@ -104,7 +104,7 @@ simulate_bulk <- function(object, samples, subclass, times = 1,
   method <- match.arg(method)
   
   start <- Sys.time()
-  cat("Creating sampling matrix")
+  message("Creating sampling matrix", appendLF = FALSE)
   samples <- samples * times
   subclass_lev <- levels(subclass)
   subclass_lev <- subclass_lev[subclass_lev %in% colnames(samples)]
@@ -124,7 +124,7 @@ simulate_bulk <- function(object, samples, subclass, times = 1,
   cat_timer(start)
   
   start <- Sys.time()
-  cat("Matrix multiplication")
+  message("Matrix multiplication", appendLF = FALSE)
   sim_pseudo <- as.matrix(object %*% cmat)
   colnames(sim_pseudo) <- rownames(samples)
   if (max(sim_pseudo) <= .Machine$integer.max) mode(sim_pseudo) <- "integer"
@@ -134,7 +134,7 @@ simulate_bulk <- function(object, samples, subclass, times = 1,
 }
 
 cat_timer <- function(start) {
-  cat(paste0(" (", format(Sys.time() - start, digits = 3), ")\n"))
+  message(" (", format(Sys.time() - start, digits = 3), ")")
 }
 
 #' Scatter plots to compare deconvoluted subclasses
@@ -171,7 +171,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
                      title = "", cex.title = 1, ...) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
-    cat("`pred` contains NA\n")
+    message("`pred` contains NA")
     pred[is.na(pred)] <- 0
   }
   if (is.null(cols)) cols <- TRUE
@@ -231,7 +231,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
 metric_set <- function(obs, pred) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
-    cat("`pred` contains NA\n")
+    message("`pred` contains NA")
     pred[is.na(pred)] <- 0
   }
   
