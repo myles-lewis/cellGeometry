@@ -25,6 +25,6 @@ information including which cell subclasses each problematic signature
 spills into.
 }
 \description{
-Diagnostic tool for identifying cell subclasses or groups with weak
-signatures.
+Diagnostic tool which prints information for identifying cell subclasses or
+groups with weak signatures.
 }

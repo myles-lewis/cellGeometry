@@ -1,8 +1,8 @@
 
 #' Diagnostics for cellMarker signatures
 #' 
-#' Diagnostic tool for identifying cell subclasses or groups with weak
-#' signatures.
+#' Diagnostic tool which prints information for identifying cell subclasses or
+#' groups with weak signatures.
 #' 
 #' @param object A 'cellMarkers' or 'deconv' class object.
 #' @param group Character vector to focus on cell subclasses within a particular
