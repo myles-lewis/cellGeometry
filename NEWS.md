@@ -1,6 +1,11 @@
 News
 =====
 
+# cellGeometry 0.5.4
+###### 09/09/2025
+* Fix CRAN checks
+* Switch from using `cat()` to `message()`
+
 # cellGeometry 0.5.3
 ###### 26/08/2025
 * Massive speed up (4-5x) in compensation optimisation
