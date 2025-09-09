@@ -19,7 +19,7 @@ considered to overlap too much. Range 0-90. See \code{\link[=cos_similarity]{cos
 its gene set is considered weak.}
 }
 \value{
-No return value. Displays information about the cellMarkers
+No return value. Prints information about the cellMarkers
 signature showing cells subclasses with weak signatures and diagnostic
 information including which cell subclasses each problematic signature
 spills into.
