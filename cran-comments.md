@@ -2,9 +2,11 @@
 
 0 errors | 0 warnings | 0 note
 
+Thanks for the comments. This is a resubmission of a new release.
+
 * There are no references/citations available for this novel method (it is 
-unpublished). But we are going to submit the maths of the method as a new 
-manuscript soon.
+unpublished). But we will submit the maths of the method as a new manuscript
+soon.
 
 * All instances of `cat()` have been changed to `message()` throughout. All 
 requested functions have been fixed.
@@ -16,5 +18,3 @@ diagnostics, similar to `summary()`, so this retains `cat()`.
 suppress messages.
 
 * The function `txtProgressBar2()` was redundant and has been removed.
-
-* This is a resubmission of a new release.
