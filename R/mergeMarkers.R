@@ -30,11 +30,21 @@ mergeMarkers <- function(mk1, mk2,
                          transform = c("qq", "linear.qq", "scale", "none"),
                          scale = 1, ...) {
   .call <- match.call()
-  if (!inherits(mk1, "cellMarkers")) stop("'mk1' is not a 'cellMarkers' object")
-  if (!inherits(mk2, "cellMarkers")) stop("'mk2' is not a 'cellMarkers' object")
   xlab <- deparse(substitute(mk2))
   ylab <- deparse(substitute(mk1))
+  if (!inherits(mk1, "cellMarkers"))
+    stop("`", ylab, "` is not a 'cellMarkers' object")
+  if (!inherits(mk2, "cellMarkers"))
+    stop("`", xlab, "` is not a 'cellMarkers' object")
   
+  if (is.null(mk1$cell_table)) {
+    message("`", ylab, "` has no cell groups")
+    mk1 <- fix_group(mk1, "group1")
+  }
+  if (is.null(mk2$cell_table)) {
+    message("`", xlab, "` has no cell groups")
+    mk2 <- fix_group(mk2, "group2")
+  }
   transform <- match.arg(transform)
   qfun <- NULL
   if (transform == "qq") {
@@ -158,4 +168,36 @@ collapse_group <- function(mk, groups, weights = NULL) {
   levels(mk$cell_table)[w] <- groups[1]
   
   updateMarkers(mk)
+}
+
+
+#' Fix cellMarkers signature with no cell groups
+#' 
+#' This function is designed to fix `cellMarkers` objects which were not created
+#' with a `cellgroup` vector and therefore have no cell grouping categories.
+#' This can cause issues during merging of cellMarkers objects.
+#' 
+#' @param mk A 'cellMarkers' class object.
+#' @param lab Character value to label the overarching group.
+#' @returns A 'cellMarkers' class list object in which the elements `cell_table`
+#'   and `groupmeans` have been updated.
+#' @seealso [mergeMarkers()]
+#' @export
+fix_group <- function(mk, lab) {
+  if (!inherits(mk, "cellMarkers")) stop("not a 'cellMarkers' object")
+  if (!is.null(mk$cell_table)) return(mk)
+  cell_table <- factor(rep_len(lab, ncol(mk$genemeans)))
+  names(cell_table) <- colnames(mk$genemeans)
+  mk$cell_table <- cell_table
+  
+  if (is.null(mk$groupmeans)) {
+    # weighted mean
+    w <- mk$subclass_table
+    w <- w / mean(w)
+    groupmeans <- as.matrix(colMeans(t(mk$genemeans) * w))
+    colnames(groupmeans) <- lab
+    mk$groupmeans <- groupmeans
+  }
+  
+  mk
 }
