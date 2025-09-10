@@ -70,8 +70,8 @@ mergeMarkers <- function(mk1, mk2,
   gm1 <- mk1$genemeans[common, ]
   gm2 <- mk2$genemeans[common, ]
   genemeans <- cbind(gm1, gm2)
-  gp1 <- mk1$groupmeans[common, ]
-  gp2 <- mk2$groupmeans[common, ]
+  gp1 <- mk1$groupmeans[common, , drop = FALSE]
+  gp2 <- mk2$groupmeans[common, , drop = FALSE]
   groupmeans <- cbind(gp1, gp2)
   gm1_ar <- mk1$genemeans_ar[common, ]
   gm2_ar <- mk2$genemeans_ar[common, ]
