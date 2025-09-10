@@ -192,7 +192,7 @@ fix_group <- function(mk, lab) {
   
   if (is.null(mk$groupmeans)) {
     # weighted mean
-    w <- mk$subclass_table
+    w <- as.numeric(mk$subclass_table[colnames(mk$genemeans)])
     w <- w / mean(w)
     groupmeans <- as.matrix(colMeans(t(mk$genemeans) * w))
     colnames(groupmeans) <- lab
