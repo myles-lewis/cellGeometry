@@ -1,5 +1,7 @@
 # Geometric single cell deconvolution
 
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/cellGeometry)](https://cran.r-project.org/package=cellGeometry)
+
 Ultrafast deconvolution of bulk RNA-Seq datasets using a single-cell RNA-Seq
 reference dataset in which cell clusters have been defined.
 
