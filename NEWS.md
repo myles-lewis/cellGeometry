@@ -1,6 +1,10 @@
 News
 =====
 
+# cellGeometry 0.5.5
+###### 10/09/2025
+* Fix bug in `mergeMarkers()` if cellMarkers object has no cell grouping vector.
+
 # cellGeometry 0.5.4
 ###### 09/09/2025
 * Fix CRAN checks
