@@ -329,8 +329,11 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       comp_amount[w] <- unlist(newcomps)
       atest <- deconv(test, cellmat, comp_amount, m_itself)
       # fix floating point errors
-      atest$output[atest$output < 0] <- 0
-      atest$percent[atest$percent < 0] <- 0
+      if (any(z <- atest$output < 0)) {
+        attr(atest$output, "min") <- min(atest$output)
+        atest$output[z] <- 0
+        atest$percent <- atest$output / rowSums(atest$output) * 100
+      }
     } else if (verbose) message("negative cell proportion projection detected")
   }
   if (resid) {

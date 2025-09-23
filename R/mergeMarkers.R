@@ -92,12 +92,15 @@ mergeMarkers <- function(mk1, mk2,
   cell_table <- c(mk1$cell_table, mk2$cell_table)
   rem_subcl <- colnames(genemeans) %in% remove_subclass |
     cell_table %in% remove_group
-  if (any(rem_subcl)) genemeans <- genemeans[, !rem_subcl]
-  cell_table <- cell_table[!rem_subcl]
-  old_levels <- levels(cell_table)
-  cell_table <- droplevels(cell_table)
-  gone <- setdiff(old_levels, levels(cell_table))
-  remove_group <- c(remove_group, gone)
+  if (any(rem_subcl)) {
+    genemeans <- genemeans[, !rem_subcl]
+    genemeans_ar <- genemeans_ar[, !rem_subcl]
+    cell_table <- cell_table[!rem_subcl]
+    old_levels <- levels(cell_table)
+    cell_table <- droplevels(cell_table)
+    gone <- setdiff(old_levels, levels(cell_table))
+    remove_group <- c(remove_group, gone)
+  }
   if (any(remove_group %in% colnames(groupmeans))) {
     grp <- !colnames(groupmeans) %in% remove_group
     groupmeans <- if (sum(grp) > 1) groupmeans[, grp] else NULL
