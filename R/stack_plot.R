@@ -168,6 +168,7 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
     xlab("") + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
+          axis.ticks = element_line(color = "black"),
           legend.key.size = unit(0.8, 'lines'),
           legend.spacing.y = unit(0, 'lines'))
   if (!show_xticks) p <- p + theme(axis.text.x = element_blank(),
