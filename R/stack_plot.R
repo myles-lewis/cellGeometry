@@ -98,7 +98,7 @@ stack_plot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
 #' @rdname stack_plot
 #' @importFrom ggplot2 ggplot geom_col aes scale_fill_manual xlab ylab
 #'   theme_classic theme element_text guide_legend guides guide_axis
-#'   scale_y_continuous expansion element_blank
+#'   scale_y_continuous expansion element_blank element_line
 #' @importFrom rlang .data
 #' @importFrom utils stack
 #' @export
