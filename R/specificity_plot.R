@@ -161,7 +161,8 @@ specificity_plot <- function(mk, subclass = NULL,
       xlab("Non-specific gene expression") +
       ylab(paste(subc, "mean expression")) +
       theme_classic() +
-      theme(axis.text = element_text(colour = "black"))
+      theme(axis.text = element_text(colour = "black"),
+            axis.ticks = element_line(color = "black"))
   } else {
     # angle on x, mean exp on y
     xr <- range(df$angle.deg, na.rm = TRUE)
@@ -178,7 +179,8 @@ specificity_plot <- function(mk, subclass = NULL,
       xlab("Vector angle") +
       ylab(paste(subc, "mean expression")) +
       theme_classic() +
-      theme(axis.text = element_text(colour = "black"))
+      theme(axis.text = element_text(colour = "black"),
+            axis.ticks = element_line(color = "black"))
   }
 }
 

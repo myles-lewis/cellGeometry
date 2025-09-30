@@ -102,5 +102,6 @@ ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     xlab("Bulk gene expression") + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
+          axis.ticks = element_line(color = "black"),
           legend.position = "none")
 }
