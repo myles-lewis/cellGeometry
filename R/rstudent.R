@@ -91,3 +91,43 @@ cooks_distance_fit <- function(fit) {
   mse <- rss / rdf
   (r / (1 - hat))^2 * outer(hat, mse, "/") / p
 }
+
+
+#' Extract Deconvolution Residuals
+#' 
+#' Extracts residuals from a deconvolution model. As the model uses a reduced
+#' signature gene set for deconvolution, in order to extract residuals for all
+#' genes, these need to recalculated by supplying the bulk count matrix `test`.
+#' 
+#' @param object a 'deconv' class object
+#' @param ... retained for class compatibility
+#' @param test bulk gene expression matrix assumed to be in raw counts
+#' @param arith_mean logical, whether to use arithmetic mean as gene signature
+#' @param use_filter logical, whether to use denoised signature matrix
+#' @returns Matrix of residuals.
+#' @export
+residuals.deconv <- function(object,
+                             test = NULL,
+                             arith_mean = FALSE, use_filter = FALSE, ...) {
+  if (is.null(test)) return(object$subclass$residuals)
+  # recalculate residuals
+  if (is.null(arith_mean)) arith_mean <- object$call$arith_mean
+  if (is.null(use_filter)) use_filter <- object$call$use_filter
+  if (arith_mean) {
+    cellmat <- if (use_filter) object$mk$genemeans_ar_filter else object$mk$genemeans_ar
+    if (is.null(cellmat)) stop("arithmetic mean not available")
+  } else {
+    cellmat <- if (use_filter) object$mk$genemeans_filter else object$mk$genemeans
+  }
+  nm <- object$call$test
+  .call <- match.call()
+  if (nm != .call$test) {
+    message("`", .call$test, "` does not match the bulk dataset `", nm,
+            "` used in `", .call$object, "`")
+  }
+  geneset <- intersect(rownames(cellmat), rownames(test))
+  cellmat <- cellmat[geneset, ]
+  test <- test[geneset, ]
+  cellmat <- 2^cellmat -1
+  residuals_deconv(test, cellmat, object$subclass$output)
+}

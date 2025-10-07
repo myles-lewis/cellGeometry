@@ -2,6 +2,7 @@
 
 S3method(cooks.distance,deconv)
 S3method(plot,qqmap)
+S3method(residuals,deconv)
 S3method(rstandard,deconv)
 S3method(rstudent,deconv)
 S3method(summary,cellMarkers)

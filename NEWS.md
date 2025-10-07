@@ -1,6 +1,10 @@
 News
 =====
 
+# cellGeometry 0.5.6
+###### 07/10/2025
+* Add `residuals.deconv()` to allow recalculation of full residuals matrix.
+
 # cellGeometry 0.5.5
 ###### 10/09/2025
 * Fix bug in `mergeMarkers()` if cellMarkers object has no cell grouping vector.
