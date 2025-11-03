@@ -14,8 +14,9 @@
 #'   columns. Can be sparse matrix or DelayedMatrix. Must have rownames 
 #'   representing gene IDs or gene symbols.
 #' @param bulkdata Optional data matrix containing bulk RNA-Seq data with genes
-#'   in rows. This matrix is only used for its rownames (gene IDs), to ensure
-#'   that cell markers are selected from genes in the bulk dataset.
+#'   in rows and samples in columns. This matrix is only used for its rownames
+#'   (gene IDs), to ensure that cell markers are selected from genes in the bulk
+#'   dataset.
 #' @param subclass Vector of cell subclasses matching the columns in `scdata`
 #' @param cellgroup Optional grouping vector of major cell types matching the
 #'   columns in `scdata`. `subclass` is assumed to contain subclasses which are

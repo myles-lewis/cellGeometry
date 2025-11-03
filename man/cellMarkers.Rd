@@ -31,8 +31,9 @@ columns. Can be sparse matrix or DelayedMatrix. Must have rownames
 representing gene IDs or gene symbols.}
 
 \item{bulkdata}{Optional data matrix containing bulk RNA-Seq data with genes
-in rows. This matrix is only used for its rownames (gene IDs), to ensure
-that cell markers are selected from genes in the bulk dataset.}
+in rows and samples in columns. This matrix is only used for its rownames
+(gene IDs), to ensure that cell markers are selected from genes in the bulk
+dataset.}
 
 \item{subclass}{Vector of cell subclasses matching the columns in \code{scdata}}
 
