@@ -145,6 +145,7 @@ deconvolute <- function(mk, test, log = TRUE,
   weight_method <- match.arg(weight_method, c("none", "equal"))
   outlier_method <- match.arg(outlier_method)
   test <- as.matrix(test)
+  if (any(test < 0)) stop("`test` contains negative values")
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
@@ -159,7 +160,7 @@ deconvolute <- function(mk, test, log = TRUE,
     cellmat <- if (use_filter) {mk$groupmeans_filtered[mk$group_geneset, ]
     } else mk$groupmeans[mk$group_geneset, ]
     if (!all(mk$group_geneset %in% rownames(test)))
-      stop("test is missing some group signature genes")
+      stop("`test` is missing some group signature genes")
     logtest <- test[mk$group_geneset, , drop = FALSE]
     if (log) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
@@ -181,7 +182,7 @@ deconvolute <- function(mk, test, log = TRUE,
   }
   # cellmat <- sc2bulk(cellmat)
   if (!all(mk$geneset %in% rownames(test)))
-    stop("test is missing some signature genes")
+    stop("`test` is missing some signature genes")
   logtest2 <- test[mk$geneset, , drop = FALSE]
   if (log) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
