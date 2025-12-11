@@ -429,6 +429,13 @@ in `fit$group$output` and `fit$group$percent`.
 
 ## Real bulk RNA-Seq settings
 
+We recommend that bulk RNA-Seq sample data is provided as raw counts.
+Log<sub>2</sub> transformed data can be inputted, but it is important that the
+transformed data is *not* offset, i.e. the algorithm expects that zero in the
+bulk really means zero expression. Some transformation methods, e.g. variance
+stabilising transform (VST), mean that there is an offset so that zero counts
+equates to a positive number. This typed of transformed data cannot be used.
+
 With a real bulk RNA-Seq dataset the first step is to ensure that only genes
 which are present in the bulk data are used for the gene signatures. This is
 achieved using the function `updateMarkers()`.

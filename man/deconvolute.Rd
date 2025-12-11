@@ -7,7 +7,7 @@
 deconvolute(
   mk,
   test,
-  log = TRUE,
+  logged_bulk = FALSE,
   count_space = TRUE,
   comp_amount = 1,
   group_comp_amount = 0,
@@ -31,10 +31,10 @@ deconvolute(
 
 \item{test}{matrix of bulk RNA-Seq to be deconvoluted with genes in rows and
 samples in columns. We recommend raw counts as input, but normalised data
-can be provided, in which case set \code{log = FALSE}.}
+can be provided, in which case set \code{logged_bulk = TRUE}.}
 
-\item{log}{Logical, whether to apply log2 +1 to count data in \code{test}. Set to
-\code{FALSE} if prenormalised bulk RNA-Seq data is provided.}
+\item{logged_bulk}{Logical, whether log2 transformed bulk RNA-Seq data is
+used as input in \code{test}.}
 
 \item{count_space}{Logical, whether deconvolution is performed in count
 space (as opposed to log2 space). Signature and test revert to count scale

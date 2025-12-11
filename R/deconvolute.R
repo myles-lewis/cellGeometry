@@ -7,9 +7,9 @@
 #' @param mk object of class 'cellMarkers'. See [cellMarkers()].
 #' @param test matrix of bulk RNA-Seq to be deconvoluted with genes in rows and
 #'   samples in columns. We recommend raw counts as input, but normalised data
-#'   can be provided, in which case set `log = FALSE`.
-#' @param log Logical, whether to apply log2 +1 to count data in `test`. Set to
-#'   `FALSE` if prenormalised bulk RNA-Seq data is provided.
+#'   can be provided, in which case set `logged_bulk = TRUE`.
+#' @param logged_bulk Logical, whether log2 transformed bulk RNA-Seq data is
+#'   used as input in `test`.
 #' @param count_space Logical, whether deconvolution is performed in count
 #'   space (as opposed to log2 space). Signature and test revert to count scale
 #'   by 2^ exponentiation during deconvolution.
@@ -123,7 +123,8 @@
 #' @importFrom stats optimise
 #' @export
 #'
-deconvolute <- function(mk, test, log = TRUE,
+deconvolute <- function(mk, test,
+                        logged_bulk = FALSE,
                         count_space = TRUE,
                         comp_amount = 1,
                         group_comp_amount = 0,
@@ -151,7 +152,8 @@ deconvolute <- function(mk, test, log = TRUE,
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
   if (convert_bulk == "qqmap") {
     if (verbose) message("Quantile map bulk to sc, ", appendLF = FALSE)
-    qqmap <- quantile_map(log2(test +1), mk$genemeans, remove_zeros = TRUE)
+    logtest0 <- if (logged_bulk) test else log2(test +1)
+    qqmap <- quantile_map(logtest0, mk$genemeans, remove_zeros = TRUE)
   }
   bulk2scfun <- switch(convert_bulk, "ref" = bulk2sc, "qqmap" = qqmap$map)
   
@@ -162,7 +164,7 @@ deconvolute <- function(mk, test, log = TRUE,
     if (!all(mk$group_geneset %in% rownames(test)))
       stop("`test` is missing some group signature genes")
     logtest <- test[mk$group_geneset, , drop = FALSE]
-    if (log) logtest <- log2(logtest +1)
+    if (!logged_bulk) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
                            adjust_comp, count_space, weight_method,
@@ -184,7 +186,7 @@ deconvolute <- function(mk, test, log = TRUE,
   if (!all(mk$geneset %in% rownames(test)))
     stop("`test` is missing some signature genes")
   logtest2 <- test[mk$geneset, , drop = FALSE]
-  if (log) logtest2 <- log2(logtest2 +1)
+  if (!logged_bulk) logtest2 <- log2(logtest2 +1)
   if (convert_bulk != "none") logtest2 <- bulk2scfun(logtest2)
   atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
                             weight_method, adjust_comp, count_space, npass,
