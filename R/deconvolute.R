@@ -316,7 +316,8 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
   }
   
   m_itself <- dotprod(cellmat, cellmat)
-  atest <- deconv(test, cellmat, comp_amount, m_itself)
+  rawcomp <- solve(m_itself)
+  atest <- deconv(test, cellmat, comp_amount, m_itself, rawcomp)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
@@ -327,7 +328,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
-          ntest <- quick_deconv(test, cellmat, newcomp, m_itself, wi)
+          ntest <- quick_deconv(test, cellmat, newcomp, m_itself, rawcomp, wi)
           min(ntest, na.rm = TRUE)^2
         }
         if (comp_amount[wi] == 0) return(0)
@@ -335,7 +336,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         xmin$minimum
       }, progress = verbose, mc.cores = cores)
       comp_amount[w] <- unlist(newcomps)
-      atest <- deconv(test, cellmat, comp_amount, m_itself)
+      atest <- deconv(test, cellmat, comp_amount, m_itself, rawcomp)
       # fix floating point errors
       if (any(z <- atest$output < 0)) {
         attr(atest$output, "min") <- min(atest$output)
@@ -369,9 +370,9 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
 }
 
 
-deconv <- function(test, cellmat, comp_amount, m_itself) {
-  rawcomp <- solve(m_itself)
-  mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
+deconv <- function(test, cellmat, comp_amount, m_itself, rawcomp) {
+  endcomp <- comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)
+  mixcomp <- tcrossprod(rawcomp, endcomp)
   output <- dotprod(test, cellmat) %*% mixcomp
   percent <- output / rowSums(output) * 100
   
@@ -381,8 +382,9 @@ deconv <- function(test, cellmat, comp_amount, m_itself) {
 }
 
 
-quick_deconv <- function(test, cellmat, comp_amount, m_itself, wi) {
-  mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
+quick_deconv <- function(test, cellmat, comp_amount, m_itself, rawcomp, wi) {
+  endcomp <- comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)
+  mixcomp <- tcrossprod(m_itself, endcomp)
   dotprod(test, cellmat) %*% mixcomp[, wi, drop = FALSE]
 }
 
@@ -433,11 +435,12 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
   px <- seq(0, 1, 0.05)
   
   m_itself <- dotprod(cellmat, cellmat)
+  rawcomp <- solve(m_itself)
   out <- mclapply(seq_len(ncol(cellmat)), function(i) {
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- quick_deconv(test, cellmat, newcomp, m_itself, i)
+      ntest <- quick_deconv(test, cellmat, newcomp, m_itself, rawcomp, i)
       min(ntest, na.rm = TRUE)
     }, numeric(1))
   }, mc.cores = cores)
