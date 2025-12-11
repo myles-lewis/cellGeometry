@@ -373,8 +373,6 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
 deconv <- function(test, cellmat, comp_amount, m_itself, rawcomp) {
   endcomp <- comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)
   mixcomp <- tcrossprod(rawcomp, endcomp)
-  # original
-  # mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
   output <- dotprod(test, cellmat) %*% mixcomp
   percent <- output / rowSums(output) * 100
   
@@ -383,16 +381,8 @@ deconv <- function(test, cellmat, comp_amount, m_itself, rawcomp) {
        comp_amount = comp_amount)
 }
 
-
+# single column
 quick_deconv <- function(test, cellmat, comp_amount, m_itself, rawcomp, wi) {
-  # original
-  # mixcomp <- solve(m_itself, t(comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)))
-  # dotprod(test, cellmat) %*% mixcomp[, wi, drop = FALSE]
-  # v2
-  # endcomp <- comp_amount * diag(nrow(m_itself)) + (1-comp_amount) * t(m_itself)
-  # mixcomp <- tcrossprod(rawcomp, endcomp)
-  # dotprod(test, cellmat) %*% mixcomp[, wi, drop = FALSE]
-  
   endcomp <- (1-comp_amount[wi]) * m_itself[, wi]
   endcomp[wi] <- endcomp[wi] + comp_amount[wi]
   mixcomp <- rawcomp %*% endcomp
