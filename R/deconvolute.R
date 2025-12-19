@@ -134,6 +134,7 @@ deconvolute <- function(mk, test,
                         use_filter = TRUE,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
+                        lambda = NULL,
                         check_comp = FALSE,
                         npass = 1,
                         outlier_method = c("var.e", "cooks", "rstudent"),
@@ -167,7 +168,7 @@ deconvolute <- function(mk, test,
     if (!logged_bulk) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
-                           adjust_comp, count_space, weight_method,
+                           adjust_comp, count_space, weight_method, lambda,
                            verbose = verbose, resid = FALSE)
   } else {
     gtest <- NULL
@@ -191,7 +192,7 @@ deconvolute <- function(mk, test,
   atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
                             weight_method, adjust_comp, count_space, npass,
                             outlier_method, outlier_cutoff, outlier_quantile,
-                            verbose, cores)
+                            lambda, verbose, cores)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -223,8 +224,8 @@ deconvolute <- function(mk, test,
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
     if (verbose) message("analysing compensation")
-    out$comp_check <- comp_check(logtest2, cellmat, comp_amount,
-                                 weights, weight_method, count_space, cores)
+    out$comp_check <- comp_check(logtest2, cellmat, comp_amount, weights,
+                                 weight_method, count_space, lambda, cores)
   }
   class(out) <- "deconv"
   out
@@ -234,9 +235,9 @@ deconvolute <- function(mk, test,
 deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
                              adjust_comp, count_space, npass,
                              outlier_method, outlier_cutoff, outlier_quantile,
-                             verbose, cores) {
+                             lambda, verbose, cores) {
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                       adjust_comp, count_space, weight_method,
+                       adjust_comp, count_space, weight_method, lambda,
                        cores, verbose)
   metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
   outlier <- metric > outlier_cutoff
@@ -264,7 +265,7 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     weights <- weights[!outlier]
     if (nrow(cellmat) < ncol(cellmat)) stop("insufficient genes")
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, weight_method,
+                         adjust_comp, count_space, weight_method, lambda,
                          cores, verbose)
     metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
     outlier <- metric > outlier_cutoff
@@ -290,7 +291,7 @@ outlier_metric <- function(fit, outlier_method, outlier_quantile, count_space) {
 
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
                           adjust_comp, count_space,
-                          weight_method = "", cores = 1L, verbose = TRUE,
+                          weight_method = "", lambda, cores = 1L, verbose = TRUE,
                           resid = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
@@ -316,6 +317,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
   }
   
   m_itself <- dotprod(cellmat, cellmat)
+  if (!is.null(lambda)) m_itself <- m_itself + diag(nrow(m_itself)) * lambda
   rawcomp <- solve(m_itself)
   atest <- deconv(test, cellmat, comp_amount, m_itself, rawcomp)
   if (any(atest$output < 0)) {
@@ -416,7 +418,7 @@ bulk2sc <- function(x) {
 
 
 comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
-                       count_space, cores) {
+                       count_space, lambda, cores) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (count_space) {
@@ -436,6 +438,7 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
   px <- seq(0, 1, 0.05)
   
   m_itself <- dotprod(cellmat, cellmat)
+  if (!is.null(lambda)) m_itself <- m_itself + diag(nrow(m_itself)) * lambda
   rawcomp <- solve(m_itself)
   out <- mclapply(seq_len(ncol(cellmat)), function(i) {
     newcomp <- comp_amount

@@ -133,7 +133,8 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
     ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
-    df <- data.frame(subclass = rownames(out), ngene, row.names = NULL)
+    df <- data.frame(subclass = rownames(out), ngene,
+                     resvar = mean(fit$subclass$resvar), row.names = NULL)
     df <- cbind(df, out)
     return(df)
   }
@@ -149,7 +150,7 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
     out <- metric_set(samples, fit_output)
     ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
     df <- data.frame(grid2_row, subclass = rownames(out), ngene,
-                     row.names = NULL)
+                     resvar = mean(fit$subclass$resvar), row.names = NULL)
     cbind(df, out)
   }, mc.cores = cores, mc.preschedule = FALSE)
   do.call(rbind, res)
@@ -181,13 +182,13 @@ summary.tune_deconv <- function(object,
                                 method = attr(object, "method"),
                                 ...) {
   method <- match.arg(method, c("top", "overall"))
-  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
+  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE", "resvar"))
+  metFUN <- if (metric %in% c("RMSE", "resvar")) which.min else which.max
   
   params <- colnames(object)
-  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
+  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   mres <- tune_stats(object, metric, params)
-  w <- if (metric == "RMSE") {which.min(mres$mean.RMSE)
-    } else which.max(mres[, paste0("mean.", metric)])
+  w <- metFUN(mres[, paste0("mean.", metric)])
   
   if (method == attr(object, "method") && metric == attr(object, "metric")) {
     best_tune <- attr(object, "tune")
@@ -198,7 +199,7 @@ summary.tune_deconv <- function(object,
     best_tune <- lapply(params, function(i) {
       mres <- aggregate(object[, metric], by = object[, i, drop = FALSE],
                         FUN = mean, na.rm = TRUE)
-      w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
+      w <- metFUN(mres$x)
       mres[w, i]
     })
     best_tune <- data.frame(best_tune)
@@ -213,7 +214,7 @@ summary.tune_deconv <- function(object,
 
 
 tune_stats <- function(object, metric, params) {
-  mets <- c("pearson.rsq", "Rsq", "RMSE")
+  mets <- c("pearson.rsq", "Rsq", "RMSE", "resvar")
   mres <- aggregate(object[, mets], by = object[, params, drop = FALSE],
                     FUN = mean, na.rm = TRUE)
   w <- which(colnames(mres) %in% mets)
@@ -237,7 +238,9 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
   }
   ret <- lapply(levels(object$subclass), function(i) {
     sub <- object[object$subclass == i, ]
-    w <- if (metric != "RMSE") which.max(sub[, metric]) else which.min(sub[, metric])
+    w <- if (metric %in% c("RMSE", "resvar")) {
+      which.min(sub[, metric])
+    } else which.max(sub[, metric])
     sub$nsubclass[w]
   })
   names(ret) <- levels(object$subclass)
@@ -281,9 +284,10 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       fix = NULL,
                       metric = attr(result, "metric"), title = NULL) {
   params <- colnames(result)
-  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
+  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   if (!xvar %in% params) stop("incorrect `xvar`")
-  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq"))
+  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar"))
+  if (metric == "resvar" & group == "subclass") group <- NULL
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
