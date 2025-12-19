@@ -287,12 +287,13 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   if (!xvar %in% params) stop("incorrect `xvar`")
   metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar"))
-  if (metric == "resvar" & group == "subclass") group <- NULL
+  if (metric == "resvar" && !is.null(group) && group == "subclass") group <- NULL
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
     
     p <- ggplot(result, aes(x = .data[[xvar]], y = .data[[metric]])) +
+      stat_summary(fun = mean, geom = "line", col = "limegreen") +
       stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
                    width = 0.02 * xdiff) +
       stat_summary(fun = mean, geom = "point", col = "black") +
