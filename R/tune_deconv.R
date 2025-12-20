@@ -285,7 +285,6 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   if (!xvar %in% params) stop("incorrect `xvar`")
   metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar"))
-  if (metric == "resvar" && !is.null(group) && group == "subclass") group <- NULL
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
@@ -308,7 +307,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   
   mres <- aggregate(result[, metric], by = result[, params, drop = FALSE],
                     FUN = mean, na.rm = TRUE)
-  w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
+  w <- if (metric %in% c("RMSE", "resvar")) which.min(mres$x) else which.max(mres$x)
   colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
   best_tune <- mres[w, ]
   
