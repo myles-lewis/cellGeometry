@@ -77,21 +77,19 @@ tune_deconv <- function(mk, test, samples, grid,
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
-    cores2 <- 1  # nested
-    if (nrow(grid1) < cores) cores2 <- floor(cores / nrow(grid1))
     res <- pbmclapply(seq_len(nrow(grid1)), function(i) {
       args <- list(object = mk)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
-      df2 <- tune_dec(mk_update, test, samples, grid2, output, cores2, ...)
+      df2 <- tune_dec(mk_update, test, samples, grid2, output, ...)
       data.frame(grid1_row, df2, row.names = NULL)
-    }, mc.cores = cores, mc.preschedule = FALSE)
+    }, progress = verbose, mc.cores = cores, mc.preschedule = FALSE)
     res <- do.call(rbind, res)
   } else {
     # null grid1
     if (is.null(grid2)) stop("No parameters to tune")
-    res <- tune_dec(mk, test, samples, grid2, output, cores, ...)
+    res <- tune_dec(mk, test, samples, grid2, output, verbose, cores, ...)
   }
   res$subclass <- factor(res$subclass, levels = names(mk$cell_table))
   
@@ -127,7 +125,8 @@ tune_deconv <- function(mk, test, samples, grid,
 
 
 # tune inner grid of arguments for deconvolute()
-tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
+tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
+                     cores = 1L, ...) {
   if (is.null(grid2)) {
     fit <- deconvolute(mk, test, verbose = FALSE, ...) |> suppressMessages()
     fit_output <- fit$subclass[[output]]
@@ -139,10 +138,10 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
     return(df)
   }
   # loop grid2
-  res <- pbmclapply(seq_len(nrow(grid2)), function(i) {
-    dots <- list(...)
+  dots <- list(...)
+  args <- list(mk = mk, test = test, verbose = FALSE)
+  res <- pmclapply(seq_len(nrow(grid2)), function(i) {
     grid2_row <- grid2[i, , drop = FALSE]
-    args <- list(mk = mk, test = test, verbose = FALSE)
     args <- c(args, grid2_row)
     if (length(dots)) args[names(dots)] <- dots
     fit <- do.call("deconvolute", args) |> suppressMessages()
@@ -152,7 +151,7 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
     df <- data.frame(grid2_row, subclass = rownames(out), ngene,
                      resvar = mean(fit$subclass$resvar), row.names = NULL)
     cbind(df, out)
-  }, mc.cores = cores, mc.preschedule = FALSE)
+  }, progress = progress, mc.cores = cores, mc.preschedule = FALSE)
   do.call(rbind, res)
 }
 
