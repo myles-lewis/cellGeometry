@@ -17,6 +17,7 @@ deconvolute(
   use_filter = TRUE,
   arith_mean = FALSE,
   convert_bulk = FALSE,
+  lambda = NULL,
   check_comp = FALSE,
   npass = 1,
   outlier_method = c("var.e", "cooks", "rstudent"),
@@ -66,6 +67,8 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 \item{convert_bulk}{either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
+
+\item{lambda}{numeric value of ridge parameter lambda.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses. See \code{\link[=plot_comp]{plot_comp()}}.}

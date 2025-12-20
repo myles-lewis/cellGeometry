@@ -32,6 +32,7 @@
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
+#' @param lambda numeric value of ridge parameter lambda. 
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses. See [plot_comp()].
 #' @param npass Number of passes. If `npass` set to 2 or more this activates

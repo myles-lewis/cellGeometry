@@ -48,7 +48,6 @@
 #' 
 #' @seealso [plot_tune()] [summary.tune_deconv()]
 #' @importFrom stats aggregate
-#' @importFrom pbmcapply pbmclapply
 #' @export
 tune_deconv <- function(mk, test, samples, grid,
                         output = "output",
@@ -77,7 +76,7 @@ tune_deconv <- function(mk, test, samples, grid,
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
-    res <- pbmclapply(seq_len(nrow(grid1)), function(i) {
+    res <- pmclapply(seq_len(nrow(grid1)), function(i) {
       args <- list(object = mk)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)

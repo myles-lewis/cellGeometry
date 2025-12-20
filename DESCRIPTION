@@ -27,7 +27,6 @@ Imports:
     matrixStats,
     mcprogress,
     parallel,
-    pbmcapply,
     rlang,
     scales
 Roxygen: list(markdown = TRUE)
