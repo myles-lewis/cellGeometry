@@ -32,7 +32,8 @@
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
-#' @param lambda numeric value of ridge parameter lambda. 
+#' @param lambda numeric value of ridge parameter lambda. Only applied to
+#'   subclass deconvolution, not applied to cell group analysis.
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses. See [plot_comp()].
 #' @param npass Number of passes. If `npass` set to 2 or more this activates
@@ -169,8 +170,8 @@ deconvolute <- function(mk, test,
     if (!logged_bulk) logtest <- log2(logtest +1)
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
-                           adjust_comp, count_space, weight_method, lambda,
-                           verbose = verbose, resid = FALSE)
+                           adjust_comp, count_space, weight_method,
+                           lambda = NULL, verbose = verbose, resid = FALSE)
   } else {
     gtest <- NULL
   }
@@ -254,13 +255,14 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     i <- i +1
     remove_genes <- sort(metric[outlier], decreasing = TRUE)
     removed <- c(removed, remove_genes)
-    rem_names <- names(remove_genes)
-    if (length(remove_genes) > 20) {
-      rem_names <- c(rem_names[1:20],
-                    paste0("... [", length(remove_genes), " genes]"))
+    if (verbose) {
+      rem_names <- names(remove_genes)
+      if (length(remove_genes) > 20) {
+        rem_names <- c(rem_names[1:20],
+                       paste0("... [", length(remove_genes), " genes]"))
+      }
+      message("Pass ", i, " - removed ", paste(rem_names, collapse = ", "))
     }
-    if (verbose) message("Pass ", i, " - removed ",
-                         paste(rem_names, collapse = ", "))
     test <- test[!outlier, , drop = FALSE]
     cellmat <- cellmat[!outlier, , drop = FALSE]
     weights <- weights[!outlier]
@@ -390,31 +392,6 @@ quick_deconv <- function(test, cellmat, comp_amount, m_itself, rawcomp, wi) {
   endcomp[wi] <- endcomp[wi] + comp_amount[wi]
   mixcomp <- rawcomp %*% endcomp
   dotprod(test, cellmat) %*% mixcomp
-}
-
-
-approxfun.matrix <- function(x, FUN) {
-  if (is.data.frame(x)) x <- as.matrix(x)
-  if (is.matrix(x)) {
-    out <- FUN(as.vector(x))
-    out <- matrix(out, nrow = nrow(x), dimnames = dimnames(x))
-    return(out)
-  }
-  FUN(x)
-}
-
-#' @importFrom stats approxfun
-sc2bulk <- function(x) {
-  sc2bulkfun <- approxfun(x = celseqfit$celseq, y = celseqfit$pred.bulk,
-                          yleft = 0, rule = 2)
-  approxfun.matrix(x, sc2bulkfun)
-}
-
-
-bulk2sc <- function(x) {
-  bulk2scfun <- approxfun(x = celseqfit$pred.bulk, y = celseqfit$celseq,
-                          yleft = 0, rule = 2)
-  approxfun.matrix(x, bulk2scfun)
 }
 
 
