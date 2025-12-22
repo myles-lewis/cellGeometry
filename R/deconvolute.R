@@ -119,6 +119,10 @@
 #'       \item `hat`, diagonal elements of the hat matrix
 #'       \item `removed`, vector of outlying genes removed during successive 
 #'       passes
+#'       \item `cv`, optional list object included when `cv_lambda = TRUE`, 
+#'       containing `mmse`, a matrix of mean & sem of mean squared error for 
+#'       each value of lambda, and `lambda.min`, the value of lambda that gives 
+#'       the lowest `mmse`
 #'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
 #'   cell group analysis.}

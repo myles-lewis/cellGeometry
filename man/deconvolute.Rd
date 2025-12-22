@@ -123,6 +123,10 @@ for each sample
 \item \code{hat}, diagonal elements of the hat matrix
 \item \code{removed}, vector of outlying genes removed during successive
 passes
+\item \code{cv}, optional list object included when \code{cv_lambda = TRUE},
+containing \code{mmse}, a matrix of mean & sem of mean squared error for
+each value of lambda, and \code{lambda.min}, the value of lambda that gives
+the lowest \code{mmse}
 }}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}
