@@ -1,6 +1,29 @@
 News
 =====
 
+# cellGeometry 0.6.0
+###### 22/12/2025
+
+## New features
+
+* Speed up variable compensation.
+* Add ridge parameter `lambda` to `deconvolute()`.
+* Add cross-validation of `lambda`.
+* Add `resvar` metric to `tune_deconv()` to examine residual variance of bulk 
+gene expression.
+
+## Important bugfix
+
+* R 4.5.2 for macOS arm64 (Apple M* Macs) has switched to using a faster BLAS 
+(vecLib?) by default which causes errors with parallelisation in `mclapply()`. 
+The problem is isolated to R 4.5.2 arm64 for macOS on M* Macs, or any version of 
+R for macOS including intel, if the vecLib BLAS is being used via a symlink. The 
+solution is to use `cores = 1` with `deconvolute()` and `tune_deconv()` whenever 
+vecLib BLAS is in use.
+* Remove use of `pbmclapply()` as this caused problems with R 4.5.2 for macOS 
+arm64 (Apple M* Macs) even with `cores=1`. This fixes indefinite hanging in 
+`tune_deconv()` with vecLib BLAS.
+
 # cellGeometry 0.5.7
 ###### 11/12/2025
 * Change `log` argument in `deconvolute()` to `logged_bulk`. NB. this is a 
