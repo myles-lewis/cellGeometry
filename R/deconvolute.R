@@ -92,7 +92,7 @@
 #' to deconvolution accuracy in simulations at the expense of speed. The default
 #' lambda sequence has 20 values and CV uses 10 folds, so deconvolution is
 #' performed 200 times by default. Results on real bulk samples are still to be
-#' evaluated.
+#' evaluated. The lambda CV curve can be plotted using [plot_cv()].
 #' 
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
@@ -131,7 +131,7 @@
 #'   \item{comp_amount}{original argument `comp_amount`}
 #'   \item{comp_check}{optional list element returned when `check_comp = TRUE`}
 #' @seealso [cellMarkers()] [updateMarkers()] [rstudent.deconv()]
-#'   [cooks.distance.deconv()]
+#'   [cooks.distance.deconv()] [plot_cv()]
 #' @author Myles Lewis
 #' @importFrom matrixStats colMins rowQuantiles rowVars
 #' @importFrom stats optimise

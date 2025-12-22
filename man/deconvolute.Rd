@@ -182,11 +182,11 @@ experimental. Here, the holdout 'samples' are genes. It gives a slight uplift
 to deconvolution accuracy in simulations at the expense of speed. The default
 lambda sequence has 20 values and CV uses 10 folds, so deconvolution is
 performed 200 times by default. Results on real bulk samples are still to be
-evaluated.
+evaluated. The lambda CV curve can be plotted using \code{\link[=plot_cv]{plot_cv()}}.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
-\code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}}
+\code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}} \code{\link[=plot_cv]{plot_cv()}}
 }
 \author{
 Myles Lewis
