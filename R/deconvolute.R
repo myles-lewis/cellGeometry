@@ -32,9 +32,12 @@
 #' @param convert_bulk either "ref" to convert bulk RNA-Seq to scRNA-Seq scaling
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
-#' @param lambda numeric value of ridge parameter lambda. Only applied to
-#'   subclass deconvolution, not applied to cell group analysis.
-#' @param cv_lambda logical, whether to tune lambda using cross-validation.
+#' @param lambda Either a single numeric value of ridge parameter lambda. Or
+#'   when `cv_lambda = TRUE`, an optional vector of lambda values to be tested
+#'   using cross-validation. Only applied to subclass deconvolution, not applied
+#'   to cell group analysis.
+#' @param cv_lambda logical, whether to tune lambda using cross-validation. If
+#'   `lambda` is not supplied, a default sequence is used.
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses. See [plot_comp()].
 #' @param npass Number of passes. If `npass` set to 2 or more this activates
@@ -83,11 +86,13 @@
 #' normally distributed either, which probably explains the need for a very high
 #' cut-off. In practice the choice of settings seems to be dataset dependent.
 #' 
-#' Use of the ridge parameter lambda which adds L1 regularisation to the
-#' compensation (moment) matrix is experimental, as is tuning of lambda using
-#' cross-validation. In this situation, the hold out 'samples' are genes. It
-#' gives a slight uplift to deconvolution accuracy in simulations. Results on
-#' real bulk samples are still to be determined.
+#' Use of the ridge parameter lambda, which adds L2 regularisation to the
+#' compensation (moment) matrix, and tuning of lambda using cross-validation are
+#' experimental. Here, the holdout 'samples' are genes. It gives a slight uplift
+#' to deconvolution accuracy in simulations at the expense of speed. The default
+#' lambda sequence has 20 values and CV uses 10 folds, so deconvolution is
+#' performed 200 times by default. Results on real bulk samples are still to be
+#' evaluated.
 #' 
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
@@ -158,6 +163,10 @@ deconvolute <- function(mk, test,
   outlier_method <- match.arg(outlier_method)
   test <- as.matrix(test)
   if (any(test < 0)) stop("`test` contains negative values")
+  if (cv_lambda && length(lambda) == 1)
+    stop("need more than 1 value of lambda for cross-validation")
+  if (!cv_lambda && length(lambda) > 1)
+    stop("cross-validation is required with multiple values of lambda")
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
@@ -246,8 +255,9 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
                              adjust_comp, count_space, npass,
                              outlier_method, outlier_cutoff, outlier_quantile,
                              lambda, cv_lambda, verbose, cores) {
+  lambda1 <- if (cv_lambda) NULL else lambda
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                       adjust_comp, count_space, weight_method, lambda,
+                       adjust_comp, count_space, weight_method, lambda1,
                        cores, verbose)
   metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
   outlier <- metric > outlier_cutoff
@@ -276,7 +286,7 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     weights <- weights[!outlier]
     if (nrow(cellmat) < ncol(cellmat)) stop("insufficient genes")
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, weight_method, lambda,
+                         adjust_comp, count_space, weight_method, lambda1,
                          cores, verbose)
     metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
     outlier <- metric > outlier_cutoff

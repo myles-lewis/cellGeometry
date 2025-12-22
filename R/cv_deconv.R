@@ -19,7 +19,7 @@ cv_deconv <- function(test, cellmat, comp_amount, weights,
   # CV
   if (verbose) message("CV lambda")
   nfolds <- 10L
-  lam_set <- c(0, 10^seq(-4, 0, length = 25))
+  lam_set <- lambda %||% c(0, 10^seq(-4, 0, length = 25))
   folds <- sample(rep_len(seq_len(nfolds), nrow(cellmat)))
   # for each fold do lambda set
   mse <- pmclapply(seq_len(nfolds), function(i) {

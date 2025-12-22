@@ -69,10 +69,13 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
-\item{lambda}{numeric value of ridge parameter lambda. Only applied to
-subclass deconvolution, not applied to cell group analysis.}
+\item{lambda}{Either a single numeric value of ridge parameter lambda. Or
+when \code{cv_lambda = TRUE}, an optional vector of lambda values to be tested
+using cross-validation. Only applied to subclass deconvolution, not applied
+to cell group analysis.}
 
-\item{cv_lambda}{logical, whether to tune lambda using cross-validation.}
+\item{cv_lambda}{logical, whether to tune lambda using cross-validation. If
+\code{lambda} is not supplied, a default sequence is used.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses. See \code{\link[=plot_comp]{plot_comp()}}.}
@@ -173,11 +176,13 @@ not derive from a normal distribution, the errors and residuals are not
 normally distributed either, which probably explains the need for a very high
 cut-off. In practice the choice of settings seems to be dataset dependent.
 
-Use of the ridge parameter lambda which adds L1 regularisation to the
-compensation (moment) matrix is experimental, as is tuning of lambda using
-cross-validation. In this situation, the hold out 'samples' are genes. It
-gives a slight uplift to deconvolution accuracy in simulations. Results on
-real bulk samples are still to be determined.
+Use of the ridge parameter lambda, which adds L2 regularisation to the
+compensation (moment) matrix, and tuning of lambda using cross-validation are
+experimental. Here, the holdout 'samples' are genes. It gives a slight uplift
+to deconvolution accuracy in simulations at the expense of speed. The default
+lambda sequence has 20 values and CV uses 10 folds, so deconvolution is
+performed 200 times by default. Results on real bulk samples are still to be
+evaluated.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
