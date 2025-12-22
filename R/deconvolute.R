@@ -34,6 +34,7 @@
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param lambda numeric value of ridge parameter lambda. Only applied to
 #'   subclass deconvolution, not applied to cell group analysis.
+#' @param cv_lambda logical, whether to tune lambda using cross-validation.
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses. See [plot_comp()].
 #' @param npass Number of passes. If `npass` set to 2 or more this activates
@@ -81,6 +82,12 @@
 #' not derive from a normal distribution, the errors and residuals are not
 #' normally distributed either, which probably explains the need for a very high
 #' cut-off. In practice the choice of settings seems to be dataset dependent.
+#' 
+#' Use of the ridge parameter lambda which adds L1 regularisation to the
+#' compensation (moment) matrix is experimental, as is tuning of lambda using
+#' cross-validation. In this situation, the hold out 'samples' are genes. It
+#' gives a slight uplift to deconvolution accuracy in simulations. Results on
+#' real bulk samples are still to be determined.
 #' 
 #' @returns A list object of S3 class 'deconv' containing:
 #'   \item{call}{the matched call}
@@ -137,6 +144,7 @@ deconvolute <- function(mk, test,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
                         lambda = NULL,
+                        cv_lambda = FALSE,
                         check_comp = FALSE,
                         npass = 1,
                         outlier_method = c("var.e", "cooks", "rstudent"),
@@ -194,7 +202,7 @@ deconvolute <- function(mk, test,
   atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
                             weight_method, adjust_comp, count_space, npass,
                             outlier_method, outlier_cutoff, outlier_quantile,
-                            lambda, verbose, cores)
+                            lambda, cv_lambda, verbose, cores)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -237,7 +245,7 @@ deconvolute <- function(mk, test,
 deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
                              adjust_comp, count_space, npass,
                              outlier_method, outlier_cutoff, outlier_quantile,
-                             lambda, verbose, cores) {
+                             lambda, cv_lambda, verbose, cores) {
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                        adjust_comp, count_space, weight_method, lambda,
                        cores, verbose)
@@ -272,6 +280,18 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
                          cores, verbose)
     metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
     outlier <- metric > outlier_cutoff
+  }
+  
+  # tune lambda
+  if (cv_lambda) {
+    cv <- cv_deconv(test, cellmat, comp_amount, weights,
+                    adjust_comp, count_space, weight_method, lambda,
+                    cores, verbose)
+    # refit with best lambda
+    fit <- deconv_adjust(test, cellmat, comp_amount, weights,
+                         adjust_comp, count_space, weight_method,
+                         lambda = cv$lambda.min, cores, verbose = FALSE)
+    fit$cv <- cv
   }
   fit$removed <- removed
   fit

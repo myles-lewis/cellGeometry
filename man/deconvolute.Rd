@@ -18,6 +18,7 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = FALSE,
   lambda = NULL,
+  cv_lambda = FALSE,
   check_comp = FALSE,
   npass = 1,
   outlier_method = c("var.e", "cooks", "rstudent"),
@@ -68,7 +69,10 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
-\item{lambda}{numeric value of ridge parameter lambda.}
+\item{lambda}{numeric value of ridge parameter lambda. Only applied to
+subclass deconvolution, not applied to cell group analysis.}
+
+\item{cv_lambda}{logical, whether to tune lambda using cross-validation.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses. See \code{\link[=plot_comp]{plot_comp()}}.}
@@ -168,6 +172,12 @@ to be on a t distribution scale. However, since gene expression itself does
 not derive from a normal distribution, the errors and residuals are not
 normally distributed either, which probably explains the need for a very high
 cut-off. In practice the choice of settings seems to be dataset dependent.
+
+Use of the ridge parameter lambda which adds L1 regularisation to the
+compensation (moment) matrix is experimental, as is tuning of lambda using
+cross-validation. In this situation, the hold out 'samples' are genes. It
+gives a slight uplift to deconvolution accuracy in simulations. Results on
+real bulk samples are still to be determined.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}

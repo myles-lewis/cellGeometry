@@ -56,6 +56,7 @@ tune_deconv <- function(mk, test, samples, grid,
                         verbose = TRUE, cores = 1, ...) {
   method <- match.arg(method, c("top", "overall"))
   metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq"))
+  if (!inherits(mk, "cellMarkers")) stop("`mk` is not a cellMarkers objects")
   if (ncol(test) != nrow(samples)) stop("incompatible test and samples")
   if (!identical(colnames(mk$genemeans), colnames(samples)))
     stop("incompatible subclasses between mk and samples")
