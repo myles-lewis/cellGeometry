@@ -21,7 +21,8 @@
 #'   [deconvolute()]. This deconvolution result is compared against the actual
 #'   sample cell numbers in `samples`, using [metric_set()].
 #' @param metric Specifies tuning metric to choose optimal tune: either
-#'  "RMSE", "Rsq" or "pearson".
+#'  "RMSE", "Rsq", "pearson" or "resvar" (residual variance of bulk gene 
+#'  expression).
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
 #'   "overall", the average effect of varying each parameter is calculated using
@@ -162,7 +163,8 @@ tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
 #' 
 #' @param object dataframe of class `'tune_deconv'`.
 #' @param metric Specifies tuning metric to choose optimal tune: either
-#'   "RMSE", "Rsq" or "pearson".
+#'   "RMSE", "Rsq", "pearson" or "resvar" (residual variance of bulk gene 
+#'  expression).
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
 #'   "overall", the average effect of varying each parameter is calculated using
@@ -185,7 +187,8 @@ summary.tune_deconv <- function(object,
   metFUN <- if (metric %in% c("RMSE", "resvar")) which.min else which.max
   
   params <- colnames(object)
-  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
+  params <- params[!params %in% 
+                     c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   mres <- tune_stats(object, metric, params)
   w <- metFUN(mres[, paste0("mean.", metric)])
   
@@ -259,7 +262,8 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' @param xvar Character value specifying column in `result` to vary along the x
 #'   axis.
 #' @param fix Optional list specifying parameters to be fixed at specific values.
-#' @param metric Specifies tuning metric: either "RMSE", "Rsq" or "pearson".
+#' @param metric Specifies tuning metric: either "RMSE", "Rsq", "pearson" or
+#'   "resvar" (residual variance of bulk gene expression).
 #' @param title Character value for the plot title.
 #' @returns ggplot2 scatter plot.
 #' @details
@@ -283,7 +287,8 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       fix = NULL,
                       metric = attr(result, "metric"), title = NULL) {
   params <- colnames(result)
-  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
+  params <- params[!params %in% 
+                     c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   if (!xvar %in% params) stop("incorrect `xvar`")
   metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar"))
   
