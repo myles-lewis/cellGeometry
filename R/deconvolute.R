@@ -304,7 +304,7 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     # refit with best lambda
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                          adjust_comp, count_space, weight_method,
-                         lambda = cv$lambda.min, cores, verbose = FALSE)
+                         lambda = cv$lambda.1se, cores, verbose = FALSE)
     fit$cv <- cv
   }
   fit$removed <- removed

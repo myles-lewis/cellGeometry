@@ -29,10 +29,12 @@ cv_deconv <- function(test, cellmat, comp_amount, weights,
   }, progress = verbose, mc.cores = cores)
   mse <- do.call(cbind, mse)
   cvm <- rowMeans(mse)
-  cvsd <- matrixStats::rowSds(mse) / sqrt(nfolds)
+  cvsd <- matrixStats::rowSds(mse) # / sqrt(nfolds)
   mmse <- cbind(lambda = lam_set, cvm, cvsd)
   lambda.min <- lam_set[which.min(cvm)]
-  list(mmse = mmse, lambda.min = lambda.min)
+  cv1se <- min(cvm) + cvsd[which.min(cvm)]
+  lambda.1se <- lam_set[min(which(cvm < cv1se))]
+  list(mmse = mmse, lambda.min = lambda.min, lambda.1se = lambda.1se)
 }
 
 
