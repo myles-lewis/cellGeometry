@@ -18,7 +18,6 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = FALSE,
   lambda = NULL,
-  cv_lambda = FALSE,
   check_comp = FALSE,
   npass = 1,
   outlier_method = c("var.e", "cooks", "rstudent"),
@@ -69,13 +68,8 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
-\item{lambda}{Either a single numeric value of ridge parameter lambda. Or
-when \code{cv_lambda = TRUE}, an optional vector of lambda values to be tested
-using cross-validation. Only applied to subclass deconvolution, not applied
-to cell group analysis.}
-
-\item{cv_lambda}{logical, whether to tune lambda using cross-validation. If
-\code{lambda} is not supplied, a default sequence is used.}
+\item{lambda}{single numeric value of ridge parameter lambda. Only applied to
+subclass deconvolution, not applied to cell group analysis. Experimental.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses. See \code{\link[=plot_comp]{plot_comp()}}.}
@@ -123,10 +117,6 @@ for each sample
 \item \code{hat}, diagonal elements of the hat matrix
 \item \code{removed}, vector of outlying genes removed during successive
 passes
-\item \code{cv}, optional list object included when \code{cv_lambda = TRUE},
-containing \code{mmse}, a matrix of mean & sem of mean squared error for
-each value of lambda, and \code{lambda.min}, the value of lambda that gives
-the lowest \code{mmse}
 }}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}
@@ -180,17 +170,13 @@ not derive from a normal distribution, the errors and residuals are not
 normally distributed either, which probably explains the need for a very high
 cut-off. In practice the choice of settings seems to be dataset dependent.
 
-Use of the ridge parameter lambda, which adds L2 regularisation to the
-compensation (moment) matrix, and tuning of lambda using cross-validation are
-experimental. Here, the holdout 'samples' are genes. It gives a slight uplift
-to deconvolution accuracy in simulations at the expense of speed. The default
-lambda sequence has 20 values and CV uses 10 folds, so deconvolution is
-performed 200 times by default. Results on real bulk samples are still to be
-evaluated. The lambda CV curve can be plotted using \code{\link[=plot_cv]{plot_cv()}}.
+The ridge parameter lambda, which adds L2 regularisation to the compensation
+(moment) matrix is provided only for experimental purposes. Any small benefit
+seems to be outweighed by varying other parameters especially \code{nsubclass}.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
-\code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}} \code{\link[=plot_cv]{plot_cv()}}
+\code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}}
 }
 \author{
 Myles Lewis

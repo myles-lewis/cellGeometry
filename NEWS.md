@@ -2,13 +2,12 @@ News
 =====
 
 # cellGeometry 0.6.0
-###### 22/12/2025
+###### 23/12/2025
 
 ## New features
 
 * Speed up variable compensation.
 * Add ridge parameter `lambda` to `deconvolute()`.
-* Add cross-validation of `lambda`.
 * Add `resvar` metric to `tune_deconv()` to examine residual variance of bulk 
 gene expression.
 
