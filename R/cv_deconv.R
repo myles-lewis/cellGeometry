@@ -38,12 +38,12 @@ cv_deconv <- function(test, cellmat, comp_amount, weights,
 }
 
 
-deconv_adjust_core <- function(test, cellmat, comp_amount, adjust_comp,
+deconv_adjust_core <- function(test.cellmat, comp_amount, adjust_comp,
                                m_itself, lambda,
                                oldtest_test, oldcellmat_test, weights_test) {
   m_itself <- m_itself + diag(nrow(m_itself)) * lambda
   rawcomp <- solve(m_itself)
-  atest <- deconv(test, cellmat, comp_amount, m_itself, rawcomp)
+  atest <- deconv(test.cellmat, comp_amount, m_itself, rawcomp)
   if (any(atest$output < 0)) {
     if (adjust_comp) {
       minout <- colMins(atest$output)
@@ -53,14 +53,14 @@ deconv_adjust_core <- function(test, cellmat, comp_amount, adjust_comp,
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
-          ntest <- quick_deconv(test, cellmat, newcomp, m_itself, rawcomp, wi)
+          ntest <- quick_deconv(test.cellmat, newcomp, m_itself, rawcomp, wi)
           min(ntest, na.rm = TRUE)^2
         }
         xmin <- optimise(f, c(0, comp_amount[wi]))
         xmin$minimum
       })
       comp_amount[w] <- unlist(newcomps)
-      atest <- deconv(test, cellmat, comp_amount, m_itself, rawcomp)
+      atest <- deconv(test.cellmat, comp_amount, m_itself, rawcomp)
     }
   }
   
@@ -87,7 +87,8 @@ deconv_lambda_set <- function(test, cellmat, weights, comp_amount, adjust_comp,
   # train-test
   m_itself <- dotprod(cellmat[train, ], cellmat[train, ])
   vapply(lam_set, function(i) {
-    deconv_adjust_core(test[train, ], cellmat[train, ], comp_amount,
+    test.cellmat <- dotprod(test[train, ], cellmat[train, ])
+    deconv_adjust_core(test.cellmat, comp_amount,
                        adjust_comp, m_itself, lambda = i,
                        oldtest_test, oldcellmat_test, weights[-train])
   }, numeric(1))
