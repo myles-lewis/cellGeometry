@@ -7,7 +7,7 @@ News
 ## New features
 
 * Speed up variable compensation.
-* Add ridge parameter `lambda` to `deconvolute()`.
+* Add ridge parameter `lambda` to `deconvolute()` [experimental].
 * Add `resvar` metric to `tune_deconv()` to examine residual variance of bulk 
 gene expression.
 
