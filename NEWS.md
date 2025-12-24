@@ -19,9 +19,9 @@ The problem is isolated to R 4.5.2 arm64 for macOS on M* Macs, or any version of
 R for macOS including intel, if the vecLib BLAS is being used via a symlink. The 
 solution is to use `cores = 1` with `deconvolute()` and `tune_deconv()` whenever 
 vecLib BLAS is in use.
-* Remove use of `pbmclapply()` as this caused problems with R 4.5.2 for macOS 
-arm64 (Apple M* Macs) even with `cores=1`. This fixes indefinite hanging in 
-`tune_deconv()` with vecLib BLAS.
+* Removed use of `pbmcapply::pbmclapply()` as this caused problems with R 4.5.2 
+for macOS arm64 (Apple M* Macs) even with `cores=1`. This fixes indefinite 
+hanging in `tune_deconv()` associated with vecLib BLAS.
 
 # cellGeometry 0.5.7
 ###### 11/12/2025
