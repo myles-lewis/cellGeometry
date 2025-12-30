@@ -62,6 +62,7 @@ tune_deconv <- function(mk, test, samples, grid,
   if (!identical(colnames(mk$genemeans), colnames(samples)))
     stop("incompatible subclasses between mk and samples")
   
+  grid[c("verbose", "cores")] <- NULL
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
   arg_set2 <- names(formals(deconvolute))

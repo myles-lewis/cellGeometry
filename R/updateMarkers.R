@@ -66,6 +66,8 @@ updateMarkers <- function(object = NULL,
   
   if (is.null(object) && is.null(genemeans))
     stop("Either a cellMarkers object or genemeans must be supplied")
+  if (!is.null(object) && !inherits(object, "cellMarkers"))
+    stop("Not a 'cellMarkers' class object")
   
   if (is.null(genemeans)) genemeans <- object$genemeans
   if (is.null(groupmeans)) groupmeans <- object$groupmeans
