@@ -45,6 +45,9 @@
 #'   method selected by `outlier_method`.
 #' @param outlier_quantile Controls quantile for the cutoff for identifying
 #'   outliers for `outlier_method = "cook"` or `"rstudent"`.
+#' @param se logical, whether to calculate `se`, the standard errors of the cell
+#'   counts, and `hat`, the hat matrix. This is coerced to `TRUE` if
+#'   `outlier_method` is set to `"cooks"` or `"rstudent"`.
 #' @param verbose logical, whether to show messages.
 #' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
 #' @details
@@ -147,11 +150,13 @@ deconvolute <- function(mk, test,
                         outlier_cutoff = switch(outlier_method, var.e = 4,
                                                 cooks = 1, rstudent = 10),
                         outlier_quantile = 0.9,
+                        se = TRUE,
                         verbose = TRUE, cores = 1L) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
   weight_method <- match.arg(weight_method, c("none", "equal"))
   outlier_method <- match.arg(outlier_method)
+  if (outlier_method != "var.e") se <- TRUE
   test <- as.matrix(test)
   if (any(test < 0)) stop("`test` contains negative values")
   if (length(lambda) > 1) stop("lambda can only accept a single value")
@@ -176,7 +181,7 @@ deconvolute <- function(mk, test,
     if (convert_bulk != "none") logtest <- bulk2scfun(logtest)
     gtest <- deconv_adjust(logtest, cellmat, group_comp_amount, weights = NULL,
                            adjust_comp, count_space, weight_method,
-                           lambda = NULL, verbose = verbose, resid = FALSE)
+                           lambda = NULL, se, verbose = verbose, resid = FALSE)
   } else {
     gtest <- NULL
   }
@@ -199,7 +204,7 @@ deconvolute <- function(mk, test,
   atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
                             weight_method, adjust_comp, count_space, npass,
                             outlier_method, outlier_cutoff, outlier_quantile,
-                            lambda, verbose, cores)
+                            lambda, se, verbose, cores)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -242,9 +247,9 @@ deconvolute <- function(mk, test,
 deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
                              adjust_comp, count_space, npass,
                              outlier_method, outlier_cutoff, outlier_quantile,
-                             lambda, verbose, cores) {
+                             lambda, se, verbose, cores) {
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                       adjust_comp, count_space, weight_method, lambda,
+                       adjust_comp, count_space, weight_method, lambda, se,
                        cores, verbose)
   metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
   outlier <- metric > outlier_cutoff
@@ -273,7 +278,7 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     weights <- weights[!outlier]
     if (nrow(cellmat) < ncol(cellmat)) stop("insufficient genes")
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, weight_method, lambda,
+                         adjust_comp, count_space, weight_method, lambda, se,
                          cores, verbose)
     metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
     outlier <- metric > outlier_cutoff
@@ -300,8 +305,8 @@ outlier_metric <- function(fit, outlier_method, outlier_quantile, count_space) {
 
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
                           adjust_comp, count_space,
-                          weight_method = "", lambda, cores = 1L, verbose = TRUE,
-                          resid = TRUE) {
+                          weight_method = "", lambda, se,
+                          cores = 1L, verbose = TRUE, resid = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (!identical(rownames(test), rownames(cellmat)))
@@ -368,15 +373,17 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
     rss <- colSums(r^2)
     rdf <- nrow(r) - ncol(X)
     atest$resvar <- rss/rdf
-    # residuals row variance
-    Lv <- colSums(X^2)
-    iXTX <- atest$compensation / Lv
-    XTXse <- crossprod(X, var.e * X)
-    # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
-    atest$se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
-    # calculate hat matrix
-    # X (X' X)^-1 X'
-    atest$hat <- diag(X %*% iXTX %*% t(X))
+    if (se) {
+      # residuals row variance
+      Lv <- colSums(X^2)
+      iXTX <- atest$compensation / Lv
+      XTXse <- crossprod(X, var.e * X)
+      # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
+      atest$se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+      # calculate hat matrix
+      # X (X' X)^-1 X'
+      atest$hat <- diag(X %*% iXTX %*% t(X))
+    }
   }
   atest
 }

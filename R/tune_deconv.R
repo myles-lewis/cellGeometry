@@ -80,7 +80,7 @@ tune_deconv <- function(mk, test, samples, grid,
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
     res <- pmclapply(seq_len(nrow(grid1)), function(i) {
-      args <- list(object = mk)
+      args <- list(object = mk, verbose = NA)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
@@ -130,7 +130,8 @@ tune_deconv <- function(mk, test, samples, grid,
 tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
                      cores = 1L, ...) {
   if (is.null(grid2)) {
-    fit <- deconvolute(mk, test, verbose = FALSE, ...) |> suppressMessages()
+    fit <- deconvolute(mk, test, se = FALSE, verbose = FALSE, ...) |>
+      suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
     ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
@@ -141,7 +142,7 @@ tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
   }
   # loop grid2
   dots <- list(...)
-  args <- list(mk = mk, test = test, verbose = FALSE)
+  args <- list(mk = mk, test = test, se = FALSE, verbose = FALSE)
   res <- pmclapply(seq_len(nrow(grid2)), function(i) {
     grid2_row <- grid2[i, , drop = FALSE]
     args <- c(args, grid2_row)

@@ -74,6 +74,9 @@ updateMarkers <- function(object = NULL,
   if (any(duplicated(rownames(genemeans))))
     stop("Duplicated rownames in genemeans")
   
+  tune <- is.na(verbose)
+  if (tune) verbose <- FALSE
+  
   ok <- TRUE
   if (!is.null(bulkdata)) {
     ok <- rownames(genemeans) %in% rownames(bulkdata)
@@ -151,8 +154,10 @@ updateMarkers <- function(object = NULL,
   }
   
   # determine spillover
-  gene_sig <- genemeans_filtered[geneset, ]
-  m_itself <- dotprod(gene_sig, gene_sig)
+  if (!tune) {
+    gene_sig <- genemeans_filtered[geneset, ]
+    m_itself <- dotprod(gene_sig, gene_sig)
+  } else m_itself <- NULL
   
   out <- list(call = object$call,
               best_angle = best_angle,
