@@ -130,7 +130,7 @@ tune_deconv <- function(mk, test, samples, grid,
 tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
                      cores = 1L, ...) {
   if (is.null(grid2)) {
-    fit <- deconvolute(mk, test, se = FALSE, verbose = FALSE, ...) |>
+    fit <- deconvolute(mk, test, verbose = FALSE, ...) |>
       suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
@@ -142,7 +142,7 @@ tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
   }
   # loop grid2
   dots <- list(...)
-  args <- list(mk = mk, test = test, se = FALSE, verbose = FALSE)
+  args <- list(mk = mk, test = test, verbose = FALSE)
   res <- pmclapply(seq_len(nrow(grid2)), function(i) {
     grid2_row <- grid2[i, , drop = FALSE]
     args <- c(args, grid2_row)
