@@ -113,8 +113,6 @@ values
 \item \code{weights}, vector of weights
 \item \code{resvar}, \eqn{s^2} the estimate of the gene expression variance
 for each sample
-\item \code{se}, standard errors of cell counts
-\item \code{hat}, diagonal elements of the hat matrix
 \item \code{removed}, vector of outlying genes removed during successive
 passes
 }}
@@ -175,7 +173,7 @@ The ridge parameter lambda, which adds L2 regularisation to the compensation
 seems to be outweighed by varying other parameters especially \code{nsubclass}.
 }
 \seealso{
-\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
+\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=se]{se()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
 \code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}}
 }
 \author{

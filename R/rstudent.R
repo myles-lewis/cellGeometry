@@ -28,7 +28,7 @@ rstudent.deconv <- function(model, ...) {
   r <- model$subclass$residuals
   weights <- model$subclass$weights
   if (!is.null(weights)) r <- r * weights
-  hat <- model$subclass$hat
+  hat <- hat(model)
   rdf <- nrow(r) - ncol(model$subclass$compensation)
   rss <- colSums(r^2)
   mse <- rss / nrow(r)
@@ -43,7 +43,7 @@ rstandard.deconv <- function(model, ...) {
   r <- model$subclass$residuals
   weights <- model$subclass$weights
   if (!is.null(weights)) r <- r * weights
-  hat <- model$subclass$hat
+  hat <- hat(model)
   rdf <- nrow(r) - ncol(model$subclass$compensation)
   rss <- colSums(r^2)
   mse <- rss / nrow(r)
@@ -57,7 +57,7 @@ cooks.distance.deconv <- function(model, ...) {
   r <- model$subclass$residuals
   weights <- model$subclass$weights
   if (!is.null(weights)) r <- r * weights
-  hat <- model$subclass$hat
+  hat <- hat(model)
   p <- ncol(model$subclass$compensation)
   rdf <- nrow(r) - p
   rss <- colSums(r^2)
@@ -71,7 +71,7 @@ rstudent_fit <- function(fit) {
   r <- fit$residuals
   weights <- fit$weights
   if (!is.null(weights)) r <- r * weights
-  hat <- fit$hat
+  hat <- hat_fit(fit)
   rdf <- nrow(r) - ncol(fit$compensation)
   rss <- colSums(r^2)
   mse <- rss / nrow(r)
@@ -84,12 +84,27 @@ cooks_distance_fit <- function(fit) {
   r <- fit$residuals
   weights <- fit$weights
   if (!is.null(weights)) r <- r * weights
-  hat <- fit$hat
+  hat <- hat_fit(fit)
   p <- ncol(fit$compensation)
   rdf <- nrow(r) - p
   rss <- colSums(r^2)
   mse <- rss / rdf
   (r / (1 - hat))^2 * outer(hat, mse, "/") / p
+}
+
+
+hat <- function(model) {
+  X <- model$subclass$X
+  Lv <- colSums(X^2)
+  iXTX <- model$subclass$compensation / Lv
+  diag(X %*% iXTX %*% t(X))
+}
+
+hat_fit <- function(fit) {
+  X <- fit$X
+  Lv <- colSums(X^2)
+  iXTX <- fit$compensation / Lv
+  diag(X %*% iXTX %*% t(X))
 }
 
 
@@ -131,3 +146,25 @@ residuals.deconv <- function(object,
   cellmat <- 2^cellmat -1
   residuals_deconv(test, cellmat, object$subclass$output)
 }
+
+
+#' Standard errors of deconvoluted cell counts
+#' 
+#' Extracts standard errors of deconvoluted cell counts based on the row
+#' variance of weighted residuals.
+#' 
+#' @param model a 'deconv' class object
+#' @returns a vector of the standard errors of cell counts for each cell
+#'   subclass
+#' @seealso [deconvolute()]
+#' @export
+se <- function(model) {
+  X <- model$subclass$X
+  var.e <- model$subclass$var.e
+  Lv <- colSums(X^2)
+  iXTX <- model$subclass$compensation / Lv
+  XTXse <- crossprod(X, var.e * X)
+  # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
+  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+}
+
