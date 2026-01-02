@@ -1,8 +1,8 @@
 News
 =====
 
-# cellGeometry 0.6.0
-###### 23/12/2025
+# cellGeometry 0.6.1
+###### 02/01/2026
 
 ## New features
 
@@ -10,6 +10,11 @@ News
 * Add ridge parameter `lambda` to `deconvolute()` [experimental].
 * Add `resvar` metric to `tune_deconv()` to examine residual variance of bulk 
 gene expression.
+
+## Important change
+
+* `deconvolute()` no longer returns `se` and `hat` in the `subclass` list 
+element. Standard errors can be obtained with the new function `se()`.
 
 ## Important bugfix
 

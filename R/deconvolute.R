@@ -101,6 +101,7 @@
 #'       \item `rawcomp`, the original unadjusted compensation matrix
 #'       \item `comp_amount`, the final values for the amount of compensation
 #'       across each cell subclass after adjustment to prevent negative values
+#'       \item `X`, the (weighted) model matrix
 #'       \item `residuals`, residuals, that is gene expression minus fitted 
 #'       values
 #'       \item `var.e`, variance of weighted residuals for each gene
