@@ -154,17 +154,52 @@ residuals.deconv <- function(object,
 #' variance of weighted residuals.
 #' 
 #' @param model a 'deconv' class object
-#' @returns a vector of the standard errors of cell counts for each cell
-#'   subclass
+#' @param type specifies standard error method. Default is "var.e", which we
+#'   recommend as being the most accurate. The alternative options include OLS
+#'   (ordinary least squares) and several heteroscedasticity-consistent methods,
+#'   HC0, HC2 and HC3.
+#' @returns with `type = "var.e"`, a vector of standard errors of cell counts
+#'   for each cell subclass. For all other options, a matrix of SE for every
+#'   bulk sample and every cell subclass.
 #' @seealso [deconvolute()]
 #' @export
-se <- function(model) {
+se <- function(model, type = c("var.e", "OLS", "OLS2", "HC0", "HC2", "HC3")) {
+  if (!inherits(model, "deconv")) stop("not a 'deconv' class object")
+  type <- match.arg(type)
   X <- model$subclass$X
   var.e <- model$subclass$var.e
   Lv <- colSums(X^2)
   iXTX <- model$subclass$compensation / Lv
+  resvar <- model$subclass$resvar
   XTXse <- crossprod(X, var.e * X)
-  # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
-  sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+  
+  if (type == "var.e") {
+    # var(beta) = (X' X)^-1 (X diag(e^2) X') (X' X)^-1
+    se <- sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    return(se)
+  } else if (type == "OLS") {
+    diag_XTX <- diag(model$subclass$compensation) / Lv
+    se <- sqrt(resvar %*% t(diag_XTX))
+  } else if (type == "OLS2") {
+    # based on van Wieringen
+    XTX <- crossprod(X)
+    diag2 <- diag(iXTX %*% XTX %*% t(iXTX))
+    se <- sqrt(resvar %*% t(diag2))
+  } else {
+    # heteroscedasticity-consistent SE, HC0-3
+    r <- model$subclass$residuals
+    weights <- model$subclass$weights
+    if (!is.null(weights)) r <- r * weights
+    hat <- hat(model)
+    omega <- switch(type, "HC0" = function(i) i^2,
+                    "HC2" = function(i) i^2 / (1 - hat),
+                    "HC3" = function(i) i^2 / (1 - hat)^2)
+    
+    se <- t(apply(r, 2, function(i) {
+      XTXse <- crossprod(X, omega(i) * X)
+      sqrt(diag(iXTX %*% XTXse %*% t(iXTX)))
+    }))
+  }
+  rownames(se) <- rownames(model$subclass$output)
+  se
 }
-

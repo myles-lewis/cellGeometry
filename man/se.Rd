@@ -4,14 +4,20 @@
 \alias{se}
 \title{Standard errors of deconvoluted cell counts}
 \usage{
-se(model)
+se(model, type = c("var.e", "OLS", "OLS2", "HC0", "HC2", "HC3"))
 }
 \arguments{
 \item{model}{a 'deconv' class object}
+
+\item{type}{specifies standard error method. Default is "var.e", which we
+recommend as being the most accurate. The alternative options include OLS
+(ordinary least squares) and several heteroscedasticity-consistent methods,
+HC0, HC2 and HC3.}
 }
 \value{
-a vector of the standard errors of cell counts for each cell
-subclass
+with \code{type = "var.e"}, a vector of standard errors of cell counts
+for each cell subclass. For all other options, a matrix of SE for every
+bulk sample and every cell subclass.
 }
 \description{
 Extracts standard errors of deconvoluted cell counts based on the row
