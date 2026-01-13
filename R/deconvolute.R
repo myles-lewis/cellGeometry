@@ -207,22 +207,22 @@ deconvolute <- function(mk, test,
     output2 <- lapply(levels(mk$cell_table), function(i) {
       output1 <- gtest$output[, i]
       ind <- mk$cell_table == i
-      subclass_i <- atest$output[, ind, drop = FALSE]
+      subclass_i <- fixzero(atest$output[, ind, drop = FALSE])
       rs <- rowSums(subclass_i)
       subclass_i / rs * output1
     })
     nest_output <- do.call(cbind, output2)
-    nest_output[is.na(nest_output)] <- 0
+    nest_output[!is.finite(nest_output)] <- 0  # fix division by 0
     # subclass percent as nested percent of groups
     pc2 <- lapply(levels(mk$cell_table), function(i) {
       pc1 <- gtest$percent[, i]
       ind <- mk$cell_table == i
-      subclass_i <- atest$output[, ind, drop = FALSE]
+      subclass_i <- fixzero(atest$output[, ind, drop = FALSE])
       rs <- rowSums(subclass_i)
       subclass_i / rs * pc1
     })
     nest_percent <- do.call(cbind, pc2)
-    nest_percent[is.na(nest_percent)] <- 0
+    nest_percent[!is.finite(nest_percent)] <- 0  # fix division by 0
   } else nest_output <- nest_percent <- NULL
   
   out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
@@ -428,4 +428,11 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
   names(out) <- colnames(cellmat)
   out$px <- px
   out
+}
+
+
+# avoid division by near 0
+fixzero <- function(x) {
+  x[abs(x) < sqrt(.Machine$double.eps)] <- 0
+  x
 }
