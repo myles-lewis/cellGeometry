@@ -25,7 +25,8 @@ axis.}
 
 \item{fix}{Optional list specifying parameters to be fixed at specific values.}
 
-\item{metric}{Specifies tuning metric: either "RMSE", "Rsq" or "pearson".}
+\item{metric}{Specifies tuning metric: either "RMSE", "Rsq", "pearson" or
+"resvar" (residual variance of bulk gene expression).}
 
 \item{title}{Character value for the plot title.}
 }

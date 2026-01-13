@@ -17,6 +17,7 @@ deconvolute(
   use_filter = TRUE,
   arith_mean = FALSE,
   convert_bulk = FALSE,
+  lambda = NULL,
   check_comp = FALSE,
   npass = 1,
   outlier_method = c("var.e", "cooks", "rstudent"),
@@ -67,6 +68,9 @@ signature matrix. Mainly useful with pseudo-bulk simulation.}
 using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
+\item{lambda}{single numeric value of ridge parameter lambda. Only applied to
+subclass deconvolution, not applied to cell group analysis. Experimental.}
+
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses. See \code{\link[=plot_comp]{plot_comp()}}.}
 
@@ -103,14 +107,13 @@ incorporates \code{comp_amount}
 \item \code{rawcomp}, the original unadjusted compensation matrix
 \item \code{comp_amount}, the final values for the amount of compensation
 across each cell subclass after adjustment to prevent negative values
+\item \code{X}, the (weighted) model matrix
 \item \code{residuals}, residuals, that is gene expression minus fitted
 values
 \item \code{var.e}, variance of weighted residuals for each gene
 \item \code{weights}, vector of weights
 \item \code{resvar}, \eqn{s^2} the estimate of the gene expression variance
 for each sample
-\item \code{se}, standard errors of cell counts
-\item \code{hat}, diagonal elements of the hat matrix
 \item \code{removed}, vector of outlying genes removed during successive
 passes
 }}
@@ -165,9 +168,13 @@ to be on a t distribution scale. However, since gene expression itself does
 not derive from a normal distribution, the errors and residuals are not
 normally distributed either, which probably explains the need for a very high
 cut-off. In practice the choice of settings seems to be dataset dependent.
+
+The ridge parameter lambda, which adds L2 regularisation to the compensation
+(moment) matrix is provided only for experimental purposes. Any small benefit
+seems to be outweighed by varying other parameters especially \code{nsubclass}.
 }
 \seealso{
-\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
+\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=se]{se()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
 \code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}}
 }
 \author{

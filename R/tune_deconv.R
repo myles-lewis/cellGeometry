@@ -21,7 +21,8 @@
 #'   [deconvolute()]. This deconvolution result is compared against the actual
 #'   sample cell numbers in `samples`, using [metric_set()].
 #' @param metric Specifies tuning metric to choose optimal tune: either
-#'  "RMSE", "Rsq" or "pearson".
+#'  "RMSE", "Rsq", "pearson" or "resvar" (residual variance of bulk gene 
+#'  expression).
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
 #'   "overall", the average effect of varying each parameter is calculated using
@@ -48,7 +49,6 @@
 #' 
 #' @seealso [plot_tune()] [summary.tune_deconv()]
 #' @importFrom stats aggregate
-#' @importFrom pbmcapply pbmclapply
 #' @export
 tune_deconv <- function(mk, test, samples, grid,
                         output = "output",
@@ -57,10 +57,12 @@ tune_deconv <- function(mk, test, samples, grid,
                         verbose = TRUE, cores = 1, ...) {
   method <- match.arg(method, c("top", "overall"))
   metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq"))
+  if (!inherits(mk, "cellMarkers")) stop("`mk` is not a cellMarkers objects")
   if (ncol(test) != nrow(samples)) stop("incompatible test and samples")
   if (!identical(colnames(mk$genemeans), colnames(samples)))
     stop("incompatible subclasses between mk and samples")
   
+  grid[c("verbose", "cores")] <- NULL
   params <- names(grid)
   arg_set1 <- names(formals(updateMarkers))
   arg_set2 <- names(formals(deconvolute))
@@ -77,21 +79,19 @@ tune_deconv <- function(mk, test, samples, grid,
   
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
-    cores2 <- 1  # nested
-    if (nrow(grid1) < cores) cores2 <- floor(cores / nrow(grid1))
-    res <- pbmclapply(seq_len(nrow(grid1)), function(i) {
-      args <- list(object = mk)
+    res <- pmclapply(seq_len(nrow(grid1)), function(i) {
+      args <- list(object = mk, verbose = NA)
       grid1_row <- grid1[i, , drop = FALSE]
       args <- c(args, grid1_row)
       mk_update <- do.call("updateMarkers", args) |> suppressMessages()
-      df2 <- tune_dec(mk_update, test, samples, grid2, output, cores2, ...)
+      df2 <- tune_dec(mk_update, test, samples, grid2, output, ...)
       data.frame(grid1_row, df2, row.names = NULL)
-    }, mc.cores = cores, mc.preschedule = FALSE)
+    }, progress = verbose, mc.cores = cores, mc.preschedule = FALSE)
     res <- do.call(rbind, res)
   } else {
     # null grid1
     if (is.null(grid2)) stop("No parameters to tune")
-    res <- tune_dec(mk, test, samples, grid2, output, cores, ...)
+    res <- tune_dec(mk, test, samples, grid2, output, verbose, cores, ...)
   }
   res$subclass <- factor(res$subclass, levels = names(mk$cell_table))
   
@@ -127,21 +127,24 @@ tune_deconv <- function(mk, test, samples, grid,
 
 
 # tune inner grid of arguments for deconvolute()
-tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
+tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
+                     cores = 1L, ...) {
   if (is.null(grid2)) {
-    fit <- deconvolute(mk, test, verbose = FALSE, ...) |> suppressMessages()
+    fit <- deconvolute(mk, test, verbose = FALSE, ...) |>
+      suppressMessages()
     fit_output <- fit$subclass[[output]]
     out <- metric_set(samples, fit_output)
     ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
-    df <- data.frame(subclass = rownames(out), ngene, row.names = NULL)
+    df <- data.frame(subclass = rownames(out), ngene,
+                     resvar = mean(fit$subclass$resvar), row.names = NULL)
     df <- cbind(df, out)
     return(df)
   }
   # loop grid2
-  res <- pbmclapply(seq_len(nrow(grid2)), function(i) {
-    dots <- list(...)
+  dots <- list(...)
+  args <- list(mk = mk, test = test, verbose = FALSE)
+  res <- pmclapply(seq_len(nrow(grid2)), function(i) {
     grid2_row <- grid2[i, , drop = FALSE]
-    args <- list(mk = mk, test = test, verbose = FALSE)
     args <- c(args, grid2_row)
     if (length(dots)) args[names(dots)] <- dots
     fit <- do.call("deconvolute", args) |> suppressMessages()
@@ -149,9 +152,9 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
     out <- metric_set(samples, fit_output)
     ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
     df <- data.frame(grid2_row, subclass = rownames(out), ngene,
-                     row.names = NULL)
+                     resvar = mean(fit$subclass$resvar), row.names = NULL)
     cbind(df, out)
-  }, mc.cores = cores, mc.preschedule = FALSE)
+  }, progress = progress, mc.cores = cores, mc.preschedule = FALSE)
   do.call(rbind, res)
 }
 
@@ -162,7 +165,8 @@ tune_dec <- function(mk, test, samples, grid2, output, cores = 1, ...) {
 #' 
 #' @param object dataframe of class `'tune_deconv'`.
 #' @param metric Specifies tuning metric to choose optimal tune: either
-#'   "RMSE", "Rsq" or "pearson".
+#'   "RMSE", "Rsq", "pearson" or "resvar" (residual variance of bulk gene 
+#'  expression).
 #' @param method Either "top" or "overall". Determines how best parameter values
 #'   are chosen. With "top" the single top configuration is chosen. With
 #'   "overall", the average effect of varying each parameter is calculated using
@@ -181,13 +185,14 @@ summary.tune_deconv <- function(object,
                                 method = attr(object, "method"),
                                 ...) {
   method <- match.arg(method, c("top", "overall"))
-  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE"))
+  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE", "resvar"))
+  metFUN <- if (metric %in% c("RMSE", "resvar")) which.min else which.max
   
   params <- colnames(object)
-  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
+  params <- params[!params %in% 
+                     c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   mres <- tune_stats(object, metric, params)
-  w <- if (metric == "RMSE") {which.min(mres$mean.RMSE)
-    } else which.max(mres[, paste0("mean.", metric)])
+  w <- metFUN(mres[, paste0("mean.", metric)])
   
   if (method == attr(object, "method") && metric == attr(object, "metric")) {
     best_tune <- attr(object, "tune")
@@ -198,7 +203,7 @@ summary.tune_deconv <- function(object,
     best_tune <- lapply(params, function(i) {
       mres <- aggregate(object[, metric], by = object[, i, drop = FALSE],
                         FUN = mean, na.rm = TRUE)
-      w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
+      w <- metFUN(mres$x)
       mres[w, i]
     })
     best_tune <- data.frame(best_tune)
@@ -213,7 +218,7 @@ summary.tune_deconv <- function(object,
 
 
 tune_stats <- function(object, metric, params) {
-  mets <- c("pearson.rsq", "Rsq", "RMSE")
+  mets <- c("pearson.rsq", "Rsq", "RMSE", "resvar")
   mres <- aggregate(object[, mets], by = object[, params, drop = FALSE],
                     FUN = mean, na.rm = TRUE)
   w <- which(colnames(mres) %in% mets)
@@ -237,7 +242,9 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
   }
   ret <- lapply(levels(object$subclass), function(i) {
     sub <- object[object$subclass == i, ]
-    w <- if (metric != "RMSE") which.max(sub[, metric]) else which.min(sub[, metric])
+    w <- if (metric %in% c("RMSE", "resvar")) {
+      which.min(sub[, metric])
+    } else which.max(sub[, metric])
     sub$nsubclass[w]
   })
   names(ret) <- levels(object$subclass)
@@ -257,7 +264,8 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' @param xvar Character value specifying column in `result` to vary along the x
 #'   axis.
 #' @param fix Optional list specifying parameters to be fixed at specific values.
-#' @param metric Specifies tuning metric: either "RMSE", "Rsq" or "pearson".
+#' @param metric Specifies tuning metric: either "RMSE", "Rsq", "pearson" or
+#'   "resvar" (residual variance of bulk gene expression).
 #' @param title Character value for the plot title.
 #' @returns ggplot2 scatter plot.
 #' @details
@@ -281,14 +289,16 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       fix = NULL,
                       metric = attr(result, "metric"), title = NULL) {
   params <- colnames(result)
-  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE")]
+  params <- params[!params %in% 
+                     c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
   if (!xvar %in% params) stop("incorrect `xvar`")
-  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq"))
+  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar"))
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
     
     p <- ggplot(result, aes(x = .data[[xvar]], y = .data[[metric]])) +
+      stat_summary(fun = mean, geom = "line", col = "limegreen") +
       stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
                    width = 0.02 * xdiff) +
       stat_summary(fun = mean, geom = "point", col = "black") +
@@ -305,7 +315,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   
   mres <- aggregate(result[, metric], by = result[, params, drop = FALSE],
                     FUN = mean, na.rm = TRUE)
-  w <- if (metric == "RMSE") which.min(mres$x) else which.max(mres$x)
+  w <- if (metric %in% c("RMSE", "resvar")) which.min(mres$x) else which.max(mres$x)
   colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
   best_tune <- mres[w, ]
   

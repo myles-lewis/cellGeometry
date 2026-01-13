@@ -32,7 +32,12 @@ install.packages("Seurat")
 BiocManager::install("AnnotationHub")
 ```
 
-Install from Github
+Install from CRAN
+```
+install.packages("cellGeometry")
+```
+
+Or install from Github
 ```
 devtools::install_github("myles-lewis/cellGeometry")
 ```

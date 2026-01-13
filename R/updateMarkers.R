@@ -66,11 +66,16 @@ updateMarkers <- function(object = NULL,
   
   if (is.null(object) && is.null(genemeans))
     stop("Either a cellMarkers object or genemeans must be supplied")
+  if (!is.null(object) && !inherits(object, "cellMarkers"))
+    stop("Not a 'cellMarkers' class object")
   
   if (is.null(genemeans)) genemeans <- object$genemeans
   if (is.null(groupmeans)) groupmeans <- object$groupmeans
   if (any(duplicated(rownames(genemeans))))
     stop("Duplicated rownames in genemeans")
+  
+  tune <- is.na(verbose)
+  if (tune) verbose <- FALSE
   
   ok <- TRUE
   if (!is.null(bulkdata)) {
@@ -149,8 +154,10 @@ updateMarkers <- function(object = NULL,
   }
   
   # determine spillover
-  gene_sig <- genemeans_filtered[geneset, ]
-  m_itself <- dotprod(gene_sig, gene_sig)
+  if (!tune) {
+    gene_sig <- genemeans_filtered[geneset, ]
+    m_itself <- dotprod(gene_sig, gene_sig)
+  } else m_itself <- NULL
   
   out <- list(call = object$call,
               best_angle = best_angle,

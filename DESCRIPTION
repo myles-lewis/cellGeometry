@@ -1,6 +1,6 @@
 Package: cellGeometry
 Title: Geometric Single Cell Deconvolution
-Version: 0.5.7
+Version: 0.6.1
 Authors@R: 
     c(person(given = "Myles", family = "Lewis",
     role = c("aut", "cre"),
@@ -27,7 +27,6 @@ Imports:
     matrixStats,
     mcprogress,
     parallel,
-    pbmcapply,
     rlang,
     scales
 Roxygen: list(markdown = TRUE)
