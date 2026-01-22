@@ -336,7 +336,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       w <- which(minout < 0)
       if (verbose) message("optimising compensation (", length(w), ")")
       
-      newcomps <- pmclapply(w, function(wi) {
+      newcomps <- mclapply(w, function(wi) {
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
@@ -346,7 +346,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         if (comp_amount[wi] == 0) return(0)
         xmin <- optimise(f, c(0, comp_amount[wi]))
         xmin$minimum
-      }, progress = verbose, mc.cores = cores)
+      }, mc.cores = cores)
       comp_amount[w] <- unlist(newcomps)
       atest <- deconv(test.cellmat, comp_amount, m_itself, rawcomp)
       # fix floating point errors

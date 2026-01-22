@@ -77,6 +77,10 @@ tune_deconv <- function(mk, test, samples, grid,
     message("Tuning parameters: ", paste(params, collapse = ", "))
   }
   
+  # disable group analysis
+  mk$group_geneset <- mk$group_angle <- mk$groupmeans <- mk$cell_table <- NULL
+  mk$groupmeans_filtered <- NULL
+  
   if (length(w1) > 0) {
     grid1 <- expand.grid(grid[w1])
     res <- pmclapply(seq_len(nrow(grid1)), function(i) {

@@ -3,7 +3,7 @@ News
 
 # cellGeometry 0.6.1
 ###### 13/01/2026
-* Fix division by 0 in `nest_output`
+* Fix subtle division by near 0 issue in `nest_output`
 
 ## New features
 
