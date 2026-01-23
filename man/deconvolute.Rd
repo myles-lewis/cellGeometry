@@ -23,8 +23,7 @@ deconvolute(
   outlier_method = c("var.e", "cooks", "rstudent"),
   outlier_cutoff = switch(outlier_method, var.e = 4, cooks = 1, rstudent = 10),
   outlier_quantile = 0.9,
-  verbose = TRUE,
-  cores = 1L
+  verbose = TRUE
 )
 }
 \arguments{
@@ -88,8 +87,6 @@ method selected by \code{outlier_method}.}
 outliers for \code{outlier_method = "cook"} or \code{"rstudent"}.}
 
 \item{verbose}{logical, whether to show messages.}
-
-\item{cores}{Number of cores for parallelisation via \code{parallel::mclapply()}.}
 }
 \value{
 A list object of S3 class 'deconv' containing:

@@ -46,7 +46,6 @@
 #' @param outlier_quantile Controls quantile for the cutoff for identifying
 #'   outliers for `outlier_method = "cook"` or `"rstudent"`.
 #' @param verbose logical, whether to show messages.
-#' @param cores Number of cores for parallelisation via `parallel::mclapply()`.
 #' @details
 #' Equal weighting of genes by setting `weight_method = "equal"` can help
 #' devolution of subclusters whose signature genes have low expression. It is
@@ -146,7 +145,7 @@ deconvolute <- function(mk, test,
                         outlier_cutoff = switch(outlier_method, var.e = 4,
                                                 cooks = 1, rstudent = 10),
                         outlier_quantile = 0.9,
-                        verbose = TRUE, cores = 1L) {
+                        verbose = TRUE) {
   if (!inherits(mk, "cellMarkers")) stop("Not a 'cellMarkers' class object")
   .call <- match.call()
   weight_method <- match.arg(weight_method, c("none", "equal"))
@@ -199,7 +198,7 @@ deconvolute <- function(mk, test,
   atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
                             weight_method, adjust_comp, count_space, npass,
                             outlier_method, outlier_cutoff, outlier_quantile,
-                            lambda, verbose, cores)
+                            lambda, verbose)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -242,10 +241,10 @@ deconvolute <- function(mk, test,
 deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
                              adjust_comp, count_space, npass,
                              outlier_method, outlier_cutoff, outlier_quantile,
-                             lambda, verbose, cores) {
+                             lambda, verbose) {
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                        adjust_comp, count_space, weight_method, lambda,
-                       cores, verbose)
+                       verbose)
   metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
   outlier <- metric > outlier_cutoff
   if (verbose && npass == 1 && any(outlier)) {
@@ -274,7 +273,7 @@ deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
     if (nrow(cellmat) < ncol(cellmat)) stop("insufficient genes")
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
                          adjust_comp, count_space, weight_method, lambda,
-                         cores, verbose)
+                         verbose)
     metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
     outlier <- metric > outlier_cutoff
   }
@@ -301,7 +300,7 @@ outlier_metric <- function(fit, outlier_method, outlier_quantile, count_space) {
 deconv_adjust <- function(test, cellmat, comp_amount, weights,
                           adjust_comp, count_space,
                           weight_method = "", lambda,
-                          cores = 1L, verbose = TRUE, resid = TRUE) {
+                          verbose = TRUE, resid = TRUE) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (!identical(rownames(test), rownames(cellmat)))
@@ -336,7 +335,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
       w <- which(minout < 0)
       if (verbose) message("optimising compensation (", length(w), ")")
       
-      newcomps <- mclapply(w, function(wi) {
+      newcomps <- lapply(w, function(wi) {
         f <- function(x) {
           newcomp <- comp_amount
           newcomp[wi] <- x
@@ -346,7 +345,7 @@ deconv_adjust <- function(test, cellmat, comp_amount, weights,
         if (comp_amount[wi] == 0) return(0)
         xmin <- optimise(f, c(0, comp_amount[wi]))
         xmin$minimum
-      }, mc.cores = cores)
+      })
       comp_amount[w] <- unlist(newcomps)
       atest <- deconv(test.cellmat, comp_amount, m_itself, rawcomp)
       # fix floating point errors

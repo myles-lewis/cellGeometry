@@ -16,6 +16,7 @@ gene expression.
 
 * `deconvolute()` no longer returns `se` and `hat` in the `subclass` list 
 element. Standard errors can be obtained with the new function `se()`.
+* `cores` argument has been removed from `deconvolute()`
 
 ## Important bugfix
 
