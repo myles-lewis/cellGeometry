@@ -250,9 +250,8 @@ We run the deconvolution on the merged pseudobulk count matrix.
 
 ```{r eval=FALSE}
 fitm <- deconvolute(mkm, sim_sampled_merge,
-                    arith_mean = TRUE, use_filter = FALSE, cores = 8)
-# 19.2 secs (ARM, 1 core)
-# 3.22 secs (ARM, 8 cores)
+                    arith_mean = TRUE, use_filter = FALSE)
+# 0.037 secs (ARM)
 ```
 
 Finally we compare with ground truth and generate summary statistics and scatter

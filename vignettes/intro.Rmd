@@ -509,8 +509,7 @@ when using tuning. Below we tune over a range of `nsubclass` values from 5 up to
 tune `weight_method` to either "none" or "equal". But any argument which can be
 passed to `updateMarkers()` can be tuned. Arguments which are not in the tuning
 list specified through the argument `grid` such as `arith_mean` and `use_filter`
-in the example below are applied constantly. Parallelisation is available on
-unix systems but not on windows.
+in the example below are applied constantly.
 
 ```{r eval = FALSE}
 res <- tune_deconv(mk, sim_sampled, sim_counts * times,
@@ -518,8 +517,7 @@ res <- tune_deconv(mk, sim_sampled, sim_counts * times,
                                expfilter = c(0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.5),
                                weight_method = c("none", "equal")),
                    arith_mean = TRUE,
-                   use_filter = FALSE,
-                   cores = 8)
+                   use_filter = FALSE)
 
 ## Tuning parameters: nsubclass, expfilter, weight_method
 ##   |==========================================================| 100%, Elapsed 00:07
@@ -583,8 +581,7 @@ res2 <- tune_deconv(mk, sim_noise, sim_counts,
                                expfilter = c(0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.5),
                                weight_method = c("none", "equal")),
                    arith_mean = TRUE,
-                   use_filter = FALSE,
-                   cores = 8)
+                   use_filter = FALSE)
 ```
 
 We find that the addition of simple noise to the simulation dataset tends to
