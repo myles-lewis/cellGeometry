@@ -232,7 +232,7 @@ deconvolute <- function(mk, test,
   if (check_comp) {
     if (verbose) message("analysing compensation")
     out$comp_check <- comp_check(logtest2, cellmat, comp_amount, weights,
-                                 weight_method, count_space, lambda, cores)
+                                 weight_method, count_space, lambda)
   }
   class(out) <- "deconv"
   out
@@ -394,7 +394,7 @@ quick_deconv <- function(test.cellmat, comp_amount, m_itself, rawcomp, wi) {
 
 
 comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
-                       count_space, lambda, cores) {
+                       count_space, lambda) {
   comp_amount <- rep_len(comp_amount, ncol(cellmat))
   names(comp_amount) <- colnames(cellmat)
   if (count_space) {
@@ -417,14 +417,14 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
   if (!is.null(lambda)) m_itself <- m_itself + diag(nrow(m_itself)) * lambda
   rawcomp <- solve(m_itself)
   test.cellmat <- dotprod(test, cellmat)
-  out <- mclapply(seq_len(ncol(cellmat)), function(i) {
+  out <- lapply(seq_len(ncol(cellmat)), function(i) {
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
       ntest <- quick_deconv(test.cellmat, newcomp, m_itself, rawcomp, i)
       min(ntest, na.rm = TRUE)
     }, numeric(1))
-  }, mc.cores = cores)
+  })
   names(out) <- colnames(cellmat)
   out$px <- px
   out
