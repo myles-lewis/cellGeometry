@@ -10,7 +10,7 @@ Authors@R:
     role = c("ctb"),
     comment = c(ORCID = "0000-0002-8330-8048")))
 URL: https://github.com/myles-lewis/cellGeometry
-Description: Deconvolution of bulk RNA-Sequencing data into proportions of cells based on a reference single-cell RNA-Sequencing dataset using high-dimensional geometric methodology. 
+Description: Deconvolution of bulk RNA-Sequencing data into proportions of cells based on a reference single-cell RNA-Sequencing dataset using high-dimensional geometric methodology <doi:10.64898/2026.01.24.701240>. 
 License: GPL (>= 3)
 Encoding: UTF-8
 biocViews:

@@ -589,3 +589,12 @@ prefer higher `nsubclass` as this averages out the noise across more markers.
 `shift_noise` which simulates differences in chemistry tends to show that the
 low expression filter `expfilter` becomes increasingly important and that there
 is a maximum limit to `nsubclass`.
+
+# Citation
+
+If you use this package, please cite as:
+
+Lau R, Cubuk C, Spiliopoulou A, Martinez-Paz P, Surace AEA, Fossati-Jimack L,
+Raychaudhuri S, Pitzalis C, Lewis MJ (2026). cellGeometry: ultra-fast
+single-cell deconvolution of bulk RNA-Seq using a geometric solution. *bioRxiv*.
+https://doi.org/10.64898/2026.01.24.701240
