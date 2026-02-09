@@ -9,7 +9,8 @@ generate_samples(
   n,
   equal_sample = TRUE,
   method = c("unif", "dirichlet"),
-  alpha = 1.5
+  alpha = 1.5,
+  zero_fraction = 0
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ are drawn from uniform distribution or dirichlet distribution.}
 
 \item{alpha}{Shape parameter for \code{gtools::rdirichlet()}. Automatically
 expanded to be a vector whose length is the number of subclasses.}
+
+\item{zero_fraction}{Numeric from 0 to 1 specifying proportion of cell
+subclasses to randomly set to zero in each sample.}
 }
 \value{
 An integer matrix with \code{n} rows, with columns for each cell

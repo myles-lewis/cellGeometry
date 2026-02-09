@@ -15,6 +15,8 @@
 #'   are drawn from uniform distribution or dirichlet distribution.
 #' @param alpha Shape parameter for `gtools::rdirichlet()`. Automatically
 #'   expanded to be a vector whose length is the number of subclasses.
+#' @param zero_fraction Numeric from 0 to 1 specifying proportion of cell
+#'   subclasses to randomly set to zero in each sample.
 #' @returns An integer matrix with `n` rows, with columns for each cell
 #'   subclasses in `object`, representing cell counts for each cell subclass.
 #'   Designed to be passed to [simulate_bulk()].
@@ -26,7 +28,7 @@
 #' @export
 generate_samples <- function(object, n, equal_sample = TRUE,
                              method = c("unif", "dirichlet"),
-                             alpha = 1.5) {
+                             alpha = 1.5, zero_fraction = 0) {
   lim <- object$subclass_table
   nc <- length(lim)
   method <- match.arg(method)
@@ -42,6 +44,13 @@ generate_samples <- function(object, n, equal_sample = TRUE,
     dimnames(sim_counts) <- list(paste0("S", c(1:n)), names(lim))
   }
   mode(sim_counts) <- "integer"
+  if (zero_fraction > 0) {
+    zc <- round(zero_fraction * nc)
+    wr <- rep(seq_len(n), each = zc)
+    wc <- sample(nc, n * zc, replace = TRUE)
+    w <- matrix(c(wr, wc), ncol = 2)
+    sim_counts[w] <- 0L
+  }
   sim_counts
 }
 
