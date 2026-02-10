@@ -18,9 +18,10 @@ columns matching \code{obs}.}
 
 \item{scheme}{Vector of colours, one for each cell subclass.}
 
-\item{ellipse}{Either a single number for the number of ellipses to plot, or
-a character vector of cell subclasses to be outlined with ellipses.
-Requires the ggforce package to be installed.}
+\item{ellipse}{Either a single number for the number of ellipses to plot, in
+which case ellipses are shown for cell subclasses with the lowest R^2; or a
+character vector of cell subclasses to be outlined with ellipses. Requires
+the ggforce package to be installed.}
 }
 \value{
 A ggplot2 scatter plot. An overall R^2 (coefficient of

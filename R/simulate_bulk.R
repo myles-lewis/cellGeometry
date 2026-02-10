@@ -281,9 +281,10 @@ Rsq <- function(obs, pred) {
 #' @param mk Optional matching cellMarkers object. This is used for its
 #'   `cell_table` element to try to colour subclasses by group.
 #' @param scheme Vector of colours, one for each cell subclass.
-#' @param ellipse Either a single number for the number of ellipses to plot, or
-#'   a character vector of cell subclasses to be outlined with ellipses.
-#'   Requires the ggforce package to be installed.
+#' @param ellipse Either a single number for the number of ellipses to plot, in
+#'   which case ellipses are shown for cell subclasses with the lowest R^2; or a
+#'   character vector of cell subclasses to be outlined with ellipses. Requires
+#'   the ggforce package to be installed.
 #' @returns A ggplot2 scatter plot. An overall R^2 (coefficient of
 #'   determination) comparing all observed and predicted results is shown.
 #' @importFrom ggplot2 geom_abline
