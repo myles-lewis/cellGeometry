@@ -265,3 +265,52 @@ Rsq <- function(obs, pred) {
   tss <- sum((obs - mean(obs))^2)
   1 - rss/tss
 }
+
+
+plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = 0) {
+  if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
+  if (anyNA(pred)) {
+    message("`pred` contains NA")
+    pred[is.na(pred)] <- 0
+  }
+  subclasses <- colnames(obs)
+  if (is.null(scheme)) {
+    if (is.null(mk)) {
+      scheme <- hue_pal(h = c(0, 300))(ncol(obs))
+    } else {
+      if (!inherits(mk, "cellMarkers")) stop("mk is not a cellMarkers object")
+      scheme <- material_colours(mk)
+    }
+  }
+  dat <- data.frame(obs = as.vector(obs), pred = as.vector(pred),
+                    subclass = factor(rep(subclasses, each = nrow(obs))))
+  rsq <- format(Rsq(obs, pred), digits = 3)
+  title <- bquote(R^2 ~"="~ .(rsq))
+  
+  p <- ggplot(dat, aes(x = .data$obs, y = .data$pred, color = .data$subclass,
+                       fill = .data$subclass)) +
+    geom_point(size = 1, alpha = 0.8) +
+    scale_colour_manual(values = scheme) +
+    scale_fill_manual(values = scheme) +
+    geom_abline(slope = 1, intercept = 0) +
+    xlab("Observed") + ylab("Predicted") +
+    ggtitle(title) +
+    theme_classic() +
+    theme(axis.text = element_text(colour = "black"),
+          plot.title = element_text(size = 10),
+          legend.position = "none")
+  
+  if (ellipse > 0) {
+    if (!requireNamespace("ggforce", quietly = TRUE))
+      stop("'ggforce' package is not installed")
+    mset <- metric_set(obs, pred)
+    o <- order(mset[, "Rsq"])[seq_len(ellipse)]
+    subdat <- dat[dat$subclass %in% colnames(obs)[o], ]
+    p <- p +
+      ggforce::geom_mark_ellipse(data = subdat,
+                                 aes(x = .data$obs, y = .data$pred,
+                                     color = .data$subclass, fill = .data$subclass),
+                                 expand = 0, linewidth = unit(0.3, "pt"))
+  }
+  p
+}

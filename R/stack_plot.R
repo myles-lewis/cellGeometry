@@ -110,7 +110,7 @@ stack_ggplot <- function(x, percent = FALSE, order_col = 1, scheme = NULL,
                          show_xticks = FALSE) {
   ord_table <- NULL
   if (inherits(x, "deconv")) {
-    scheme <- material_colours(x$mk)
+    if (is.null(scheme)) scheme <- material_colours(x$mk)
     ord_table <- order(x$mk$cell_table)
     x <- x$subclass$output
   }
