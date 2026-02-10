@@ -148,10 +148,10 @@ cat_timer <- function(start) {
 
 #' Scatter plots to compare deconvoluted subclasses
 #' 
-#' Produces scatter plots using base graphics to compare actual cell counts
-#' against deconvoluted cell counts from bulk (or pseudo-bulk) RNA-Seq. Mainly
-#' for use if ground truth is available, e.g. for simulated pseudo-bulk RNA-Seq
-#' data.
+#' Produces a set of scatter plots using base graphics to compare actual cell
+#' counts against deconvoluted cell counts from bulk (or pseudo-bulk) RNA-Seq
+#' for each cell subclass. Mainly for use if ground truth is available, e.g. for
+#' simulated pseudo-bulk RNA-Seq data.
 #' 
 #' @param obs Observed matrix of cell amounts with subclasses in columns and
 #'   samples in rows.
@@ -267,7 +267,28 @@ Rsq <- function(obs, pred) {
 }
 
 
-plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = 0) {
+#' Scatter plot to compare deconvoluted subclasses
+#' 
+#' Produces a single scatter plot using base graphics to compare actual cell
+#' counts against deconvoluted cell counts from bulk (or pseudo-bulk) RNA-Seq
+#' Cell subclasses are shown in different colours. Designed for use if ground
+#' truth is available, e.g. for simulated pseudo-bulk RNA-Seq data.
+#' 
+#' @param obs Observed matrix of cell amounts with subclasses in columns and
+#'   samples in rows.
+#' @param pred Predicted (deconvoluted) matrix of cell amounts with rows and
+#'   columns matching `obs`.
+#' @param mk Optional matching cellMarkers object. This is used for its
+#'   `cell_table` element to try to colour subclasses by group.
+#' @param scheme Vector of colours, one for each cell subclass.
+#' @param ellipse Either a single number for the number of ellipses to plot, or
+#'   a character vector of cell subclasses to be outlined with ellipses.
+#'   Requires the ggforce package to be installed.
+#' @returns A ggplot2 scatter plot. An overall R^2 (coefficient of
+#'   determination) comparing all observed and predicted results is shown.
+#' @importFrom ggplot2 geom_abline
+#' @export
+plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
     message("`pred` contains NA")
@@ -300,12 +321,16 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = 0) {
           plot.title = element_text(size = 10),
           legend.position = "none")
   
-  if (ellipse > 0) {
+  if (!is.null(ellipse)) {
+    if (is.character(ellipse)) {
+      subdat <- dat[dat$subclass %in% ellipse, ]
+    } else {
+      mset <- metric_set(obs, pred)
+      o <- order(mset[, "Rsq"])[seq_len(ellipse)]
+      subdat <- dat[dat$subclass %in% colnames(obs)[o], ]
+    }
     if (!requireNamespace("ggforce", quietly = TRUE))
-      stop("'ggforce' package is not installed")
-    mset <- metric_set(obs, pred)
-    o <- order(mset[, "Rsq"])[seq_len(ellipse)]
-    subdat <- dat[dat$subclass %in% colnames(obs)[o], ]
+      stop("'ggforce' package is not installed", call. = FALSE)
     p <- p +
       ggforce::geom_mark_ellipse(data = subdat,
                                  aes(x = .data$obs, y = .data$pred,

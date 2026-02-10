@@ -35,6 +35,7 @@ Depends:
     R (>= 4.1.0)
 Suggests:
     future.apply,
+    ggforce,
     ggsci,
     knitr,
     plotly,
