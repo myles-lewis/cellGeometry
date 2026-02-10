@@ -335,7 +335,16 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL) {
     p <- p +
       ggforce::geom_mark_ellipse(data = subdat,
                                  aes(x = .data$obs, y = .data$pred,
-                                     color = .data$subclass, fill = .data$subclass),
+                                     color = .data$subclass, fill = .data$subclass,
+                                     label = .data$subclass),
+                                 label.fontface = "plain",
+                                 label.margin = margin(1, 1, 1, 1, "mm"),
+                                 label.fontsize = 10,
+                                 label.fill = alpha("white", 0.6),
+                                 label.buffer = unit(5, "mm"),
+                                 con.cap = 0,
+                                 con.type = "straight",
+                                 con.border = "none",
                                  expand = 0, linewidth = unit(0.3, "pt"))
   }
   p
