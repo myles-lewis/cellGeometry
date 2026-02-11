@@ -73,11 +73,11 @@ well as mean(log2(counts +1)). This is mainly useful for simulation.}
 \item{meanFUN}{Either a character value or function for applying mean which
 is passed to \code{\link[=scmean]{scmean()}}. Options include \code{"logmean"} (the default) or
 \code{"trimmean"} which is a trimmed after excluding the top/bottom 5\% of
-values.}
+values. \code{rowMeans} can be used for the arithmetic mean of counts.}
 
 \item{postFUN}{Optional function applied to \code{genemeans} matrices after mean
-has been calculated. If \code{meanFUN} is set to \code{"trimmean"}, then \code{postFUN}
-is set to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
+has been calculated. If \code{meanFUN} is set to \code{"trimmean"} or \code{"rowMeans"},
+then \code{postFUN} defaults to \code{log2s}. See \code{\link[=scmean]{scmean()}}.}
 
 \item{verbose}{Logical whether to show messages.}
 

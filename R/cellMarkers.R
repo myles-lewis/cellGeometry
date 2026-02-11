@@ -45,10 +45,10 @@
 #' @param meanFUN Either a character value or function for applying mean which
 #'   is passed to [scmean()]. Options include `"logmean"` (the default) or
 #'   `"trimmean"` which is a trimmed after excluding the top/bottom 5% of
-#'   values.
+#'   values. `rowMeans` can be used for the arithmetic mean of counts.
 #' @param postFUN Optional function applied to `genemeans` matrices after mean
-#'   has been calculated. If `meanFUN` is set to `"trimmean"`, then `postFUN`
-#'   is set to `log2s`. See [scmean()].
+#'   has been calculated. If `meanFUN` is set to `"trimmean"` or `"rowMeans"`,
+#'   then `postFUN` defaults to `log2s`. See [scmean()].
 #' @param verbose Logical whether to show messages.
 #' @param sliceMem Max amount of memory in GB to allow for each subsetted count
 #'   matrix object. When `scdata` is subsetted by each cell subclass, if the
@@ -164,7 +164,8 @@ cellMarkers <- function(scdata,
   }
   nsubclass2 <- rep_len(nsubclass, nsub)
   
-  if (is.character(meanFUN) && meanFUN == "trimmean" && is.null(postFUN)) {
+  if (is.character(meanFUN) && meanFUN %in% c("trimmean", "rowMeans") && 
+      is.null(postFUN)) {
     postFUN <- log2s
   }
   if (dual_mean) {
