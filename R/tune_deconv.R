@@ -78,7 +78,7 @@ tune_deconv <- function(mk, test, samples, grid,
   }
   
   # disable group analysis
-  mk$group_geneset <- mk$group_angle <- mk$groupmeans <- mk$cell_table <- NULL
+  mk$group_geneset <- mk$group_angle <- mk$groupmeans <- NULL
   mk$groupmeans_filtered <- NULL
   
   if (length(w1) > 0) {
