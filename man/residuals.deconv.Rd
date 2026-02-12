@@ -4,18 +4,18 @@
 \alias{residuals.deconv}
 \title{Extract Deconvolution Residuals}
 \usage{
-\method{residuals}{deconv}(object, test = NULL, arith_mean = FALSE, use_filter = FALSE, ...)
+\method{residuals}{deconv}(object, ..., test = NULL, arith_mean = FALSE, use_filter = FALSE)
 }
 \arguments{
 \item{object}{a 'deconv' class object}
+
+\item{...}{retained for class compatibility}
 
 \item{test}{bulk gene expression matrix assumed to be in raw counts}
 
 \item{arith_mean}{logical, whether to use arithmetic mean as gene signature}
 
 \item{use_filter}{logical, whether to use denoised signature matrix}
-
-\item{...}{retained for class compatibility}
 }
 \value{
 Matrix of residuals.

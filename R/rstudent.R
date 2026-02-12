@@ -121,9 +121,9 @@ hat_fit <- function(fit) {
 #' @param use_filter logical, whether to use denoised signature matrix
 #' @returns Matrix of residuals.
 #' @export
-residuals.deconv <- function(object,
+residuals.deconv <- function(object, ...,
                              test = NULL,
-                             arith_mean = FALSE, use_filter = FALSE, ...) {
+                             arith_mean = FALSE, use_filter = FALSE) {
   if (is.null(test)) return(object$subclass$residuals)
   # recalculate residuals
   if (is.null(arith_mean)) arith_mean <- object$call$arith_mean
@@ -202,4 +202,18 @@ se <- function(model, type = c("var.e", "OLS", "OLS2", "HC0", "HC2", "HC3")) {
   }
   rownames(se) <- rownames(model$subclass$output)
   se
+}
+
+
+#' Compute condition number of deconvolution model
+#' 
+#' Computes the condition number of the spillover matrix from a deconvolution
+#' model.
+#' 
+#' @param x a 'deconv' class object
+#' @param ... arguments passed to [kappa()]
+#' @returns The condition number.
+#' @export
+kappa.deconv <- function(x, ...) {
+  kappa(x$subclass$spillover, ...)
 }

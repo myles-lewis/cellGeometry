@@ -156,7 +156,8 @@ tune_dec <- function(mk, test, samples, grid2, output, progress = FALSE,
     out <- metric_set(samples, fit_output)
     ngene <- length(fit$mk$geneset) - length(fit$subclass$removed)
     df <- data.frame(grid2_row, subclass = rownames(out), ngene,
-                     resvar = mean(fit$subclass$resvar), row.names = NULL)
+                     resvar = mean(fit$subclass$resvar),
+                     kappa = kappa(fit$subclass$spillover), row.names = NULL)
     cbind(df, out)
   }, progress = progress, mc.cores = cores, mc.preschedule = FALSE)
   do.call(rbind, res)
@@ -294,9 +295,9 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       metric = attr(result, "metric"), title = NULL) {
   params <- colnames(result)
   params <- params[!params %in% 
-                     c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar")]
+                     c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar", "kappa")]
   if (!xvar %in% params) stop("incorrect `xvar`")
-  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar"))
+  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar", "kappa"))
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
@@ -319,7 +320,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   
   mres <- aggregate(result[, metric], by = result[, params, drop = FALSE],
                     FUN = mean, na.rm = TRUE)
-  w <- if (metric %in% c("RMSE", "resvar")) which.min(mres$x) else which.max(mres$x)
+  w <- if (metric %in% c("RMSE", "resvar", "kappa")) which.min(mres$x) else which.max(mres$x)
   colnames(mres)[which(colnames(mres) == "x")] <- paste0("mean.", metric)
   best_tune <- mres[w, ]
   
