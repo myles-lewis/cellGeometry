@@ -11,9 +11,13 @@
 #'   plot.
 #' @param mfrow Optional vector of length 2 for organising plot layout. See
 #'   `par()`. Only used when `overlay = FALSE`.
+#' @param subclass Either a number or character value specifying which cell
+#'   subclass to plot.
 #' @param ... Optional graphical arguments passed to [plot()].
-#' @return No return value, plots the effect of varying compensation on minimum
-#'   subclass output for each cell subclass.
+#' @return No return value. `plot_comp()` plots the effect of varying
+#'   compensation on the minimum subclass output for every cell subclass.
+#'   `plot_path()` plots the coefficient paths for each bulk sample for a single
+#'   subclass.
 #' @importFrom graphics text
 #' @export
 
@@ -25,7 +29,7 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
   
   n <- length(x) -1
   px <- x$px
-  x <- x[1:n]
+  x <- lapply(x[1:n], colMins)
   new.args <- list(...)
   
   if (overlay) {
@@ -59,4 +63,29 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
            col = "red", adj = c(0.5, -0.5), xpd = NA)
     }
   }
+}
+
+#' @rdname plot_comp
+plot_path <- function(x, subclass = 1, ...) {
+  if (!inherits(x, "deconv")) stop("not a 'deconv' class object")
+  ox <- x
+  x <- x$comp_check
+  if (is.null(x)) stop("missing comp_check analysis")
+  
+  n <- nrow(x[[1]])
+  px <- x$px
+  new.args <- list(...)
+  
+  yr <- range(x[[subclass]])
+  scheme <- hue_pal(h = c(0, 270), c = 120)(n)
+  args <- list(x = NA, las = 1, xlim = c(0, 1), ylim = yr,
+               xlab = "Compensation", ylab = "coef",
+               main = names(x[subclass]), font.main = 1)
+  if (length(new.args)) args[names(new.args)] <- new.args
+  do.call(plot, args)
+  abline(h = 0)
+  for (i in seq_len(n)) {
+    lines(px, x[[subclass]][i, ], col = scheme[i])
+  }
+  abline(v = ox$subclass$comp_amount[subclass], lty = 2)
 }

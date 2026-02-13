@@ -420,9 +420,8 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
     newcomp <- comp_amount
     vapply(px, function(ci) {
       newcomp[i] <- ci
-      ntest <- quick_deconv(test.cellmat, newcomp, m_itself, rawcomp, i)
-      min(ntest, na.rm = TRUE)
-    }, numeric(1))
+      quick_deconv(test.cellmat, newcomp, m_itself, rawcomp, i)
+    }, numeric(ncol(test)))
   })
   names(out) <- colnames(cellmat)
   out$px <- px
