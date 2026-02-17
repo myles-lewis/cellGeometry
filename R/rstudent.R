@@ -210,10 +210,10 @@ se <- function(model, type = c("var.e", "OLS", "OLS2", "HC0", "HC2", "HC3")) {
 #' Computes the condition number of the spillover matrix from a deconvolution
 #' model.
 #' 
-#' @param x a 'deconv' class object
+#' @param z a 'deconv' class object
 #' @param ... arguments passed to [kappa()]
 #' @returns The condition number.
 #' @export
-kappa.deconv <- function(x, ...) {
-  kappa(x$subclass$spillover, ...)
+kappa.deconv <- function(z, ...) {
+  kappa(z$subclass$spillover, ...)
 }

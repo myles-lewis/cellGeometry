@@ -4,10 +4,10 @@
 \alias{kappa.deconv}
 \title{Compute condition number of deconvolution model}
 \usage{
-\method{kappa}{deconv}(x, ...)
+\method{kappa}{deconv}(z, ...)
 }
 \arguments{
-\item{x}{a 'deconv' class object}
+\item{z}{a 'deconv' class object}
 
 \item{...}{arguments passed to \code{\link[=kappa]{kappa()}}}
 }

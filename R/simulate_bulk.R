@@ -287,7 +287,7 @@ Rsq <- function(obs, pred) {
 #'   the ggforce package to be installed.
 #' @returns A ggplot2 scatter plot. An overall R^2 (coefficient of
 #'   determination) comparing all observed and predicted results is shown.
-#' @importFrom ggplot2 geom_abline
+#' @importFrom ggplot2 geom_abline alpha margin
 #' @export
 plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
