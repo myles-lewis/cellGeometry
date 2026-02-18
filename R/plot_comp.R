@@ -17,6 +17,7 @@
 #'   sample to plot. Both `subclass` and `sample` cannot be specified together.
 #' @param add_points Logical whether to add points showing the final cell count
 #'   values.
+#' @param add_labs Logical whether to show labels for each line.
 #' @param ... Optional graphical arguments passed to [plot()].
 #' @return No return value. `plot_comp()` plots the effect of varying
 #'   compensation on the minimum subclass output for every cell subclass.
@@ -72,7 +73,7 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
 
 #' @rdname plot_comp
 plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
-                      ...) {
+                      add_labs = TRUE, ...) {
   if (!inherits(x, "deconv")) stop("not a 'deconv' class object")
   ox <- x
   x <- x$comp_check
@@ -86,16 +87,25 @@ plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
     n <- nrow(x[[1]])
     scheme <- hue_pal(h = c(0, 270), c = 120)(n)
     yr <- range(x[[subclass]])
-    args <- list(x = NA, las = 1, xlim = c(0, 1), ylim = yr,
+    args <- list(x = NA, las = 1, xlim = c(0, 1), ylim = yr, bty = "l",
                  xlab = "Compensation", ylab = "coef",
                  main = names(x[subclass]), font.main = 1)
     if (length(new.args)) args[names(new.args)] <- new.args
     do.call(plot, args)
     abline(h = 0)
+    abline(v = ox$subclass$comp_amount[subclass], lty = 2)
     for (i in seq_len(n)) {
       lines(px, x[[subclass]][i, ], col = scheme[i])
     }
-    abline(v = ox$subclass$comp_amount[subclass], lty = 2)
+    if (add_labs) {
+      text(rep(1.01, n), x[[subclass]][, length(px)],
+           rownames(ox$subclass$output)[1:n],
+           cex = 0.7, col = scheme, adj = c(0, 0.5), xpd = NA)
+    }
+    if (add_points) {
+      points(rep(ox$subclass$comp_amount[subclass], n),
+             ox$subclass$output[, subclass], pch = 20, col = scheme)
+    }
   } else {
     # per sample
     if (!is.numeric(subclass) || subclass != 1L)
@@ -106,7 +116,7 @@ plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
     scheme <- hue_pal(h = c(0, 270), c = 120)(n)
     yr <- range(xx[sample, , ])
     main <- if (is.numeric(sample)) rownames(xx)[sample] else sample 
-    args <- list(x = NA, las = 1, xlim = c(0, 1), ylim = yr,
+    args <- list(x = NA, las = 1, xlim = c(0, 1), ylim = yr, bty = "l",
                  xlab = "Compensation", ylab = "coef",
                  main = main, font.main = 1)
     if (length(new.args)) args[names(new.args)] <- new.args
@@ -114,6 +124,11 @@ plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
     abline(h = 0)
     for (i in seq_len(n)) {
       lines(px, xx[sample, , i], col = scheme[i])
+    }
+    if (add_labs) {
+      text(rep(1.01, n), xx[sample, length(px), ],
+           colnames(ox$subclass$output)[1:n],
+           cex = 0.7, col = scheme, adj = c(0, 0.5), xpd = NA)
     }
     if (add_points) {
       points(ox$subclass$comp_amount, ox$subclass$output[sample, ],
