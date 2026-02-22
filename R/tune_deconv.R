@@ -190,14 +190,13 @@ summary.tune_deconv <- function(object,
                                 method = attr(object, "method"),
                                 ...) {
   method <- match.arg(method, c("top", "overall"))
-  metric <- match.arg(metric, c("pearson.rsq", "Rsq", "RMSE", "resvar", "kappa"))
+  metric <- match.arg(metric, met_params)
   metFUN <- if (metric %in% c("Rsq", "pearson.rsq")) which.max else which.min
   metcol <- if (metric %in% c("resvar", "kappa")) {metric
   } else paste0("mean.", metric)
   
   params <- colnames(object)
-  params <- params[!params %in% c("subclass", "pearson.rsq", "Rsq", "RMSE",
-                                  "resvar", "kappa")]
+  params <- params[!params %in% c("subclass", met_params)]
   mres <- tune_stats(object, params)
   w <- metFUN(mres[, metcol])
   
@@ -224,12 +223,13 @@ summary.tune_deconv <- function(object,
 }
 
 
+met_params <- c("pearson.rsq", "Rsq", "RMSE", "bias", "var", "resvar", "kappa")
+
 tune_stats <- function(object, params) {
-  mets <- c("pearson.rsq", "Rsq", "RMSE", "resvar", "kappa")
-  mres <- aggregate(object[, mets], by = object[, params, drop = FALSE],
+  mres <- aggregate(object[, met_params], by = object[, params, drop = FALSE],
                     FUN = mean, na.rm = TRUE)
-  w <- which(colnames(mres) %in% mets[1:3])
-  colnames(mres)[w] <- paste0("mean.", mets[1:3])
+  w <- which(colnames(mres) %in% met_params[1:3])
+  colnames(mres)[w] <- paste0("mean.", met_params[1:3])
   mres
 }
 
@@ -297,9 +297,9 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       metric = attr(result, "metric"), title = NULL) {
   params <- colnames(result)
   params <- params[!params %in% 
-                     c("subclass", "pearson.rsq", "Rsq", "RMSE", "resvar", "kappa")]
+                     c("subclass", met_params)]
   if (!xvar %in% params) stop("incorrect `xvar`")
-  metric <- match.arg(metric, c("RMSE", "Rsq", "pearson.rsq", "resvar", "kappa"))
+  metric <- match.arg(metric, met_params)
   
   if (is.null(group)) {
     xdiff <- diff(range(result[, xvar], na.rm = TRUE))
@@ -321,8 +321,9 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
   if ("ngene" %in% by_params) fix_params <- fix_params[fix_params != "nsubclass"]
   
   mres <- tune_stats(result, params)
-  metcol <- if (metric %in% c("resvar", "kappa")) {metric
-  } else paste0("mean.", metric)
+  metcol <- if (metric %in% c("Rsq", "pearson.rsq", "RMSE")) {
+    paste0("mean.", metric)
+  } else metric
   metFUN <- if (metric %in% c("Rsq", "pearson.rsq")) which.max else which.min
   w <- metFUN(mres[, metcol])
   best_tune <- mres[w, ]

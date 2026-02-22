@@ -153,6 +153,8 @@ deconvolute <- function(mk, test,
   if (outlier_method != "var.e") se <- TRUE
   test <- as.matrix(test)
   if (any(test < 0)) stop("`test` contains negative values")
+  if (logged_bulk && any(is.infinite(2^test)))
+    stop("infinite values when `test` converted to count scale. Are you sure bulk data is log2 scaled?")
   if (length(lambda) > 1) stop("lambda can only accept a single value")
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
@@ -290,7 +292,9 @@ outlier_metric <- function(fit, outlier_method, outlier_quantile, count_space) {
                    fit$var.e)
   if (outlier_method == "var.e") {
     if (count_space) metric <- log2(metric +1)
-    return(scale(metric)[, 1])
+    out <- scale(metric)[, 1]
+    out[is.na(out)] <- 0
+    return(out)
   }
   metric[is.nan(metric)] <- 0
   rowQuantiles(metric, probs = outlier_quantile)

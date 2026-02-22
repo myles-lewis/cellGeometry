@@ -99,7 +99,7 @@ simulate_bulk <- function(object, samples, subclass, times = 1,
     genemean_counts <- 2^object$genemeans -1
     if (ncol(genemean_counts) != ncol(samples)) stop("incompatible number of columns")
     sim_pseudo <- genemean_counts %*% t(samples)
-    mode(sim_pseudo) <- "integer"
+    if (all(sim_pseudo <= .Machine$integer.max)) mode(sim_pseudo) <- "integer"
     return(sim_pseudo)
   }
   
@@ -244,15 +244,14 @@ metric_set <- function(obs, pred) {
     pred[is.na(pred)] <- 0
   }
   
-  out <- t(vapply(colnames(obs), function(i) {
-    r1 <- Rsq(obs[, i], pred[, i])
-    r2 <- rmse(obs[, i], pred[, i])
-    c(r1, r2)
-  }, numeric(2)))
-  
+  d <- pred - obs
+  r1 <- colRsq(obs, pred)
+  r2 <- colRmse(d)
+  bias <- colMeans(d)
+  var <- predVar(d)
   cors <- diag(cor(obs, pred))^2 |> suppressWarnings()
-  out <- cbind(cors, out)
-  colnames(out) <- c("pearson.rsq", "Rsq", "RMSE")
+  out <- cbind(cors, r1, r2, bias, var)
+  colnames(out) <- c("pearson.rsq", "Rsq", "RMSE", "bias", "var")
   out
 }
 
@@ -266,6 +265,21 @@ Rsq <- function(obs, pred) {
   1 - rss/tss
 }
 
+# column vectorised versions
+colRmse <- function(d) {
+  sqrt(colMeans(d^2))
+}
+
+colRsq <- function(obs, pred) {
+  rss <- colSums((pred - obs)^2)
+  tss <- rowSums((t(obs) - colMeans(obs))^2)
+  1 - rss/tss
+}
+
+predVar <- function(d) {
+  n <- nrow(d)
+  matrixStats::colVars(d) * (n-1)/n
+}
 
 #' Scatter plot to compare deconvoluted subclasses
 #' 
