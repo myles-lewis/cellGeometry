@@ -41,5 +41,6 @@ Suggests:
     plotly,
     Rfast2,
     rmarkdown,
-    seriation
+    seriation,
+    tidyr
 VignetteBuilder: knitr
