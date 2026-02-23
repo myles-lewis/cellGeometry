@@ -223,7 +223,8 @@ summary.tune_deconv <- function(object,
 }
 
 
-met_params <- c("pearson.rsq", "Rsq", "RMSE", "bias", "var", "resvar", "kappa")
+met_params <- c("pearson.rsq", "Rsq", "RMSE", "bias", "bias^2", "var", "resvar",
+                "kappa")
 
 tune_stats <- function(object, params) {
   mres <- aggregate(object[, met_params], by = object[, params, drop = FALSE],
@@ -274,6 +275,8 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' @param metric Specifies tuning metric: either "RMSE", "Rsq", "pearson" or
 #'   "resvar" (residual variance of bulk gene expression).
 #' @param title Character value for the plot title.
+#' @param errorbars Logical whether to show error bars.
+#' @param show_points Logical whether to overlay points.
 #' @returns ggplot2 scatter plot.
 #' @details
 #' If `group` is set to `"subclass"`, then the tuning parameter specified by
@@ -294,7 +297,10 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' @export
 plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       fix = NULL,
-                      metric = attr(result, "metric"), title = NULL) {
+                      metric = attr(result, "metric"),
+                      title = NULL,
+                      errorbars = TRUE,
+                      show_points = TRUE) {
   params <- colnames(result)
   params <- params[!params %in% 
                      c("subclass", met_params)]
@@ -306,9 +312,11 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
     
     p <- ggplot(result, aes(x = .data[[xvar]], y = .data[[metric]])) +
       stat_summary(fun = mean, geom = "line", col = "limegreen") +
-      stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
-                   width = 0.02 * xdiff) +
-      stat_summary(fun = mean, geom = "point", col = "black") +
+      (if (errorbars) {
+        stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
+                     width = 0.02 * xdiff)}) +
+      (if (errorbars) {
+        stat_summary(fun = mean, geom = "point", col = "black")}) +
       ggtitle(title) +
       theme_bw() +
       theme(plot.title = element_text(size = 9),
@@ -360,7 +368,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
     ggplot(result, aes(x = .data[[xvar]], y = .data[[metric]],
                        color = .data[[group]])) +
       geom_line() +
-      geom_point() +
+      (if (show_points) geom_point()) +
       stat_summary(fun.data = mean_se, geom = "errorbar", col = "black",
                    width = 0.02 * xdiff) +
       stat_summary(fun = mean, geom = "point", col = "black") +
@@ -391,7 +399,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
     ggplot(mres, aes(x = .data[[xvar]], y = .data[[metcol]],
                        color = .data[[group]])) +
       geom_line() +
-      geom_point() +
+      (if (show_points) geom_point()) +
       ggtitle(title) +
       theme_bw() +
       theme(plot.title = element_text(size = 9),

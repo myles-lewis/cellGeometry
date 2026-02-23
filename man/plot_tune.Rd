@@ -10,7 +10,9 @@ plot_tune(
   xvar = colnames(result)[1],
   fix = NULL,
   metric = attr(result, "metric"),
-  title = NULL
+  title = NULL,
+  errorbars = TRUE,
+  show_points = TRUE
 )
 }
 \arguments{
@@ -29,6 +31,10 @@ axis.}
 "resvar" (residual variance of bulk gene expression).}
 
 \item{title}{Character value for the plot title.}
+
+\item{errorbars}{Logical whether to show error bars.}
+
+\item{show_points}{Logical whether to overlay points.}
 }
 \value{
 ggplot2 scatter plot.
