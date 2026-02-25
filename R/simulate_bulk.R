@@ -250,8 +250,8 @@ metric_set <- function(obs, pred) {
   bias <- colMeans(d)
   var <- predVar(d)
   cors <- diag(cor(obs, pred))^2 |> suppressWarnings()
-  out <- cbind(cors, r1, r2, bias, bias2 = bias^2, var)
-  colnames(out) <- c("pearson.rsq", "Rsq", "RMSE", "bias", "bias^2", "var")
+  out <- cbind(cors, r1, r2, bias, var)
+  colnames(out) <- c("pearson.rsq", "Rsq", "RMSE", "bias", "var")
   out
 }
 

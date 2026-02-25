@@ -58,7 +58,9 @@ settings.}
 }
 \value{
 Dataframe with class \code{'tune_deconv'} whose columns include: the
-parameters being tuned via \code{grid}, cell subclass and R squared.
+parameters being tuned via \code{grid}, cell subclass and R squared, RMSE,
+pearson r^2, residual gene expression variance, prediction bias and
+variance, and kappa (condition number).
 }
 \description{
 Performs an exhaustive grid search over a tuning grid of cell marker and

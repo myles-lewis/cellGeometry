@@ -34,7 +34,9 @@
 #' @param ... Optional arguments passed to [deconvolute()] to control fixed
 #'   settings.
 #' @returns Dataframe with class `'tune_deconv'` whose columns include: the
-#'   parameters being tuned via `grid`, cell subclass and R squared.
+#'   parameters being tuned via `grid`, cell subclass and R squared, RMSE,
+#'   pearson r^2, residual gene expression variance, prediction bias and
+#'   variance, and kappa (condition number).
 #' @details
 #' Tuning plots on the resulting object can be visualised using [plot_tune()].
 #' If `best_tune` is set to "overall", this corresponds to setting 
@@ -223,8 +225,7 @@ summary.tune_deconv <- function(object,
 }
 
 
-met_params <- c("pearson.rsq", "Rsq", "RMSE", "bias", "bias^2", "var", "resvar",
-                "kappa")
+met_params <- c("pearson.rsq", "Rsq", "RMSE", "bias", "var", "resvar", "kappa")
 
 tune_stats <- function(object, params) {
   mres <- aggregate(object[, met_params], by = object[, params, drop = FALSE],
@@ -434,6 +435,7 @@ plot_biasvar <- function(result, subclass = 1,
   if (is.numeric(subclass)) subclass <- levels(result$subclass)[subclass]
   res <- result[result$subclass == subclass, ]
   res$MSE <- res$RMSE^2
+  res$`bias^2` <- res$bias^2
   key <- c("MSE", "bias^2", "var")
   sres <- res[, c(xvar, key)]
   dat <- sres |> tidyr::pivot_longer(key)
