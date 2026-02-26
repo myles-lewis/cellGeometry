@@ -1,6 +1,22 @@
 News
 =====
 
+# cellGeometry 0.6.2
+###### 26/02/2026
+* Improved error checks in `deconvolute()` to help with issue #20.
+
+## New features
+
+* Add measurement of bias and variance to `tune_deconv()`.
+* Add `plot_tunevar()` to compare MSE, bias^2 and variance.
+* Add S3 method for `kappa()` to compute the condition number of the spillover 
+matrix.
+* Add `plot_path()` to show how the coefficient paths vary with compensation for 
+either a single bulk sample or a cell subclass.
+* Add `plot_pred()` as an alternative to `plot_set()` for viewing predicted vs 
+observed results from simulations in a single correlation plot.
+* Add `zero_fraction` argument to `generate_samples()`.
+
 # cellGeometry 0.6.1
 ###### 13/01/2026
 * Fix subtle division by near 0 issue in `nest_output`
