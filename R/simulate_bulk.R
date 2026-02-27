@@ -299,11 +299,13 @@ predVar <- function(d) {
 #'   which case ellipses are shown for cell subclasses with the lowest R^2; or a
 #'   character vector of cell subclasses to be outlined with ellipses. Requires
 #'   the ggforce package to be installed.
+#' @param labels Logical whether to add labels to ellipses.
 #' @returns A ggplot2 scatter plot. An overall R^2 (coefficient of
 #'   determination) comparing all observed and predicted results is shown.
 #' @importFrom ggplot2 geom_abline alpha margin
 #' @export
-plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL) {
+plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
+                      labels = TRUE) {
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
     message("`pred` contains NA")
@@ -350,7 +352,7 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL) {
       ggforce::geom_mark_ellipse(data = subdat,
                                  aes(x = .data$obs, y = .data$pred,
                                      color = .data$subclass, fill = .data$subclass,
-                                     label = .data$subclass),
+                                     label = if (labels) .data$subclass else NULL),
                                  label.fontface = "plain",
                                  label.margin = margin(1, 1, 1, 1, "mm"),
                                  label.fontsize = 10,
