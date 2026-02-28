@@ -306,6 +306,7 @@ predVar <- function(d) {
 #' @returns A ggplot2 scatter plot. An overall R^2 (coefficient of
 #'   determination) comparing all observed and predicted results is shown.
 #' @importFrom ggplot2 geom_abline alpha margin
+#' @importFrom DescTools CCC
 #' @export
 plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
                       labels = TRUE) {
@@ -326,8 +327,9 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
   }
   dat <- data.frame(obs = as.vector(obs), pred = as.vector(pred),
                     subclass = factor(rep(subclasses, each = nrow(obs))))
+  ccc <- CCC(dat$obs, dat$pred)$rho.c$est |> format(digits = 3)
   rsq <- format(Rsq(obs, pred), digits = 3)
-  title <- bquote(R^2 ~"="~ .(rsq))
+  title <- bquote(CCC == .(ccc) * "," ~ R^2 == .(rsq))
   
   p <- ggplot(dat, aes(x = .data$obs, y = .data$pred, color = .data$subclass,
                        fill = .data$subclass)) +
