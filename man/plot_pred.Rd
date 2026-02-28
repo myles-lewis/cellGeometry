@@ -11,7 +11,8 @@ plot_pred(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL, labels = TRUE)
 samples in rows.}
 
 \item{pred}{Predicted (deconvoluted) matrix of cell amounts with rows and
-columns matching \code{obs}.}
+columns matching \code{obs}. Alternatively a 'deconv' class fitted model can be
+supplied and its \verb{$subclass$output} cell counts element will be used.}
 
 \item{mk}{Optional matching cellMarkers object. This is used for its
 \code{cell_table} element to try to colour subclasses by group.}

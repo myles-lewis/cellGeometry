@@ -156,7 +156,8 @@ cat_timer <- function(start) {
 #' @param obs Observed matrix of cell amounts with subclasses in columns and
 #'   samples in rows.
 #' @param pred Predicted (deconvoluted) matrix of cell amounts with rows and
-#'   columns matching `obs`.
+#'   columns matching `obs`. Alternatively a 'deconv' class fitted model can be
+#'   supplied and its `$subclass$output` cell counts element will be used.
 #' @param mfrow Optional vector of length 2 for organising plot layout. See
 #'   `par()`.
 #' @param show_zero Logical whether to force plot to include the origin.
@@ -178,6 +179,7 @@ plot_set <- function(obs, pred, mfrow = NULL,
                      cols = NULL,
                      colour = "blue",
                      title = "", cex.title = 1, ...) {
+  if (inherits(pred, "deconv")) pred <- pred$subclass$output
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
     message("`pred` contains NA")
@@ -291,7 +293,8 @@ predVar <- function(d) {
 #' @param obs Observed matrix of cell amounts with subclasses in columns and
 #'   samples in rows.
 #' @param pred Predicted (deconvoluted) matrix of cell amounts with rows and
-#'   columns matching `obs`.
+#'   columns matching `obs`. Alternatively a 'deconv' class fitted model can be
+#'   supplied and its `$subclass$output` cell counts element will be used.
 #' @param mk Optional matching cellMarkers object. This is used for its
 #'   `cell_table` element to try to colour subclasses by group.
 #' @param scheme Vector of colours, one for each cell subclass.
@@ -306,6 +309,7 @@ predVar <- function(d) {
 #' @export
 plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
                       labels = TRUE) {
+  if (inherits(pred, "deconv")) pred <- pred$subclass$output
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
     message("`pred` contains NA")

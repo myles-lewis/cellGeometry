@@ -22,7 +22,8 @@ plot_set(
 samples in rows.}
 
 \item{pred}{Predicted (deconvoluted) matrix of cell amounts with rows and
-columns matching \code{obs}.}
+columns matching \code{obs}. Alternatively a 'deconv' class fitted model can be
+supplied and its \verb{$subclass$output} cell counts element will be used.}
 
 \item{mfrow}{Optional vector of length 2 for organising plot layout. See
 \code{par()}.}
