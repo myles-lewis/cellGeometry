@@ -276,6 +276,8 @@ best_nsubclass <- function(object, metric = attr(object, "metric")) {
 #' @param metric Specifies tuning metric: either "RMSE", "Rsq", "pearson" or
 #'   "resvar" (residual variance of bulk gene expression).
 #' @param title Character value for the plot title.
+#' @param show_legend Logical whether to show the legend when `group` is set to
+#'   `"subclass"`. By default the legend is hidden if there are many subclasses.
 #' @param errorbars Logical whether to show error bars.
 #' @param show_points Logical whether to overlay points.
 #' @returns ggplot2 scatter plot.
@@ -300,6 +302,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
                       fix = NULL,
                       metric = attr(result, "metric"),
                       title = NULL,
+                      show_legend = nlevels(result$subclass) < 25,
                       errorbars = TRUE,
                       show_points = TRUE) {
   params <- colnames(result)
@@ -378,7 +381,8 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       theme(plot.title = element_text(size = 9),
             axis.text = element_text(colour = "black"),
             legend.key.size = unit(0.8, 'lines'),
-            legend.spacing.y = unit(0, 'lines'))
+            legend.spacing.y = unit(0, 'lines')) +
+      (if (!show_legend) theme(legend.position = "none"))
   } else {
     # mean Rsq over subclasses
     if (length(fix_params)) {

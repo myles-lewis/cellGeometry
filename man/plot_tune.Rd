@@ -11,6 +11,7 @@ plot_tune(
   fix = NULL,
   metric = attr(result, "metric"),
   title = NULL,
+  show_legend = nlevels(result$subclass) < 25,
   errorbars = TRUE,
   show_points = TRUE
 )
@@ -31,6 +32,9 @@ axis.}
 "resvar" (residual variance of bulk gene expression).}
 
 \item{title}{Character value for the plot title.}
+
+\item{show_legend}{Logical whether to show the legend when \code{group} is set to
+\code{"subclass"}. By default the legend is hidden if there are many subclasses.}
 
 \item{errorbars}{Logical whether to show error bars.}
 
