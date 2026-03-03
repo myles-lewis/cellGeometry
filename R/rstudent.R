@@ -130,12 +130,9 @@ residuals.deconv <- function(object, ...,
   # recalculate residuals
   if (is.null(arith_mean)) arith_mean <- eval(object$call$arith_mean) %||% FALSE
   if (is.null(use_filter)) use_filter <- eval(object$call$use_filter) %||% TRUE
-  if (arith_mean) {
-    cellmat <- if (use_filter) object$mk$genemeans_ar_filter else object$mk$genemeans_ar
-    if (is.null(cellmat)) stop("arithmetic mean not available")
-  } else {
-    cellmat <- if (use_filter) object$mk$genemeans_filter else object$mk$genemeans
-  }
+  count_space <- eval(object$call$count_space) %||% TRUE
+  cellmat <- get_cellmat(object$mk, arith_mean, use_filter)
+  
   nm <- object$call$test
   .call <- match.call()
   if (nm != .call$test) {
@@ -145,7 +142,7 @@ residuals.deconv <- function(object, ...,
   geneset <- intersect(rownames(cellmat), rownames(test))
   cellmat <- cellmat[geneset, ]
   test <- test[geneset, ]
-  cellmat <- 2^cellmat -1
+  if (count_space) cellmat <- 2^cellmat -1
   residuals_deconv(test, cellmat, object$subclass$output)
 }
 

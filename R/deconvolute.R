@@ -183,15 +183,7 @@ deconvolute <- function(mk, test,
   }
   
   # cell subclasses
-  if (arith_mean) {
-    cellmat <- if (use_filter) {mk$genemeans_filtered_ar[mk$geneset, ]
-    } else mk$genemeans_ar[mk$geneset, ]
-    if (is.null(cellmat)) stop("arithmetic mean not found")
-  } else {
-    cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
-    } else mk$genemeans[mk$geneset, ]
-  }
-  # cellmat <- sc2bulk(cellmat)
+  cellmat <- get_cellmat(mk, arith_mean, use_filter)
   if (!all(mk$geneset %in% rownames(test)))
     stop("`test` is missing some signature genes")
   logtest2 <- test[mk$geneset, , drop = FALSE]
@@ -433,8 +425,24 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
 }
 
 
+get_cellmat <- function(mk, arith_mean, use_filter) {
+  if (arith_mean) {
+    cellmat <- if (use_filter) {mk$genemeans_filtered_ar[mk$geneset, ]
+    } else mk$genemeans_ar[mk$geneset, ]
+    if (is.null(cellmat)) stop("arithmetic mean not found")
+  } else {
+    cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
+    } else mk$genemeans[mk$geneset, ]
+  }
+  cellmat
+}
+
 # avoid division by near 0
 fixzero <- function(x) {
   x[abs(x) < sqrt(.Machine$double.eps)] <- 0
   x
 }
+
+
+
+
