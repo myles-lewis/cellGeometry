@@ -128,8 +128,8 @@ residuals.deconv <- function(object, ...,
                              arith_mean = NULL, use_filter = NULL) {
   if (is.null(test)) return(object$subclass$residuals)
   # recalculate residuals
-  if (is.null(arith_mean)) arith_mean <- object$call$arith_mean
-  if (is.null(use_filter)) use_filter <- object$call$use_filter
+  if (is.null(arith_mean)) arith_mean <- eval(object$call$arith_mean) %||% FALSE
+  if (is.null(use_filter)) use_filter <- eval(object$call$use_filter) %||% TRUE
   if (arith_mean) {
     cellmat <- if (use_filter) object$mk$genemeans_ar_filter else object$mk$genemeans_ar
     if (is.null(cellmat)) stop("arithmetic mean not available")
