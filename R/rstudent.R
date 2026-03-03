@@ -117,19 +117,14 @@ hat_fit <- function(fit) {
 #' @param object a 'deconv' class object
 #' @param ... retained for class compatibility
 #' @param test bulk gene expression matrix assumed to be in raw counts
-#' @param arith_mean logical, whether to use arithmetic mean as gene signature.
-#'   If `NULL`, the value of `arith_mean` from the original call will be used.
-#' @param use_filter logical, whether to use denoised signature matrix. If
-#'   `NULL`, the value of `use_filter` from the original call will be used.
 #' @returns Matrix of residuals.
 #' @export
 residuals.deconv <- function(object, ...,
-                             test = NULL,
-                             arith_mean = NULL, use_filter = NULL) {
+                             test = NULL) {
   if (is.null(test)) return(object$subclass$residuals)
   # recalculate residuals
-  if (is.null(arith_mean)) arith_mean <- eval(object$call$arith_mean) %||% FALSE
-  if (is.null(use_filter)) use_filter <- eval(object$call$use_filter) %||% TRUE
+  arith_mean <- eval(object$call$arith_mean) %||% FALSE
+  use_filter <- eval(object$call$use_filter) %||% TRUE
   count_space <- eval(object$call$count_space) %||% TRUE
   cellmat <- get_cellmat(object$mk, arith_mean, use_filter)
   
