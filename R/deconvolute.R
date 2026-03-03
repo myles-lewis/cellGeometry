@@ -425,14 +425,14 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
 }
 
 
-get_cellmat <- function(mk, arith_mean, use_filter) {
+get_cellmat <- function(mk, arith_mean, use_filter, sub = mk$geneset) {
   if (arith_mean) {
-    cellmat <- if (use_filter) {mk$genemeans_filtered_ar[mk$geneset, ]
-    } else mk$genemeans_ar[mk$geneset, ]
+    cellmat <- if (use_filter) {mk$genemeans_filtered_ar[sub, ]
+    } else mk$genemeans_ar[sub, ]
     if (is.null(cellmat)) stop("arithmetic mean not found")
   } else {
-    cellmat <- if (use_filter) {mk$genemeans_filtered[mk$geneset, ]
-    } else mk$genemeans[mk$geneset, ]
+    cellmat <- if (use_filter) {mk$genemeans_filtered[sub, ]
+    } else mk$genemeans[sub, ]
   }
   cellmat
 }
