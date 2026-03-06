@@ -12,7 +12,7 @@ plot_path(
   subclass = 1L,
   sample = NULL,
   add_points = FALSE,
-  add_labs = TRUE,
+  labs = TRUE,
   ...
 )
 }
@@ -36,7 +36,8 @@ sample to plot. Both \code{subclass} and \code{sample} cannot be specified toget
 \item{add_points}{Logical whether to add points showing the final cell count
 values.}
 
-\item{add_labs}{Logical whether to show labels for each line.}
+\item{labs}{Either logical, whether to show labels for each line. Or a vector
+of label names for each line.}
 }
 \value{
 No return value. \code{plot_comp()} plots the effect of varying

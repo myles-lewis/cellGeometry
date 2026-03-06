@@ -442,7 +442,3 @@ fixzero <- function(x) {
   x[abs(x) < sqrt(.Machine$double.eps)] <- 0
   x
 }
-
-
-
-

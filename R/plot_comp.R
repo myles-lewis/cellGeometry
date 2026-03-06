@@ -17,7 +17,8 @@
 #'   sample to plot. Both `subclass` and `sample` cannot be specified together.
 #' @param add_points Logical whether to add points showing the final cell count
 #'   values.
-#' @param add_labs Logical whether to show labels for each line.
+#' @param labs Either logical, whether to show labels for each line. Or a vector
+#'   of label names for each line.
 #' @param ... Optional graphical arguments passed to [plot()].
 #' @return No return value. `plot_comp()` plots the effect of varying
 #'   compensation on the minimum subclass output for every cell subclass.
@@ -73,7 +74,7 @@ plot_comp <- function(x, overlay = TRUE, mfrow = NULL, ...) {
 
 #' @rdname plot_comp
 plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
-                      add_labs = TRUE, ...) {
+                      labs = TRUE, ...) {
   if (!inherits(x, "deconv")) stop("not a 'deconv' class object")
   ox <- x
   x <- x$comp_check
@@ -81,6 +82,7 @@ plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
   
   px <- x$px
   new.args <- list(...)
+  add_labs <- !isFALSE(labs) & !is.null(labs)
   
   if (is.null(sample)) {
     # per subclass
@@ -98,8 +100,8 @@ plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
       lines(px, x[[subclass]][i, ], col = scheme[i])
     }
     if (add_labs) {
-      text(rep(1.01, n), x[[subclass]][, length(px)],
-           rownames(ox$subclass$output)[1:n],
+      if (isTRUE(labs)) labs <- rownames(ox$subclass$output)[1:n]
+      text(rep(1.01, n), x[[subclass]][, length(px)], labs,
            cex = 0.7, col = scheme, adj = c(0, 0.5), xpd = NA)
     }
     if (add_points) {
@@ -126,8 +128,8 @@ plot_path <- function(x, subclass = 1L, sample = NULL, add_points = FALSE,
       lines(px, xx[sample, , i], col = scheme[i])
     }
     if (add_labs) {
-      text(rep(1.01, n), xx[sample, length(px), ],
-           colnames(ox$subclass$output)[1:n],
+      if (isTRUE(labs)) labs <- colnames(ox$subclass$output)[1:n]
+      text(rep(1.01, n), xx[sample, length(px), ], labs,
            cex = 0.7, col = scheme, adj = c(0, 0.5), xpd = NA)
     }
     if (add_points) {
