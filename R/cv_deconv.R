@@ -85,8 +85,8 @@ deconv_lambda_set <- function(test, cellmat, weights, comp_amount, adjust_comp,
   
   # train-test
   m_itself <- dotprod(cellmat[train, ], cellmat[train, ])
+  test.cellmat <- dotprod(test[train, ], cellmat[train, ])
   vapply(lam_set, function(i) {
-    test.cellmat <- dotprod(test[train, ], cellmat[train, ])
     deconv_adjust_core(test.cellmat, comp_amount,
                        adjust_comp, m_itself, lambda = i,
                        oldtest_test, oldcellmat_test, weights[-train])
