@@ -120,9 +120,9 @@ plot_cv <- function(fit, ...) {
   args <- list(x = xm, y = ym,
                pch = 21, bg = "white",
                ylim = c(min(ylo), max(yhi)),
-               log = "x", xlab = "lambda", ylab = "MSE",
+               log = "xy", xlab = "lambda", ylab = "MSE",
                panel.first = quote({
-                 abline(v = lams, lty = 3)
+                 abline(v = lams, lty = 3, col = "blue")
                  arrows(xm, ylo, xm, yhi, angle = 90, code = 3, length = 0.02)
                }))
   new.args <- list(...)
