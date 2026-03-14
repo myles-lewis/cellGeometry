@@ -18,6 +18,8 @@ deconvolute(
   arith_mean = FALSE,
   convert_bulk = FALSE,
   lambda = NULL,
+  cv_lambda = FALSE,
+  nfolds = 10,
   check_comp = FALSE,
   npass = 1,
   outlier_method = c("var.e", "cooks", "rstudent"),
@@ -68,7 +70,13 @@ using reference data or "qqmap" using quantile mapping of the bulk to
 scRNA-Seq datasets, or "none" (or \code{FALSE}) for no conversion.}
 
 \item{lambda}{single numeric value of ridge parameter lambda. Only applied to
-subclass deconvolution, not applied to cell group analysis. Experimental.}
+subclass deconvolution, not applied to cell group analysis. If
+\code{cv_lambda = TRUE} then a sequence of lambda values can be supplied.}
+
+\item{cv_lambda}{logical, whether to tune lambda using cross-validation
+(experimental). If \code{lambda} is not supplied, a default sequence is used.}
+
+\item{nfolds}{Number of folds for cross-validation of lambda.}
 
 \item{check_comp}{logical, whether to analyse compensation values across
 subclasses. See \code{\link[=plot_comp]{plot_comp()}}.}
@@ -111,8 +119,10 @@ values
 \item \code{weights}, vector of weights
 \item \code{resvar}, \eqn{s^2} the estimate of the gene expression variance
 for each sample
-\item \code{removed}, vector of outlying genes removed during successive
-passes
+\item \code{removed}, optional vector of outlying genes removed during
+successive passes
+\item \code{cv}, optional list included when \code{cv_lambda = TRUE}, containing
+lambda CV results
 }}
 \item{group}{similar list object to \code{subclass}, but with results for the
 cell group analysis.}
@@ -171,8 +181,8 @@ The ridge parameter lambda, which adds L2 regularisation to the compensation
 seems to be outweighed by varying other parameters especially \code{nsubclass}.
 }
 \seealso{
-\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=se]{se()}} \code{\link[=rstudent.deconv]{rstudent.deconv()}}
-\code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}}
+\code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=se]{se()}} \code{\link[=residuals.deconv]{residuals.deconv()}}
+\code{\link[=rstudent.deconv]{rstudent.deconv()}} \code{\link[=cooks.distance.deconv]{cooks.distance.deconv()}} \code{\link[=kappa.deconv]{kappa.deconv()}} \code{\link[=plot_cv]{plot_cv()}}
 }
 \author{
 Myles Lewis
