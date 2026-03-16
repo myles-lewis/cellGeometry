@@ -17,7 +17,8 @@
 #'   if outliers are detected. Although each gene has a point for the residual
 #'   for every bulk sample, only the point with the maximum absolute residual is
 #'   labelled.
-#' @param ... Optional arguments passed to [plot()]
+#' @param ... Optional arguments passed to [plot()] for the base graphics
+#'   version, or to `geom_text_repel()` for the ggplot2 version.
 #' @returns Produces a scatter plot in base graphics. Returns invisibly a
 #'   dataframe of the coordinates of the points. The ggplot version returns a
 #'   ggplot2 plotting object.
@@ -84,7 +85,7 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
 #' @importFrom ggplot2 scale_x_log10 scale_colour_manual geom_hline
 #' @export
 ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
-                             show_outliers = TRUE, nlabels = 0) {
+                             show_outliers = TRUE, nlabels = 0, ...) {
   nm <- fit$call$test
   .call <- match.call()
   if (nm != .call$test) {
@@ -121,8 +122,7 @@ ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     scale_colour_manual(values = c(adjustcolor("black", 0.2),
                                    adjustcolor("red", 0.7))) +
     (if (nlabels > 0) {
-      geom_text_repel(size = 3, color = "black", na.rm = TRUE,
-                      nudge_x = nx, direction = "y")
+      geom_text_repel(size = 3, color = "black", na.rm = TRUE, ...)
     }) +
     xlab("Bulk gene expression") + ylab(ylab) +
     theme_classic() +
