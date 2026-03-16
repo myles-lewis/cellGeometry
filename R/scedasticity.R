@@ -112,7 +112,6 @@ ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
       w <- which.max(dat$res[ind])
       dat$label[ind[w]] <- dat$gene[ind[w]]
     }
-    nx <- log10(diff(range(dat$expr, na.rm = TRUE))) * -0.15
   }
   
   ggplot(dat, aes(x = .data$expr, y = .data$res, label = .data$label)) +
