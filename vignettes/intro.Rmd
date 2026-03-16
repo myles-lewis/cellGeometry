@@ -36,7 +36,7 @@ h5ad files. If you are using Seurat, then it needs to be installed. We also
 recommend installing AnnotationHub to enable conversion of ensembl gene ids to
 symbols.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 # Bioconductor must be installed +/- updated first
 BiocManager::install(version = "3.xx")  # set to latest version
 
@@ -54,12 +54,12 @@ BiocManager::install("AnnotationHub")
 ```
 
 Install from CRAN
-```{r eval = FALSE}
+```{r eval=FALSE}
 install.packages("cellGeometry")
 ```
 
 Or install from Github
-```{r eval = FALSE}
+```{r eval=FALSE}
 devtools::install_github("myles-lewis/cellGeometry")
 ```
 
@@ -106,7 +106,7 @@ preferably an SSD, and not a networked drive. For example, an analysis of a
 midsized dataset only took 10 minutes when the h5 file was stored on a local
 SSD, compared to 3 hours when the file was stored on a NAS.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 library(zellkonverter)
 library(SingleCellExperiment)
 library(cellGeometry)
@@ -118,7 +118,7 @@ typist_h5 <- readH5AD("2ac906a5-9725-4258-8e36-21a9f6c0302a.h5ad",
 We extract the main count matrix and cell metadata. cellGeometry needs rownames
 on the count matrix.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 mat <- typist_h5@assays@data$X
 rownames(mat) <- rownames(typist_h5)
 meta <- typist_h5@colData@listData
@@ -159,7 +159,7 @@ samples). This reduces the analysis to 27,602 cells out of the total 329,762
 cells and reduces the number of subclasses from 43 to 27. This is entirely
 optional and the algorithm can easily run the full analysis.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 table(meta$Majority_voting_CellTypist)
 
 subcl <- meta$Majority_voting_CellTypist
@@ -176,7 +176,7 @@ We then run the 1st stage of cellGeometry which generates mean gene expression
 for each cell cluster (this is the slowest part). Then the best cell cluster and
 cell group gene markers are identified.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 mk <- cellMarkers(mat, subclass = subcl, cellgroup = cellgrp,
                   dual_mean = TRUE, cores = 2)
 ```
@@ -200,7 +200,7 @@ single-cell data, available RAM and whether HFD5 is used.
 Windows users can invoke parallelisation using the future backend and setting up
 a multisession plan.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 # example code using future for parallelisation on windows
 library(future)
 plan(multisession, workers = 4)
@@ -219,7 +219,7 @@ marker signature can be updated later for different bulk datasets using
 We convert the ensembl ids in the cellMarkers object using the built-in function
 `gene2symbol()`. This needs an ensembl database to be loaded.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 library(AnnotationHub)
 ah <- AnnotationHub()
 ensDb_v110 <- ah[["AH113665"]]
@@ -230,7 +230,7 @@ mk <- gene2symbol(mk, ensDb_v110)
 
 The signature gene matrix can be displayed as follows.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 signature_heatmap(mk)  # visualise whole signature
 signature_heatmap(mk, top = 5)  # show top 5 genes for each subclass
 ```
@@ -245,7 +245,7 @@ has been applied. To see the raw gene expression heatmap call
 
 The spillover heatmap between cell clusters can also be visualised.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 spillover_heatmap(mk)
 ```
 
@@ -267,7 +267,7 @@ explicitly measures the angle between the vectors for each cell subclass as
 defined by in gene space. `cos_similarity()` generates a cosine similarity
 matrix for the cell subclasses, and this can be visualised using a heatmap.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 cs <- cos_similarity(mk)
 ComplexHeatmap::Heatmap(cs)
 ```
@@ -281,7 +281,7 @@ vectors for each cell subclass using `acos(cs)`. The function `rank_angle()` can
 be used to list those pairs of subclasses whose vectors are close together in
 terms of the angle between them.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 rank_angle(cs)
 ```
 
@@ -295,7 +295,7 @@ Helper T cells in particular do not have any top ranked markers of their own
 since they are largely identical to Tcm/Naive helper T cells in terms of their
 gene expression.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 diagnose(mk)
 ```
 
@@ -305,7 +305,7 @@ well if applied to real world bulk RNA-Seq. (For the simulation it actually does
 not matter whether these are removed or not since the algorithm is able to
 differentiate them sufficiently.)
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 mk <- updateMarkers(mk,
                     remove_subclass = c("Helper T cells", "Cytotoxic T cells"))
 ```
@@ -356,54 +356,33 @@ list for the broader cell group signatures.
 
 # Deconvolution
 
-## Simulated pseudo-bulk
-
 We can generate pseudo-bulk to test the deconvolution using the following
-commands. Here `generate_samples()` makes 25 samples with random cell counts,
-`sim_counts`. The simulate_bulk() function operates in 2 modes. In the first
-mode, the average gene expression for each cell cluster is extracted from the
-cellMarkers object and used to generate the pseudo-bulk totals. In the 2nd
-mode (see below) the original single-cell count data is sampled.
+commands. First, `generate_samples()` makes 25 samples with random cell counts,
+`sim_counts`.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 # simulated bulk
 set.seed(3)
 sim_counts <- generate_samples(mk, 25)
 sim_percent <- sim_counts / rowSums(sim_counts) * 100
-sim_pseudo <- simulate_bulk(mk, sim_counts)
-```
-
-Deconvolution itself is performed as a 2nd function `deconvolute()`. The
-`plot_set()` function can be used to plot the results. The `metric_set()`
-function generates a table of results.
-
-```{r eval = FALSE}
-# mode 1: (perfect deconvolution)
-fit <- deconvolute(mk, sim_pseudo,
-                   use_filter = FALSE)
-plot_set(sim_counts, fit$subclass$output)
-plot_set(sim_percent, fit$subclass$percent)
-
-metric_set(sim_percent, fit$subclass$percent)  # table of results
 ```
 
 ## Sampled pseudo-bulk
 
-In the 2nd mode, the original scRNA-Seq count dataset is sampled. The sampling
-rate of the actual cell counts in `sim_counts` can be increased by setting
-`times`. Cells are sampled with replacement. The desired cell counts are simply
-multiplied by `times` prior to sampling. By default, sampling is performed using
-the Dirichlet distribution as this gives true random sampling in comparison to
-uniform sampling. When cells are oversampled uniformly, in the limit the summed
-gene expression tends to the arithmetic mean of the subclass x sample frequency
-(which is a much easier deconvolution problem compared to Dirichlet sampling).
-This can be demonstrated by using uniform sampling and steadily increasing
-`times` from 1 to 30-100 or more. This improves the deconvolution as the sum of
-the gene counts per sampled cell approaches the arithmetic mean of gene counts
-for each cell cluster.
+Then the original scRNA-Seq count dataset is sampled. The actual cell counts in
+`sim_counts` can be oversampled by setting `times`.  The desired cell counts are
+simply multiplied by `times` prior to sampling. Cells are sampled with
+replacement. By default, sampling is performed using the Dirichlet distribution
+as this gives true random sampling in comparison to uniform sampling. When cells
+are oversampled uniformly, in the limit the summed gene expression tends to the
+arithmetic mean of the subclass x sample frequency (which is a much easier
+deconvolution problem compared to Dirichlet sampling). This can be demonstrated
+by using uniform sampling and steadily increasing `times` from 1 to 30-100 or
+more. This improves the deconvolution as the sum of the gene counts per sampled
+cell approaches the arithmetic mean of gene counts for each cell cluster.
 
-```{r eval = FALSE}
-# mode 2: sample from original sc count matrix
+```{r eval=FALSE}
+# sample from original sc count matrix
 # 1.43 mins (Intel); 45 secs (ARM)
 set.seed(99)
 times <- 1  # can be increased
@@ -411,16 +390,29 @@ sim_sampled <- simulate_bulk(mat, sim_counts, subcl, times = times)
 
 # fix rownames
 rownames(sim_sampled) <- gene2symbol(rownames(sim_sampled), ensDb_v110)
+```
 
+Deconvolution itself is performed using the function `deconvolute()`. The
+`plot_set()` function can be used to plot the results. This generates multiple
+plots over 1 or more pages, with a scatter plot for each cell subclass. An
+alternative way to visualise the results is to use `plot_pred()` which generates
+a single scatter plot, with each cell subclass given a different colour. The
+`metric_set()` function generates a table of results.
+
+```{r eval=FALSE}
 # near optimal deconvolution of counts sampled from the original scRNA-Seq
-fit2 <- deconvolute(mk, sim_sampled,
-                    use_filter = FALSE, arith_mean = TRUE)
+fit <- deconvolute(mk, sim_sampled,
+                   use_filter = FALSE, arith_mean = TRUE)
 
-# plot results
-plot_set(sim_counts, fit2$subclass$output / times)  # adjust for oversampling using `times`
-plot_set(sim_percent, fit2$subclass$percent)
+# plot results - multiple scatter plots 
+plot_set(sim_counts, fit$subclass$output / times)  # adjust for oversampling using `times`
+plot_set(sim_percent, fit$subclass$percent)
 
-metric_set(sim_percent, fit2$subclass$percent)
+# alternative plot - single scatter plot
+plot_pred(sim_counts, fit$subclass$output / times)
+
+# stats table
+metric_set(sim_percent, fit$subclass$percent)
 ```
 
 ```{r, out.width='90%', echo=FALSE}
@@ -445,7 +437,7 @@ With a real bulk RNA-Seq dataset the first step is to ensure that only genes
 which are present in the bulk data are used for the gene signatures. This is
 achieved using the function `updateMarkers()`.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 mk <- updateMarkers(mk, bulkdata = my_bulk_matrix)
 ```
 
@@ -509,9 +501,9 @@ when using tuning. Below we tune over a range of `nsubclass` values from 5 up to
 tune `weight_method` to either "none" or "equal". But any argument which can be
 passed to `updateMarkers()` can be tuned. Arguments which are not in the tuning
 list specified through the argument `grid` such as `arith_mean` and `use_filter`
-in the example below are applied constantly.
+in the example below are applied constantly via the `...` system.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 res <- tune_deconv(mk, sim_sampled, sim_counts * times,
                    grid = list(nsubclass = c(5, 10, 15, 25, 50, 100, 200, 500, 1000),
                                expfilter = c(0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.5),
@@ -532,7 +524,7 @@ is multiplied by the oversampling factor `times` in the above example.
 
 The results of tuning can be plotted using the function `plot_tune()`.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 plot_tune(res, xvar = "nsubclass", group = "weight_method")
 plot_tune(res, xvar = "nsubclass", group = "expfilter")
 plot_tune(res, xvar = "expfilter", group = "weight_method")
@@ -557,7 +549,7 @@ has been chosen as a plausible compromise which should work in most situations.
 The package provides several noise adding functions which can be applied to the
 sampled simulation dataset.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 # simple gaussian noise applied to counts
 sim_noise <- add_noise(sim_sampled)
 
@@ -575,7 +567,7 @@ sim_noise <- shift_noise(sim_sampled)
 Tuning can then be tested on the simulation data with added noise to see how
 tolerant the deconvolution parameters are to different types of noise.
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 res2 <- tune_deconv(mk, sim_noise, sim_counts,
                    grid = list(nsubclass = c(5, 10, 15, 25, 50, 100, 200, 500, 1000),
                                expfilter = c(0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.5),
@@ -587,8 +579,95 @@ res2 <- tune_deconv(mk, sim_noise, sim_counts,
 We find that the addition of simple noise to the simulation dataset tends to
 prefer higher `nsubclass` as this averages out the noise across more markers.
 `shift_noise` which simulates differences in chemistry tends to show that the
-low expression filter `expfilter` becomes increasingly important and that there
-is a maximum limit to `nsubclass`.
+low expression filter `expfilter` becomes increasingly important and that in
+some datasets there is a maximum limit to `nsubclass`.
+
+# Deconvolution diagnostics
+
+## Standard error
+
+Several methods are available to calculate standard errors on a fitted
+deconvolution model which can be accessed using the `se()` function. These give
+an estimate of the uncertainty/reliability of deconvolution. Note that the
+default method which we show to the most accurate gives a vector of SE estimates
+with an SE value for each cell subclass but across all bulk samples. The other
+methods which are based on ordinary least squares or extensions such as
+heteroscedasticity-consistent standard errors using methods HC0, HC2 and HC3,
+produce a matrix of SE estimates per subclass and per sample, but these are
+considerably noisier and in our view less reliable.
+
+```{r eval=FALSE}
+# default method using var.e (see paper for details)
+se1 <- se(fit)
+head(se1)
+
+# ordinary least squares
+se2 <- se(fit, type = "OLS")
+```
+
+Related to this, the condition number of the spillover matrix from a
+deconvolution model can be accessed using `kappa()`. In our experience, kappa
+tends to be very high with sc-to-bulk deconvolution, because the input data,
+which is count data, is on an exponential scale and extremely skewed. Also, most
+users actively want to try to deconvolute cell types that are related e.g.
+subsets of neurons, subsets of B/T-cells etc. This means that the single-cell
+reference gene signature has a strong tendency to collinearity.
+
+## Residual gene expression
+
+Residual gene expression values can be accessed using `residuals()`. Residuals
+are calculated based on the gene signature matrix and stored within the model
+object. A full table of residuals for all genes can be produced by providing the
+original bulk (or pseudobulk) matrix.
+
+```{r eval=FALSE}
+r <- residuals(fit)
+
+# full table including all genes
+r1 <- residuals(fit, test = sim_sampled)
+```
+
+Residuals can be visualised with the function `plot_residuals()`. This shows
+residuals across all bulk samples on the *y* axis with bulk gene expression
+along the *x* axis. Residuals can either be plotted with or without the effect
+of equal gene weighting, or as Studentized residuals. A ggplot2 version is
+available via `ggplot_residuals()`.
+
+```{r eval=FALSE}
+plot_residuals(fit, sim_sampled)
+plot_residuals(fit, sim_sampled, type = "weight")
+plot_residuals(fit, sim_sampled, type = "student")
+```
+
+Functions that can help users decide if genes are outliers include standardized
+or Studentized residuals which can be computed using `rstandard()` and
+`rstudent()` respectively. Cook's distance can also be calculated using
+`cooks.distance()`.
+
+```{r eval=FALSE}
+rs1 <- rstandard(fit)
+rs2 <- rstudent(fit)
+cooksd <- cooks.distance(fit)
+```
+
+## Multipass outlying gene removal
+
+Genes which are outliers based on extreme residual gene expression are flagged
+automatically by the `deconvolute()` function and users alerted with a message
+`"Detected genes with extreme residuals ..."`. These can be removed by
+successive passes of deconvolution by setting the argument `npass` to >= 2. This
+is generally unnecessary in simulations unless large amounts of noise have been
+added to the pseudo-bulk. But it may be necessary with real-world data,
+especially if cell types which are present in the bulk data are missing from the
+reference scRNA-Seq. The multi-pass system stops automatically if no more
+outliers can be detected. However, if thresholds for determining outliers are
+set too low, the process can go on forever.
+
+```{r eval=FALSE}
+sim_noise <- shift_noise(sim_sampled)
+fit2 <-  deconvolute(mk, sim_noise, npass = 4,
+                     use_filter = FALSE, arith_mean = TRUE)
+```
 
 # Citation
 
