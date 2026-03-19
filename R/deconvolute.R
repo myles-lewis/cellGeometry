@@ -406,7 +406,7 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
     cellmat <- cellmat * weights
     test <- test * weights
   }
-  px <- seq(0, 1, 0.05)
+  px <- seq(0, 1, 0.025)
   
   m_itself <- dotprod(cellmat, cellmat)
   if (!is.null(lambda)) m_itself <- m_itself + diag(nrow(m_itself)) * lambda
@@ -419,9 +419,10 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
       quick_deconv(test.cellmat, newcomp, m_itself, rawcomp, i)
     }, numeric(ncol(test)))
   })
-  names(out) <- colnames(cellmat)
-  out$px <- px
-  out
+  dims <- c(ncol(test), length(px), ncol(cellmat))  # sample, comp, subclass
+  mat <- array(unlist(out), dim = dims,
+               dimnames = list(colnames(test), NULL, colnames(cellmat)))
+  list(mat = mat, comp = px)
 }
 
 
