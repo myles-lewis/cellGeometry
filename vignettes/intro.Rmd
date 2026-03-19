@@ -669,6 +669,34 @@ fit2 <-  deconvolute(mk, sim_noise, npass = 4,
                      use_filter = FALSE, arith_mean = TRUE)
 ```
 
+## Variable compensation
+
+cellGeometry autotunes compensation for each cell subclass independently as part
+of the mechanism to prevent negative cell counts in the deconvolution results.
+The package includes functions to visualise the effects of varying compensation.
+To enable these, the argument `comp_check` must be set to `TRUE` when calling
+`deconvolute()`. With simple simulations, the compensation values are all very
+close to 1. However, this system is more deeply invoked and necessary with
+real-world bulk samples.
+
+```{r eval=FALSE}
+fit2 <-  deconvolute(mk, sim_noise,
+                     use_filter = FALSE, arith_mean = TRUE, comp_check = TRUE)
+
+# show minimum deconvolution values across all samples to see where comp cut-offs occur
+plot_comp(fit2)
+
+# show coefficient paths for a single subclass (across all samples)
+plot_path(fit2)
+
+# show coef paths as cell percentages
+plot_path(fit2, type = "percent")
+
+# show coef paths for the first bulk sample (across all subclasses)
+plot_path(fit2, sample = 1)
+plot_path(fit2, sample = 1, type = "percent")
+```
+
 # Citation
 
 If you use this package, please cite as:
