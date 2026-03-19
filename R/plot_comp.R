@@ -119,7 +119,8 @@ plot_path <- function(x, subclass = 1L, sample = NULL,
       lines(comp, mat[i, , subclass], col = scheme[i])
     }
     if (add_labs) {
-      if (isTRUE(labs)) labs <- rownames(x$subclass$output)
+      if (isTRUE(labs)) {labs <- rownames(mat)
+      } else if (length(labs) != n) stop("incompatible `labs` length")
       text(1.01, mat[, length(comp), subclass], labs,
            cex = 0.7, col = scheme, adj = c(0, 0.5), xpd = NA)
     }
@@ -163,7 +164,7 @@ compmat_percent <- function(mat) {
     mat2 <- mat[, i, ]  # sample, subclass
     mat2 / rowSums(mat2) * 100
   })
-  pc <- array(unlist(pc), dim = dims[c(1, 3, 2)])  # sample, subclass, comp
-  pc2 <- lapply(seq_len(dims[3]), function(i) pc[, i, ])
-  array(unlist(pc2), dim = dims, dimnames = dimnames(mat))
+  pc <- array(unlist(pc), dim = dims[c(1, 3, 2)],
+              dimnames = dimnames(mat)[c(1, 3, 2)])  # sample, subclass, comp
+  aperm(pc, c(1, 3, 2))
 }
