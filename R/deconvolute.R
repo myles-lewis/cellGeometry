@@ -224,8 +224,8 @@ deconvolute <- function(mk, test,
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
     if (verbose) message("analysing compensation")
-    out$comp_check <- comp_check(logtest2, cellmat, comp_amount, weights,
-                                 weight_method, count_space, lambda)
+    out$comp_check <- comp_check(logtest2, atest$X, atest$weights, count_space,
+                                 lambda)
   }
   class(out) <- "deconv"
   out
@@ -388,24 +388,10 @@ quick_deconv <- function(test.cellmat, comp_amount, m_itself, rawcomp, wi) {
 }
 
 
-comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
-                       count_space, lambda) {
-  comp_amount <- rep_len(comp_amount, ncol(cellmat))
-  names(comp_amount) <- colnames(cellmat)
-  if (count_space) {
-    test <- 2^test -1
-    cellmat <- 2^cellmat -1
-  }
-  if (weight_method == "equal") weights <- equalweight(cellmat)
-  if (any(nok <- weights == 0)) {
-    test <- test[!nok, , drop = FALSE]
-    cellmat <- cellmat[!nok, , drop = FALSE]
-    weights <- weights[!nok]
-  }
-  if (!is.null(weights)) {
-    cellmat <- cellmat * weights
-    test <- test * weights
-  }
+comp_check <- function(test, cellmat, weights, count_space, lambda) {
+  test <- test[rownames(cellmat), ]
+  if (count_space) test <- 2^test -1
+  if (!is.null(weights)) test <- test * weights
   px <- seq(0, 1, 0.025)
   
   m_itself <- dotprod(cellmat, cellmat)
@@ -413,7 +399,7 @@ comp_check <- function(test, cellmat, comp_amount, weights, weight_method,
   rawcomp <- solve(m_itself)
   test.cellmat <- dotprod(test, cellmat)
   out <- lapply(seq_len(ncol(cellmat)), function(i) {
-    newcomp <- comp_amount
+    newcomp <- rep(1, ncol(cellmat))
     vapply(px, function(ci) {
       newcomp[i] <- ci
       quick_deconv(test.cellmat, newcomp, m_itself, rawcomp, i)
