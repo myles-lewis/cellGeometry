@@ -13,7 +13,12 @@
 #'   genes in red
 #' @param show_plot Logical whether to show plot using base graphics (used to
 #'   allow return of dataframe of points without plotting)
-#' @param ... Optional arguments passed to [plot()]
+#' @param nlabels Number of outlying gene labels to add. Labels are only added
+#'   if outliers are detected. Although each gene has a point for the residual
+#'   for every bulk sample, only the point with the maximum absolute residual is
+#'   labelled.
+#' @param ... Optional arguments passed to [plot()] for the base graphics
+#'   version, or to `geom_text_repel()` for the ggplot2 version.
 #' @returns Produces a scatter plot in base graphics. Returns invisibly a
 #'   dataframe of the coordinates of the points. The ggplot version returns a
 #'   ggplot2 plotting object.
@@ -80,7 +85,7 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
 #' @importFrom ggplot2 scale_x_log10 scale_colour_manual geom_hline
 #' @export
 ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
-                             show_outliers = TRUE) {
+                             show_outliers = TRUE, nlabels = 0, ...) {
   nm <- fit$call$test
   .call <- match.call()
   if (nm != .call$test) {
@@ -93,12 +98,31 @@ ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
   ylab <- switch(type, student = "Studentized residuals",
                  weight = "Weighted residuals",
                  "Raw residuals")
-  ggplot(dat, aes(x = .data$expr, y = .data$res)) +
+  dat$label <- ""
+  outl <- unique(dat$gene[dat$outlier])
+  nlabels <- min(c(nlabels, length(outl)))
+  if (nlabels > 0) {
+    m <- vapply(outl, function(i) {
+      abs(mean(dat$res[dat$gene == i]))
+    }, numeric(1))
+    outl <- outl[order(m, decreasing = TRUE)]
+    labs <- outl[seq_len(nlabels)]
+    for (i in labs) {
+      ind <- which(dat$gene == i)
+      w <- which.max(dat$res[ind])
+      dat$label[ind[w]] <- dat$gene[ind[w]]
+    }
+  }
+  
+  ggplot(dat, aes(x = .data$expr, y = .data$res, label = .data$label)) +
     geom_point(aes(colour = .data$outlier), na.rm = TRUE) +
     geom_hline(yintercept = 0, color = "royalblue") +
     scale_x_log10(guide = "axis_logticks") +
     scale_colour_manual(values = c(adjustcolor("black", 0.2),
                                    adjustcolor("red", 0.7))) +
+    (if (nlabels > 0) {
+      geom_text_repel(size = 3, color = "black", na.rm = TRUE, ...)
+    }) +
     xlab("Bulk gene expression") + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),

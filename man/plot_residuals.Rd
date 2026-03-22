@@ -18,7 +18,9 @@ ggplot_residuals(
   fit,
   test,
   type = c("reg", "student", "weight"),
-  show_outliers = TRUE
+  show_outliers = TRUE,
+  nlabels = 0,
+  ...
 )
 }
 \arguments{
@@ -34,7 +36,13 @@ genes in red}
 \item{show_plot}{Logical whether to show plot using base graphics (used to
 allow return of dataframe of points without plotting)}
 
-\item{...}{Optional arguments passed to \code{\link[=plot]{plot()}}}
+\item{...}{Optional arguments passed to \code{\link[=plot]{plot()}} for the base graphics
+version, or to \code{geom_text_repel()} for the ggplot2 version.}
+
+\item{nlabels}{Number of outlying gene labels to add. Labels are only added
+if outliers are detected. Although each gene has a point for the residual
+for every bulk sample, only the point with the maximum absolute residual is
+labelled.}
 }
 \value{
 Produces a scatter plot in base graphics. Returns invisibly a

@@ -1,6 +1,9 @@
 News
 =====
 
+###### 19/03/2026
+* Improved `plot_comp()` and `plot_path()` with option to show cell percentages.
+
 # cellGeometry 0.6.2
 ###### 26/02/2026
 * Improved error checks in `deconvolute()` to help with issue #20.
