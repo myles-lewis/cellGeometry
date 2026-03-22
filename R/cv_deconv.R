@@ -116,11 +116,12 @@ plot_cv <- function(fit, ...) {
   ylo <- ym - ysd
   yhi <- ym + ysd
   lams <- as.vector(fit$subclass$cv[2:3])
+  log_ax <- if (min(ylo) < 0) "x" else "xy"
   
   args <- list(x = xm, y = ym,
                pch = 21, bg = "white",
                ylim = c(min(ylo), max(yhi)),
-               log = "xy", xlab = "lambda", ylab = "MSE",
+               log = log_ax, xlab = "lambda", ylab = "MSE",
                panel.first = quote({
                  abline(v = lams, lty = 3, col = "blue")
                  arrows(xm, ylo, xm, yhi, angle = 90, code = 3, length = 0.02)
