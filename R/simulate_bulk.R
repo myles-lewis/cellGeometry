@@ -267,6 +267,15 @@ Rsq <- function(obs, pred) {
   1 - rss/tss
 }
 
+# Lin's CCC
+#' @importFrom stats cov var
+ccc <- function(x, y) {
+  x <- as.vector(x)
+  y <- as.vector(y)
+  n <- length(x)
+  2* cov(x, y) / (var(x) + var(y) + ((mean(x) - mean(y))^2 * n/(n-1)))
+}
+
 # column vectorised versions
 colRmse <- function(d) {
   sqrt(colMeans(d^2))
@@ -306,7 +315,6 @@ predVar <- function(d) {
 #' @returns A ggplot2 scatter plot. An overall R^2 (coefficient of
 #'   determination) comparing all observed and predicted results is shown.
 #' @importFrom ggplot2 geom_abline alpha margin
-#' @importFrom DescTools CCC
 #' @export
 plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
                       labels = TRUE) {
@@ -327,7 +335,7 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
   }
   dat <- data.frame(obs = as.vector(obs), pred = as.vector(pred),
                     subclass = factor(rep(subclasses, each = nrow(obs))))
-  ccc <- CCC(dat$obs, dat$pred)$rho.c$est |> format(digits = 3)
+  ccc <- ccc(dat$obs, dat$pred) |> format(digits = 3)
   rsq <- format(Rsq(obs, pred), digits = 3)
   title <- bquote(CCC == .(ccc) * "," ~ R^2 == .(rsq))
   

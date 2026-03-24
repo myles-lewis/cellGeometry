@@ -18,7 +18,6 @@ Imports:
     circlize,
     ComplexHeatmap,
     DelayedArray,
-    DescTools,
     dplyr,
     ensembldb,
     ggplot2,
