@@ -232,7 +232,10 @@ deconvolute <- function(mk, test,
               nest_output = nest_output, nest_percent = nest_percent,
               comp_amount = comp_amount,
               opt = list(count_space = count_space, arith_mean = arith_mean,
-                         use_filter = use_filter))
+                         use_filter = use_filter,
+                         outlier_method = outlier_method,
+                         outlier_cutoff = outlier_cutoff,
+                         outlier_quantile = outlier_quantile))
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
     if (verbose) message("analysing compensation")
