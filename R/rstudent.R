@@ -123,9 +123,9 @@ residuals.deconv <- function(object, ...,
                              test = NULL) {
   if (is.null(test)) return(object$subclass$residuals)
   # recalculate residuals
-  arith_mean <- try_eval(object$call$arith_mean, FALSE)
-  use_filter <- try_eval(object$call$use_filter, TRUE)
-  count_space <- try_eval(object$call$count_space, TRUE)
+  arith_mean <- object$opt$arith_mean %||% FALSE
+  use_filter <- object$opt$use_filter %||% TRUE
+  count_space <- object$opt$count_space %||% TRUE
   cellmat <- get_cellmat(object$mk, arith_mean, use_filter, sub = TRUE)
   
   nm <- object$call$test
@@ -139,13 +139,6 @@ residuals.deconv <- function(object, ...,
   test <- test[geneset, ]
   if (count_space) cellmat <- 2^cellmat -1
   residuals_deconv(test, cellmat, object$subclass$output)
-}
-
-
-try_eval <- function(a, def) {
-  b <- try(eval(a), silent = TRUE)
-  if (inherits(b, "try-error")) return(def)
-  b %||% def
 }
 
 

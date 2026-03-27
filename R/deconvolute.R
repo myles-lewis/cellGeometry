@@ -125,6 +125,7 @@
 #'   subclass adjusted so that the percentages across subclasses are nested
 #'   within cell group percentages. The total percentage still adds to 100%.}
 #'   \item{comp_amount}{original argument `comp_amount`}
+#'   \item{opt}{list of original arguments}
 #'   \item{comp_check}{optional list element returned when `check_comp = TRUE`}
 #' @seealso [cellMarkers()] [updateMarkers()] [se()] [residuals.deconv()]
 #'   [rstudent.deconv()] [cooks.distance.deconv()] [kappa.deconv()] [plot_cv()]
@@ -229,7 +230,9 @@ deconvolute <- function(mk, test,
   
   out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
               nest_output = nest_output, nest_percent = nest_percent,
-              comp_amount = comp_amount)
+              comp_amount = comp_amount,
+              opt = list(count_space = count_space, arith_mean = arith_mean,
+                         use_filter = use_filter))
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
     if (verbose) message("analysing compensation")

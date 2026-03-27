@@ -133,6 +133,7 @@ as a proportion of cell group outputs.}
 subclass adjusted so that the percentages across subclasses are nested
 within cell group percentages. The total percentage still adds to 100\%.}
 \item{comp_amount}{original argument \code{comp_amount}}
+\item{opt}{list of original arguments}
 \item{comp_check}{optional list element returned when \code{check_comp = TRUE}}
 }
 \description{
