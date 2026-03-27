@@ -46,7 +46,7 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     outlier_cutoff <- fit$call$outlier_cutoff %||% switch(outlier_method, var.e = 4,
                                                           cooks = 1, rstudent = 10)
     outlier_quantile <- fit$call$outlier_quantile %||% 0.9
-    count_space <- fit$call$count_space %||% TRUE
+    count_space <- fit$opt$count_space %||% TRUE
     metric <- outlier_metric(fit$subclass, outlier_method, outlier_quantile,
                              count_space)
     outlier <- metric > outlier_cutoff
