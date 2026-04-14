@@ -58,3 +58,19 @@ rank_angle <- function(x, angle_cutoff = 45) {
   c2 <- factor(ind[ok, 2], levels = seq_len(ncol(x)), labels = colnames(x))
   data.frame(c1, c2, angle = ang[o2])
 }
+
+
+#' Maximum similarity between cell types
+#' 
+#' Computes maximum similarity between cell types based on the gene signature
+#' matrix.
+#' 
+#' @param x Either a matrix or a 'cellMarkers' class or 'deconv' class object.
+#' @param ... Optional arguments passed to [cos_similarity()].
+#' @returns A vector of similarity results.
+#' @export
+max_similarity <- function(x, ...) {
+  cs <- cos_similarity(x, ...)
+  diag(cs) <- 0
+  rowMaxs(cs)
+}
