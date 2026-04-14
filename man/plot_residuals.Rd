@@ -8,7 +8,7 @@
 plot_residuals(
   fit,
   test,
-  type = c("reg", "student", "weight"),
+  type = c("raw", "student", "weight"),
   show_outliers = TRUE,
   show_plot = TRUE,
   ...

@@ -116,12 +116,21 @@ hat_fit <- function(fit) {
 #' 
 #' @param object a 'deconv' class object
 #' @param ... retained for class compatibility
+#' @param type Specifies type of residuals, either raw or weighted. Ignored if
+#'   `test` is specified.
 #' @param test bulk gene expression matrix assumed to be in raw counts
 #' @returns Matrix of residuals.
 #' @export
 residuals.deconv <- function(object, ...,
+                             type = c("raw", "weight"),
                              test = NULL) {
-  if (is.null(test)) return(object$subclass$residuals)
+  type <- match.arg(type)
+  if (is.null(test)) {
+    r <- object$subclass$residuals
+    w <- object$subclass$weights
+    if (type == "weight" && !is.null(w)) r <- r * w
+    return(r)
+  }
   # recalculate residuals
   arith_mean <- object$opt$arith_mean %||% FALSE
   use_filter <- object$opt$use_filter %||% TRUE

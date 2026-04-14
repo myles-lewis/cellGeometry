@@ -23,7 +23,7 @@
 #'   dataframe of the coordinates of the points. The ggplot version returns a
 #'   ggplot2 plotting object.
 #' @export
-plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
+plot_residuals <- function(fit, test, type = c("raw", "student", "weight"),
                            show_outliers = TRUE, show_plot = TRUE,
                            ...) {
   if (!inherits(fit, "deconv")) stop("not a 'deconv' class object")

@@ -4,12 +4,15 @@
 \alias{residuals.deconv}
 \title{Extract Deconvolution Residuals}
 \usage{
-\method{residuals}{deconv}(object, ..., test = NULL)
+\method{residuals}{deconv}(object, ..., type = c("raw", "weight"), test = NULL)
 }
 \arguments{
 \item{object}{a 'deconv' class object}
 
 \item{...}{retained for class compatibility}
+
+\item{type}{Specifies type of residuals, either raw or weighted. Ignored if
+\code{test} is specified.}
 
 \item{test}{bulk gene expression matrix assumed to be in raw counts}
 }
