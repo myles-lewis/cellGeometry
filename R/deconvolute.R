@@ -159,8 +159,8 @@ deconvolute <- function(mk, test,
   .call <- match.call()
   weight_method <- match.arg(weight_method, c("none", "equal"))
   outlier_method <- match.arg(outlier_method)
-  if (outlier_method != "var.e") se <- TRUE
   test <- as.matrix(test)
+  if (ncol(test) == 1) outlier_method <- "rstudent"
   if (any(test < 0)) stop("`test` contains negative values")
   if (logged_bulk && any(is.infinite(2^test)))
     stop("infinite values when `test` converted to count scale. Are you sure bulk data is log2 scaled?")
