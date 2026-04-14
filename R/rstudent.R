@@ -224,9 +224,14 @@ kappa.deconv <- function(z, ...) {
 
 #' Confidence Intervals for Deconvolution Models
 #' 
-#' Computes confidence intervals for fitted deconvolution models. Note that this
-#' is anticipated to be most reliable when compensation values are close to 1
-#' and lambda is close to 0.
+#' Computes confidence intervals for fitted deconvolution models.
+#' 
+#' The default "var.e" method for calculating standard error (SE) is
+#' recommended. Other SE methods are most reliable with bulk data with low
+#' noise, and when fitted compensation values are close to 1 and ridge parameter
+#' lambda is close to 0. As compensation values deviate away from 1 or as lambda
+#' increases, CI calculated based on OLS/HC0-3 SE inflate and are progressively
+#' less reliable.
 #' 
 #' @param object a fitted 'deconv' class model object.
 #' @param parm for compatibility with S3 method. Not used.
@@ -236,7 +241,7 @@ kappa.deconv <- function(z, ...) {
 #' @returns List containing 2 matrices with lower and upper confidence
 #'   intervals.
 #' @seealso [se()]
-#' @importFrom stats qnorm setNames
+#' @importFrom stats qt setNames
 #' @export
 confint.deconv <- function(object, parm, level = 0.95, ..., type = "var.e") {
   type <- match.arg(type, c("var.e", "OLS", "OLS2", "HC0", "HC2", "HC3"))

@@ -22,9 +22,15 @@ List containing 2 matrices with lower and upper confidence
 intervals.
 }
 \description{
-Computes confidence intervals for fitted deconvolution models. Note that this
-is anticipated to be most reliable when compensation values are close to 1
-and lambda is close to 0.
+Computes confidence intervals for fitted deconvolution models.
+}
+\details{
+The default "var.e" method for calculating standard error (SE) is
+recommended. Other SE methods are most reliable with bulk data with low
+noise, and when fitted compensation values are close to 1 and ridge parameter
+lambda is close to 0. As compensation values deviate away from 1 or as lambda
+increases, CI calculated based on OLS/HC0-3 SE inflate and are progressively
+less reliable.
 }
 \seealso{
 \code{\link[=se]{se()}}
