@@ -123,9 +123,9 @@ residuals.deconv <- function(object, ...,
                              test = NULL) {
   if (is.null(test)) return(object$subclass$residuals)
   # recalculate residuals
-  arith_mean <- eval(object$call$arith_mean) %||% FALSE
-  use_filter <- eval(object$call$use_filter) %||% TRUE
-  count_space <- eval(object$call$count_space) %||% TRUE
+  arith_mean <- object$opt$arith_mean %||% FALSE
+  use_filter <- object$opt$use_filter %||% TRUE
+  count_space <- object$opt$count_space %||% TRUE
   cellmat <- get_cellmat(object$mk, arith_mean, use_filter, sub = TRUE)
   
   nm <- object$call$test

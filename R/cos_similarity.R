@@ -14,7 +14,7 @@
 cos_similarity <- function(x, use_filter = NULL) {
   if (inherits(x, "deconv")) {
     x <- x$mk
-    if (is.null(use_filter)) use_filter <- x$call$use_filter
+    if (is.null(use_filter)) use_filter <- x$opt$use_filter
   }
   if (inherits(x, "cellMarkers")) {
     if (is.null(use_filter)) use_filter <- TRUE

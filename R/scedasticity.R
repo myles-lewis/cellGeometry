@@ -42,11 +42,11 @@ plot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
   dat <- data.frame(expr = as.vector(ge), res = as.vector(res),
                     gene = rownames(res))
   if (show_outliers) {
-    outlier_method <- fit$call$outlier_method %||% "var.e"
-    outlier_cutoff <- fit$call$outlier_cutoff %||% switch(outlier_method, var.e = 4,
-                                                          cooks = 1, rstudent = 10)
-    outlier_quantile <- fit$call$outlier_quantile %||% 0.9
-    count_space <- fit$call$count_space %||% TRUE
+    outlier_method <- fit$opt$outlier_method %||% "var.e"
+    outlier_cutoff <- fit$opt$outlier_cutoff %||%
+      switch(outlier_method, var.e = 4, cooks = 1, rstudent = 10)
+    outlier_quantile <- fit$opt$outlier_quantile %||% 0.9
+    count_space <- fit$opt$count_space %||% TRUE
     metric <- outlier_metric(fit$subclass, outlier_method, outlier_quantile,
                              count_space)
     outlier <- metric > outlier_cutoff

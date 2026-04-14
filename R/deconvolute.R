@@ -33,7 +33,11 @@
 #'   using reference data or "qqmap" using quantile mapping of the bulk to
 #'   scRNA-Seq datasets, or "none" (or `FALSE`) for no conversion.
 #' @param lambda single numeric value of ridge parameter lambda. Only applied to
-#'   subclass deconvolution, not applied to cell group analysis. Experimental.
+#'   subclass deconvolution, not applied to cell group analysis. If 
+#'   `cv_lambda = TRUE` then a sequence of lambda values can be supplied.
+#' @param cv_lambda logical, whether to tune lambda using cross-validation
+#'   (experimental). If `lambda` is not supplied, a default sequence is used.
+#' @param nfolds Number of folds for cross-validation of lambda.
 #' @param check_comp logical, whether to analyse compensation values across
 #'   subclasses. See [plot_comp()].
 #' @param npass Number of passes. If `npass` set to 2 or more this activates
@@ -107,8 +111,10 @@
 #'       \item `weights`, vector of weights
 #'       \item `resvar`, \eqn{s^2} the estimate of the gene expression variance 
 #'       for each sample
-#'       \item `removed`, vector of outlying genes removed during successive 
-#'       passes
+#'       \item `removed`, optional vector of outlying genes removed during 
+#'       successive passes
+#'       \item `cv`, optional list included when `cv_lambda = TRUE`, containing
+#'       lambda CV results
 #'   }}
 #'   \item{group}{similar list object to `subclass`, but with results for the 
 #'   cell group analysis.}
@@ -119,9 +125,10 @@
 #'   subclass adjusted so that the percentages across subclasses are nested
 #'   within cell group percentages. The total percentage still adds to 100%.}
 #'   \item{comp_amount}{original argument `comp_amount`}
+#'   \item{opt}{list of original arguments}
 #'   \item{comp_check}{optional list element returned when `check_comp = TRUE`}
-#' @seealso [cellMarkers()] [updateMarkers()] [se()] [rstudent.deconv()]
-#'   [cooks.distance.deconv()]
+#' @seealso [cellMarkers()] [updateMarkers()] [se()] [residuals.deconv()]
+#'   [rstudent.deconv()] [cooks.distance.deconv()] [kappa.deconv()] [plot_cv()]
 #' @author Myles Lewis
 #' @importFrom matrixStats colMins rowQuantiles rowVars
 #' @importFrom stats optimise
@@ -139,6 +146,8 @@ deconvolute <- function(mk, test,
                         arith_mean = FALSE,
                         convert_bulk = FALSE,
                         lambda = NULL,
+                        cv_lambda = FALSE,
+                        nfolds = 10,
                         check_comp = FALSE,
                         npass = 1,
                         outlier_method = c("var.e", "cooks", "rstudent"),
@@ -155,7 +164,8 @@ deconvolute <- function(mk, test,
   if (any(test < 0)) stop("`test` contains negative values")
   if (logged_bulk && any(is.infinite(2^test)))
     stop("infinite values when `test` converted to count scale. Are you sure bulk data is log2 scaled?")
-  if (length(lambda) > 1) stop("lambda can only accept a single value")
+  if (length(lambda) > 1 && !cv_lambda) 
+    stop("lambda can only accept multiple values if cv_lambda is TRUE")
   
   if (isTRUE(convert_bulk)) convert_bulk <- "ref"
   if (isFALSE(convert_bulk)) convert_bulk <- "none"
@@ -192,7 +202,7 @@ deconvolute <- function(mk, test,
   atest <- deconv_multipass(logtest2, cellmat, comp_amount, weights,
                             weight_method, adjust_comp, count_space, npass,
                             outlier_method, outlier_cutoff, outlier_quantile,
-                            lambda, verbose)
+                            lambda, cv_lambda, nfolds, verbose)
   
   # subclass nested within group output/percent
   if (!is.null(gtest)) {
@@ -220,7 +230,12 @@ deconvolute <- function(mk, test,
   
   out <- list(call = .call, mk = mk, subclass = atest, group = gtest,
               nest_output = nest_output, nest_percent = nest_percent,
-              comp_amount = comp_amount)
+              comp_amount = comp_amount,
+              opt = list(count_space = count_space, arith_mean = arith_mean,
+                         use_filter = use_filter,
+                         outlier_method = outlier_method,
+                         outlier_cutoff = outlier_cutoff,
+                         outlier_quantile = outlier_quantile))
   if (convert_bulk == "qqmap") out$qqmap <- qqmap
   if (check_comp) {
     if (verbose) message("analysing compensation")
@@ -235,43 +250,57 @@ deconvolute <- function(mk, test,
 deconv_multipass <- function(test, cellmat, comp_amount, weights, weight_method,
                              adjust_comp, count_space, npass,
                              outlier_method, outlier_cutoff, outlier_quantile,
-                             lambda, verbose) {
+                             lambda, cv_lambda, nfolds, verbose) {
+  lambda1 <- if (cv_lambda) NULL else lambda
   fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                       adjust_comp, count_space, weight_method, lambda,
+                       adjust_comp, count_space, weight_method, lambda1,
                        verbose)
   metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
   outlier <- metric > outlier_cutoff
-  if (verbose && npass == 1 && any(outlier)) {
-    nm <- names(sort(metric[outlier], decreasing = TRUE))
-    if (length(nm) > 20) nm <- c(nm[1:20], "...")
-    message("Detected genes with extreme residuals: ",
-            paste(nm, collapse = ", "))
+  if (verbose) {
+    if (npass == 1 && any(outlier)) {
+      nm <- sort(metric[outlier], decreasing = TRUE)
+      message("Detected genes with extreme residuals: ", rem_names(nm))
+    }
+    if (npass > 1 && !any(outlier)) message("Pass 1 - no outliers found")
   }
+  
   i <- 1
   removed <- NULL
   while (any(outlier) & i < npass) {
-    i <- i +1
     remove_genes <- sort(metric[outlier], decreasing = TRUE)
     removed <- c(removed, remove_genes)
-    if (verbose) {
-      rem_names <- names(remove_genes)
-      if (length(remove_genes) > 20) {
-        rem_names <- c(rem_names[1:20],
-                       paste0("... [", length(remove_genes), " genes]"))
-      }
-      message("Pass ", i, " - removed ", paste(rem_names, collapse = ", "))
-    }
+    if (verbose) message("Pass ", i, " - removed ", rem_names(remove_genes))
+    i <- i +1
     test <- test[!outlier, , drop = FALSE]
     cellmat <- cellmat[!outlier, , drop = FALSE]
     weights <- weights[!outlier]
     if (nrow(cellmat) < ncol(cellmat)) stop("insufficient genes")
     fit <- deconv_adjust(test, cellmat, comp_amount, weights,
-                         adjust_comp, count_space, weight_method, lambda,
+                         adjust_comp, count_space, weight_method, lambda1,
                          verbose)
     metric <- outlier_metric(fit, outlier_method, outlier_quantile, count_space)
     outlier <- metric > outlier_cutoff
+    if (verbose) {
+      if (!any(outlier)) message("Pass ", i, " - no more outliers found")
+      if (any(outlier & i == npass)) {
+        nm <- sort(metric[outlier], decreasing = TRUE)
+        message("Pass ", i, " - persistent outliers ", rem_names(nm))
+      }
+    }
   }
   
+  # tune lambda
+  if (cv_lambda) {
+    cv <- cv_deconv(test, cellmat, comp_amount, weights,
+                    adjust_comp, count_space, weight_method, lambda,
+                    nfolds, verbose)
+    # refit with best lambda
+    fit <- deconv_adjust(test, cellmat, comp_amount, weights,
+                         adjust_comp, count_space, weight_method,
+                         lambda = cv$lambda.1se, verbose = FALSE)
+    fit$cv <- cv
+  }
   fit$removed <- removed
   fit
 }
@@ -422,6 +451,16 @@ get_cellmat <- function(mk, arith_mean, use_filter, sub = mk$geneset) {
     } else mk$genemeans[sub, ]
   }
   cellmat
+}
+
+
+rem_names <- function(remove_genes) {
+  rem_names <- names(remove_genes)
+  if (length(remove_genes) > 10) {
+    rem_names <- c(rem_names[1:10],
+                   paste0("... [", length(remove_genes), " genes]"))
+  }
+  paste(rem_names, collapse = ", ")
 }
 
 # avoid division by near 0
