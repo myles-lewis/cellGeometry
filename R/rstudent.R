@@ -211,3 +211,34 @@ se <- function(model, type = c("var.e", "OLS", "OLS2", "HC0", "HC2", "HC3")) {
 kappa.deconv <- function(z, ...) {
   kappa(z$subclass$spillover, ...)
 }
+
+
+#' Confidence Intervals for Deconvolution Models
+#' 
+#' Computes confidence intervals for fitted deconvolution models. Note that this
+#' is anticipated to be most reliable when compensation values are close to 1
+#' and lambda is close to 0.
+#' 
+#' @param object a fitted 'deconv' class model object.
+#' @param parm for compatibility with S3 method. Not used.
+#' @param level the confidence level required.
+#' @param ... additional arguments for S3 compatibility.
+#' @param type specifies standard error method, see [se()].
+#' @returns List containing 2 matrices with lower and upper confidence
+#'   intervals.
+#' @seealso [se()]
+#' @importFrom stats qnorm setNames
+#' @export
+confint.deconv <- function(object, parm, level = 0.95, ..., type = "var.e") {
+  type <- match.arg(type)
+  se0 <- se(object, type)
+  output <- object$subclass$output
+  attr(output, "min") <- NULL
+  a <- 1 - (1 - level)/2
+  format_perc <- paste(format(c(1 - a, a), trim = TRUE, digits = 3,
+                              scientific = FALSE), "%")
+  fac <- qnorm(a)
+  lci <- output - se0 * fac
+  uci <- output + se0 * fac
+  setNames(list(lci, uci), format_perc)
+}

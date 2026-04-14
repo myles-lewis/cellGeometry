@@ -2,7 +2,9 @@ News
 =====
 
 ###### 14/04/2026
-* Add CV of lambda in `deconvolute()`.
+* Add S3 method for `deconv` objects to allow calculation of confidence
+intervals using `confint()`.
+* Add CV of lambda in `deconvolute()` [experimental].
 * Use `$opt` element to store call arguments in `deconvolute()`.
 * Refine vignette.
 
