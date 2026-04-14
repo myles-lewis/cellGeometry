@@ -239,15 +239,20 @@ kappa.deconv <- function(z, ...) {
 #' @importFrom stats qnorm setNames
 #' @export
 confint.deconv <- function(object, parm, level = 0.95, ..., type = "var.e") {
-  type <- match.arg(type)
+  type <- match.arg(type, c("var.e", "OLS", "OLS2", "HC0", "HC2", "HC3"))
   se0 <- se(object, type)
   output <- object$subclass$output
   attr(output, "min") <- NULL
+  if (type == "var.e") output <- t(output)
   a <- 1 - (1 - level)/2
   format_perc <- paste(format(c(1 - a, a), trim = TRUE, digits = 3,
                               scientific = FALSE), "%")
-  fac <- qnorm(a)
+  fac <- qt(a, nrow(object$subclass$X))
   lci <- output - se0 * fac
   uci <- output + se0 * fac
+  if (type == "var.e") {
+    lci <- t(lci)
+    uci <- t(uci)
+  }
   setNames(list(lci, uci), format_perc)
 }
