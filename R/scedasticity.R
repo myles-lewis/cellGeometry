@@ -7,8 +7,11 @@
 #' genes with extreme errors.
 #' 
 #' @param fit 'deconv' class deconvolution object
-#' @param test bulk gene expression matrix assumed to be in raw counts
-#' @param type Specifies type of residuals to be plotted
+#' @param test bulk gene expression matrix assumed to be in raw counts. If
+#'   `test` is not supplied, fitted values are plotted instead.
+#' @param type Specifies type of residuals to be plotted, either "raw" for
+#'   unweighted residuals, "weight" for weighted residuals, or "student" for
+#'   Studentized residuals.
 #' @param show_outliers Logical whether to show any remaining outlying extreme
 #'   genes in red
 #' @param show_plot Logical whether to show plot using base graphics (used to
@@ -23,13 +26,26 @@
 #'   dataframe of the coordinates of the points. The ggplot version returns a
 #'   ggplot2 plotting object.
 #' @export
-plot_residuals <- function(fit, test, type = c("raw", "student", "weight"),
+plot_residuals <- function(fit, test = NULL, type,
                            show_outliers = TRUE, show_plot = TRUE,
                            ...) {
   if (!inherits(fit, "deconv")) stop("not a 'deconv' class object")
-  type <- match.arg(type)
+  if (missing(type)) {
+    type <- if (is.null(fit$subclass$weights)) "raw" else "weight"
+  }
+  type <- match.arg(type, c("raw", "student", "weight"))
+  if (type == "weight" & is.null(fit$subclass$weights))
+    stop("no weights were used")
   geneset <- rownames(fit$subclass$residuals)
-  ge <- test[geneset, ]
+  if (!is.null(test)) {
+    test <- as.matrix(test)
+    ge <- test[geneset, ]
+    xlab <- "Bulk gene expression"
+  } else {
+    # fitted values
+    ge <- tcrossprod(fit$subclass$X, fit$subclass$output)
+    xlab <- "Fitted values"
+  }
   res <- fit$subclass$residuals
   w <- fit$subclass$weights %||% 1
   res <- switch(type, student = rstudent(fit),
@@ -60,7 +76,7 @@ plot_residuals <- function(fit, test, type = c("raw", "student", "weight"),
   if (show_plot) {
     nm <- fit$call$test
     .call <- match.call()
-    if (nm != .call$test) {
+    if (!is.null(test) && nm != .call$test) {
       message("`", .call$test, "` does not match the bulk dataset `", nm,
               "` used in `", .call$fit, "`")
     }
@@ -73,7 +89,7 @@ plot_residuals <- function(fit, test, type = c("raw", "student", "weight"),
     do.call("plot", args) |>
       suppressWarnings()
     if (is.null(new.args$xlab)) {
-      mtext("Bulk gene expression", 1, line = 2.2, cex = par("cex.lab") * par("cex"))
+      mtext(xlab, 1, line = 2.2, cex = par("cex.lab") * par("cex"))
     }
     abline(0, 0, col = "royalblue")
   }
@@ -84,20 +100,24 @@ plot_residuals <- function(fit, test, type = c("raw", "student", "weight"),
 #' @rdname plot_residuals
 #' @importFrom ggplot2 scale_x_log10 scale_colour_manual geom_hline
 #' @export
-ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
+ggplot_residuals <- function(fit, test = NULL, type,
                              show_outliers = TRUE, nlabels = 0, ...) {
   nm <- fit$call$test
   .call <- match.call()
-  if (nm != .call$test) {
+  if (!is.null(test) && nm != .call$test) {
     message("`", .call$test, "` does not match the bulk dataset `", nm,
             "` used in `", .call$fit, "`")
   }
   dat <- plot_residuals(fit, test, type, show_outliers, show_plot = FALSE)
-  type <- match.arg(type)
+  if (missing(type)) {
+    type <- if (is.null(fit$subclass$weights)) "raw" else "weight"
+  }
+  type <- match.arg(type, c("raw", "student", "weight"))
   dat$expr[dat$expr < 1] <- NA
   ylab <- switch(type, student = "Studentized residuals",
                  weight = "Weighted residuals",
                  "Raw residuals")
+  xlab <- if (is.null(test)) "Fitted values" else "Bulk gene expression"
   dat$label <- ""
   outl <- unique(dat$gene[dat$outlier])
   nlabels <- min(c(nlabels, length(outl)))
@@ -123,7 +143,7 @@ ggplot_residuals <- function(fit, test, type = c("reg", "student", "weight"),
     (if (nlabels > 0) {
       geom_text_repel(size = 3, color = "black", na.rm = TRUE, ...)
     }) +
-    xlab("Bulk gene expression") + ylab(ylab) +
+    xlab(xlab) + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
           axis.ticks = element_line(color = "black"),

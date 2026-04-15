@@ -7,8 +7,8 @@
 \usage{
 plot_residuals(
   fit,
-  test,
-  type = c("raw", "student", "weight"),
+  test = NULL,
+  type,
   show_outliers = TRUE,
   show_plot = TRUE,
   ...
@@ -16,8 +16,8 @@ plot_residuals(
 
 ggplot_residuals(
   fit,
-  test,
-  type = c("reg", "student", "weight"),
+  test = NULL,
+  type,
   show_outliers = TRUE,
   nlabels = 0,
   ...
@@ -26,9 +26,12 @@ ggplot_residuals(
 \arguments{
 \item{fit}{'deconv' class deconvolution object}
 
-\item{test}{bulk gene expression matrix assumed to be in raw counts}
+\item{test}{bulk gene expression matrix assumed to be in raw counts. If
+\code{test} is not supplied, fitted values are plotted instead.}
 
-\item{type}{Specifies type of residuals to be plotted}
+\item{type}{Specifies type of residuals to be plotted, either "raw" for
+unweighted residuals, "weight" for weighted residuals, or "student" for
+Studentized residuals.}
 
 \item{show_outliers}{Logical whether to show any remaining outlying extreme
 genes in red}
