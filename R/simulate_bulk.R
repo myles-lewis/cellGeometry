@@ -312,12 +312,13 @@ predVar <- function(d) {
 #'   character vector of cell subclasses to be outlined with ellipses. Requires
 #'   the ggforce package to be installed.
 #' @param labels Logical whether to add labels to ellipses.
+#' @param main Title to add to plot.
 #' @returns A ggplot2 scatter plot. An overall R^2 (coefficient of
 #'   determination) comparing all observed and predicted results is shown.
 #' @importFrom ggplot2 geom_abline alpha margin
 #' @export
 plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
-                      labels = TRUE) {
+                      labels = TRUE, main = "") {
   if (inherits(pred, "deconv")) pred <- pred$subclass$output
   if (!identical(dim(obs), dim(pred))) stop("incompatible dimensions")
   if (anyNA(pred)) {
@@ -337,7 +338,8 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
                     subclass = factor(rep(subclasses, each = nrow(obs))))
   ccc <- ccc(dat$obs, dat$pred) |> format(digits = 3)
   rsq <- format(Rsq(obs, pred), digits = 3)
-  title <- bquote(CCC == .(ccc) * "," ~ R^2 == .(rsq))
+  if (nchar(main) > 0) main <- paste0(main, " ")
+  title <- bquote(.(main) * CCC == .(ccc) * "," ~ R^2 == .(rsq))
   
   p <- ggplot(dat, aes(x = .data$obs, y = .data$pred, color = .data$subclass,
                        fill = .data$subclass)) +

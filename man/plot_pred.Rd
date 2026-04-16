@@ -4,7 +4,15 @@
 \alias{plot_pred}
 \title{Scatter plot to compare deconvoluted subclasses}
 \usage{
-plot_pred(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL, labels = TRUE)
+plot_pred(
+  obs,
+  pred,
+  mk = NULL,
+  scheme = NULL,
+  ellipse = NULL,
+  labels = TRUE,
+  main = ""
+)
 }
 \arguments{
 \item{obs}{Observed matrix of cell amounts with subclasses in columns and
@@ -25,6 +33,8 @@ character vector of cell subclasses to be outlined with ellipses. Requires
 the ggforce package to be installed.}
 
 \item{labels}{Logical whether to add labels to ellipses.}
+
+\item{main}{Title to add to plot.}
 }
 \value{
 A ggplot2 scatter plot. An overall R^2 (coefficient of
