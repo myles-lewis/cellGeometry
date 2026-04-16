@@ -347,11 +347,10 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
     scale_colour_manual(values = scheme) +
     scale_fill_manual(values = scheme) +
     geom_abline(slope = 1, intercept = 0) +
-    xlab("Observed") + ylab("Predicted") +
-    ggtitle(title) +
+    labs(xlab = "Observed", ylab = "Predicted", subtitle = title) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
-          plot.title = element_text(size = 10),
+          axis.ticks = element_lines(colour = "black"),
           legend.position = "none")
   
   if (!is.null(ellipse)) {
