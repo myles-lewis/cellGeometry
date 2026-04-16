@@ -350,7 +350,7 @@ plot_pred <- function(obs, pred, mk = NULL, scheme = NULL, ellipse = NULL,
     labs(xlab = "Observed", ylab = "Predicted", subtitle = title) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
-          axis.ticks = element_lines(colour = "black"),
+          axis.ticks = element_line(colour = "black"),
           legend.position = "none")
   
   if (!is.null(ellipse)) {
