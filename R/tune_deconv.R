@@ -323,7 +323,8 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       ggtitle(title) +
       theme_bw() +
       theme(plot.title = element_text(size = 9),
-            axis.text = element_text(colour = "black"))
+            axis.text = element_text(colour = "black"),
+            axis.ticks = element_line(colour = "black"))
     return(p)
   }
   if (!group %in% colnames(result)) stop("incorrect `group`")
@@ -380,6 +381,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       theme_bw() +
       theme(plot.title = element_text(size = 9),
             axis.text = element_text(colour = "black"),
+            axis.ticks = element_line(colour = "black"),
             legend.key.size = unit(0.8, 'lines'),
             legend.spacing.y = unit(0, 'lines')) +
       (if (!show_legend) theme(legend.position = "none"))
@@ -408,6 +410,7 @@ plot_tune <- function(result, group = "subclass", xvar = colnames(result)[1],
       theme_bw() +
       theme(plot.title = element_text(size = 9),
             axis.text = element_text(colour = "black"),
+            axis.ticks = element_line(colour = "black"),
             legend.key.size = unit(0.8, 'lines'),
             legend.spacing.y = unit(0, 'lines'))
   }

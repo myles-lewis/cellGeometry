@@ -210,6 +210,7 @@ violin_plot <- function(x, percent = FALSE,
     xlab("") + ylab(ylab) +
     theme_classic() +
     theme(axis.text = element_text(colour = "black"),
+          axis.ticks = element_line(colour = "black"),
           legend.position = "none")
 }
 
