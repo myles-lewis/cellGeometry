@@ -613,6 +613,20 @@ users actively want to try to deconvolute cell types that are related e.g.
 subsets of neurons, subsets of B/T-cells etc. This means that the single-cell
 reference gene signature has a strong tendency to collinearity.
 
+## Confidence intervals
+
+Based on the standard error calculation, confidence intervals (default level
+95%) can be calculated for all samples using `confint()`.
+
+```{r eval=FALSE}
+# default method using var.e (see paper for details)
+ci1 <- confint(fit)
+str(se1)
+
+# ordinary least squares
+ci2 <- confint(fit, type = "OLS")
+```
+
 ## Residual gene expression
 
 Residual gene expression values can be accessed using `residuals()`. Residuals
@@ -634,8 +648,12 @@ of equal gene weighting, or as Studentized residuals. A ggplot2 version is
 available via `ggplot_residuals()`.
 
 ```{r eval=FALSE}
+# fitted values for bulk on x axis
+plot_residuals(fit)
+
+# actual bulk gene expression - good for spotting outliers with massive expression
 plot_residuals(fit, sim_sampled)
-plot_residuals(fit, sim_sampled, type = "weight")
+plot_residuals(fit, sim_sampled, type = "raw")
 plot_residuals(fit, sim_sampled, type = "student")
 ```
 
