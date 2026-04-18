@@ -621,7 +621,7 @@ Based on the standard error calculation, confidence intervals (default level
 ```{r eval=FALSE}
 # default method using var.e (see paper for details)
 ci1 <- confint(fit)
-str(se1)
+str(ci1)
 
 # ordinary least squares
 ci2 <- confint(fit, type = "OLS")
