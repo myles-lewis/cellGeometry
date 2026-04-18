@@ -252,7 +252,8 @@ confint.deconv <- function(object, parm, level = 0.95, ..., type = "var.e") {
   a <- 1 - (1 - level)/2
   format_perc <- paste(format(c(1 - a, a), trim = TRUE, digits = 3,
                               scientific = FALSE), "%")
-  fac <- qt(a, nrow(object$subclass$X))
+  rdf <- nrow(object$subclass$X) - ncol(object$subclass$X)
+  fac <- qt(a, rdf)
   lci <- output - se0 * fac
   uci <- output + se0 * fac
   if (type == "var.e") {
