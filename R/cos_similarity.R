@@ -68,6 +68,8 @@ rank_angle <- function(x, angle_cutoff = 45) {
 #' @param x Either a matrix or a 'cellMarkers' class or 'deconv' class object.
 #' @param ... Optional arguments passed to [cos_similarity()].
 #' @returns A vector of similarity results.
+#' @seealso [diagnose()] which outputs a more comprehensive pairwise comparison
+#'   of similarity between cell subclasses.
 #' @export
 max_similarity <- function(x, ...) {
   cs <- cos_similarity(x, ...)

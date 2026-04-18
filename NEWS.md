@@ -2,8 +2,8 @@ News
 =====
 
 ###### 14/04/2026
-* Add S3 method for `deconv` objects to allow calculation of confidence
-intervals using `confint()`.
+* Add S3 method for `confint()` with `deconv` objects to allow calculation of
+confidence intervals.
 * Add `max_similarity()` for calculating maximum similarity between cell types.
 * Add CV of lambda in `deconvolute()` [experimental].
 * Use `$opt` element to store call arguments in `deconvolute()`.

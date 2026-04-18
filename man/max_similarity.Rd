@@ -18,3 +18,7 @@ A vector of similarity results.
 Computes maximum similarity between cell types based on the gene signature
 matrix.
 }
+\seealso{
+\code{\link[=diagnose]{diagnose()}} which outputs a more comprehensive pairwise comparison
+of similarity between cell subclasses.
+}
