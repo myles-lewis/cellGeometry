@@ -178,8 +178,19 @@ normally distributed either, which probably explains the need for a very high
 cut-off. In practice the choice of settings seems to be dataset dependent.
 
 The ridge parameter lambda, which adds L2 regularisation to the compensation
-(moment) matrix is provided only for experimental purposes. Any small benefit
-seems to be outweighed by varying other parameters especially \code{nsubclass}.
+(moment) matrix, is provided for experimental purposes. Lambda can either be
+set manually, or cross-validation of lambda is performed by splitting
+signature genes into folds and performing CV based on minimising sum of
+squared residual gene expression error. The CV curve can be plotted using
+\code{\link[=plot_cv]{plot_cv()}}.
+
+In simple simulations, altering lambda or using CV of lambda provides a small
+benefit, but it is almost always outweighed by varying other parameters
+especially increasing \code{nsubclass}. Where CV of lambda appears to be more
+useful is in simulations where different types of noise is added. Here, CV of
+lambda provides benefit against added noise, especially in large datasets
+with many subclasses, or if collinearity (similarity) is high between cell
+subclasses. It has not been tested extensively on real world bulk data.
 }
 \seealso{
 \code{\link[=cellMarkers]{cellMarkers()}} \code{\link[=updateMarkers]{updateMarkers()}} \code{\link[=se]{se()}} \code{\link[=residuals.deconv]{residuals.deconv()}}
