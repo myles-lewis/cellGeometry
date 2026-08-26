@@ -719,7 +719,4 @@ plot_path(fit2, sample = 1, type = "percent")
 
 If you use this package, please cite as:
 
-Lau R, Cubuk C, Spiliopoulou A, Martinez-Paz P, Surace AEA, Fossati-Jimack L,
-Raychaudhuri S, Pitzalis C, Lewis MJ (2026). cellGeometry: ultra-fast
-single-cell deconvolution of bulk RNA-Seq using a geometric solution. *bioRxiv*.
-https://doi.org/10.64898/2026.01.24.701240
+Lau, R., Çubuk, C., Spiliopoulou, A., Martínez-Paz, P., Surace, A.E.A., Fossati-Jimack, L., Raychaudhuri, S., Pitzalis, C., Lewis, M.J. cellGeometry: ultra-fast single-cell deconvolution of bulk RNA-Seq using a geometric solution. Nat Commun 17, 8995 (2026). [doi:10.1038/s41467-026-75762-7](https://doi.org/10.1038/s41467-026-75762-7)
