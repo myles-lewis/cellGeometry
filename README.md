@@ -284,3 +284,9 @@ Also, 2 scRNA-Seq datasets can be merged using the function `mergeMarkers()`.
 This merges the `cellMarkers` objects derived from each single cell dataset. One
 dataset is defined as reference, and the 2nd dataset is merged into it after
 adjustment for its overall distribution based on quantile mapping.
+
+# Citation
+
+If you use this package please cite as: 
+
+Lau, R., Çubuk, C., Spiliopoulou, A., Martínez-Paz, P., Surace, A.E.A., Fossati-Jimack, L., Raychaudhuri, S., Pitzalis, C., Lewis, M.J. cellGeometry: ultra-fast single-cell deconvolution of bulk RNA-Seq using a geometric solution. Nat Commun 17, 8995 (2026). [doi:10.1038/s41467-026-75762-7](https://doi.org/10.1038/s41467-026-75762-7)
