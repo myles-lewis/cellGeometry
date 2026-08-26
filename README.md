@@ -1,8 +1,8 @@
 # Geometric single cell deconvolution
 
-[!\[CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/cellGeometry)](https://cran.r-project.org/package=cellGeometry)
-[!\[Downloads](https://cranlogs.r-pkg.org/badges/cellGeometry)](https://CRAN.R-project.org/package=cellGeometry)
-[!\[Downloads](https://cranlogs.r-pkg.org/badges/grand-total/cellGeometry)](https://CRAN.R-project.org/package=cellGeometry)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/cellGeometry)](https://cran.r-project.org/package=cellGeometry)
+[![Downloads](https://cranlogs.r-pkg.org/badges/cellGeometry)](https://CRAN.R-project.org/package=cellGeometry)
+[![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/cellGeometry)](https://CRAN.R-project.org/package=cellGeometry)
 
 Ultrafast deconvolution of bulk RNA-Seq datasets using a single-cell RNA-Seq
 reference dataset in which cell clusters have been defined.
@@ -35,15 +35,13 @@ BiocManager::install("AnnotationHub")
 ```
 
 Install from CRAN
-
 ```
 install.packages("cellGeometry")
 ```
 
 Or install from Github
-
 ```
-devtools::install\_github("myles-lewis/cellGeometry")
+devtools::install_github("myles-lewis/cellGeometry")
 ```
 
 ### Algorithm
@@ -53,6 +51,7 @@ The algorithm is performed in two stages:
 1. Optimal gene markers for each cell subclass are identified. In this part,
 each gene is considered as a vector in high dimensions with cell clusters as
 dimensions.
+
 2. The bulk RNA-Seq is deconvoluted by calculating the vector projection of each
 bulk RNA-Seq sample against a vector representing each cell cluster in high
 dimensional gene marker space using the vector dot product. In order to adjust
@@ -79,17 +78,17 @@ library(zellkonverter)
 library(SingleCellExperiment)
 library(cellGeometry)
 
-typist\_h5 <- readH5AD("2ac906a5-9725-4258-8e36-21a9f6c0302a.h5ad",
-                      use\_hdf5 = TRUE, reader = "R")
+typist_h5 <- readH5AD("2ac906a5-9725-4258-8e36-21a9f6c0302a.h5ad",
+                      use_hdf5 = TRUE, reader = "R")
 ```
 
 We extract the main count matrix and cell metadata. cellGeometry needs rownames
 on the count matrix.
 
 ```
-mat <- typist\_h5@assays@data$X
-rownames(mat) <- rownames(typist\_h5)
-meta <- typist\_h5@colData@listData
+mat <- typist_h5@assays@data$X
+rownames(mat) <- rownames(typist_h5)
+meta <- typist_h5@colData@listData
 ```
 
 ### Example Seurat file
@@ -123,14 +122,14 @@ restrict the dataset to blood so that we can deconvolute blood bulk
 RNA-Seq data later (this is optional).
 
 ```
-table(meta$Majority\_voting\_CellTypist)
+table(meta$Majority_voting_CellTypist)
 
-subcl <- meta$Majority\_voting\_CellTypist
-cellgrp <- meta$Majority\_voting\_CellTypist\_high
+subcl <- meta$Majority_voting_CellTypist
+cellgrp <- meta$Majority_voting_CellTypist_high
 
 # reduce dataset to only blood (optional)
-subcl\[meta$tissue != "blood"] <- NA
-cellgrp\[meta$tissue != "blood"] <- NA
+subcl[meta$tissue != "blood"] <- NA
+cellgrp[meta$tissue != "blood"] <- NA
 ```
 
 We then run the 1st stage of cellGeometry which generates mean gene expression
@@ -139,10 +138,10 @@ cell group gene markers are identified.
 
 ```
 mk <- cellMarkers(mat, subclass = subcl, cellgroup = cellgrp,
-                  dual\_mean = TRUE, cores = 2)
+                  dual_mean = TRUE, cores = 2)
 ```
 
-The `dual\_mean` argument only needs to be set for the purpose of the simulation
+The `dual_mean` argument only needs to be set for the purpose of the simulation
 later. Most users do not need to set this. It calculates both the standard mean
 gene expression, which is mean(log2(counts +1)), as well as the arithmetic mean
 of the (unlogged) counts.
@@ -174,20 +173,20 @@ We convert the ensembl ids in the cellMarkers object using the built-in function
 ```
 library(AnnotationHub)
 ah <- AnnotationHub()
-ensDb\_v110 <- ah\[\["AH113665"]]
-mk <- gene2symbol(mk, ensDb\_v110)
+ensDb_v110 <- ah[["AH113665"]]
+mk <- gene2symbol(mk, ensDb_v110)
 ```
 
 The signature gene matrix can be displayed as follows.
 
 ```
-signature\_heatmap(mk)
+signature_heatmap(mk)
 ```
 
 The spillover heatmap between cell clusters can also be visualised.
 
 ```
-spillover\_heatmap(mk)
+spillover_heatmap(mk)
 ```
 
 This heatmap as well as the signature heatmap reveals that some cell subclasses
@@ -203,14 +202,14 @@ matter whether these are removed or not.
 
 ```
 mk <- updateMarkers(mk,
-                    remove\_subclass = c("Helper T cells", "Cytotoxic T cells"))
+                    remove_subclass = c("Helper T cells", "Cytotoxic T cells"))
 ```
 
 ### Simulated pseudo-bulk RNA-Seq
 
 We can generate pseudo-bulk to test the deconvolution using the following
-commands. Here `generate\_samples()` makes 25 samples with random cell counts,
-`sim\_counts`. The simulate\_bulk() function operates in 2 modes. In the first
+commands. Here `generate_samples()` makes 25 samples with random cell counts,
+`sim_counts`. The simulate_bulk() function operates in 2 modes. In the first
 mode, the average gene expression for each cell cluster is extracted from the
 cellMarkers object and used to generate the pseudo-bulk totals. In the 2nd
 mode (see below) the original single-cell count data is sampled.
@@ -218,27 +217,27 @@ mode (see below) the original single-cell count data is sampled.
 ```
 # simulated bulk
 set.seed(3)
-sim\_counts <- generate\_samples(mk, 25)
-sim\_percent <- sim\_counts / rowSums(sim\_counts) \* 100
-sim\_pseudo <- simulate\_bulk(mk, sim\_counts)
+sim_counts <- generate_samples(mk, 25)
+sim_percent <- sim_counts / rowSums(sim_counts) * 100
+sim_pseudo <- simulate_bulk(mk, sim_counts)
 ```
 
 Deconvolution itself is performed as a 2nd function `deconvolute()`. The
-`plot\_set()` function can be used to plot the results. The `metric\_set()`
+`plot_set()` function can be used to plot the results. The `metric_set()`
 function generates a table of results.
 
 ```
 # mode 1: (perfect deconvolution)
-fit <- deconvolute(mk, sim\_pseudo,
-                   use\_filter = FALSE)
-plot\_set(sim\_counts, fit$subclass$output)
-plot\_set(sim\_percent, fit$subclass$percent)
+fit <- deconvolute(mk, sim_pseudo,
+                   use_filter = FALSE)
+plot_set(sim_counts, fit$subclass$output)
+plot_set(sim_percent, fit$subclass$percent)
 
-metric\_set(sim\_percent, fit$subclass$percent)  # table of results
+metric_set(sim_percent, fit$subclass$percent)  # table of results
 ```
 
 In the 2nd mode, the original scRNA-Seq count dataset is sampled. Here we
-oversample the actual cell counts in `sim\_counts` by 3x by setting `times = 3`.
+oversample the actual cell counts in `sim_counts` by 3x by setting `times = 3`.
 Cells are sampled with replacement. The desired cell counts are simply
 multiplied by `times` prior to sampling. Users will find that increasing `times`
 from 1 to 30 or more improves the deconvolution as the sum of the gene counts
@@ -247,20 +246,20 @@ cluster.
 
 ```
 # mode 2: sample from original sc count matrix
-sim\_sampled <- simulate\_bulk(mat, sim\_counts, subcl, times = 3)
+sim_sampled <- simulate_bulk(mat, sim_counts, subcl, times = 3)
 
 # fix rownames
-rownames(sim\_sampled) <- gene2symbol(rownames(sim\_sampled), ensDb\_v110)
+rownames(sim_sampled) <- gene2symbol(rownames(sim_sampled), ensDb_v110)
 
 # near optimal deconvolution of counts sampled from the original scRNA-Seq
-fit2 <- deconvolute(mk, sim\_sampled,
-                    use\_filter = FALSE, arith\_mean = TRUE)
+fit2 <- deconvolute(mk, sim_sampled,
+                    use_filter = FALSE, arith_mean = TRUE)
 
 # plot results
-plot\_set(sim\_counts, fit2$subclass$output / 3)  # adjust for 3x oversampling
-plot\_set(sim\_percent, fit2$subclass$percent)
+plot_set(sim_counts, fit2$subclass$output / 3)  # adjust for 3x oversampling
+plot_set(sim_percent, fit2$subclass$percent)
 
-metric\_set(sim\_percent, fit2$subclass$percent)
+metric_set(sim_percent, fit2$subclass$percent)
 ```
 
 Note that these settings are mathematically ideal for simulated bulk data. In
@@ -276,7 +275,7 @@ and warn you these genes are missing. `updateMarkers()` can then be used to
 refine the gene signatures using only genes which are also found in the bulk
 RNA-Seq dataset.
 
-There is also a powerful function `tune\_deconv()` which allows users to tune any
+There is also a powerful function `tune_deconv()` which allows users to tune any
 of the parameters available in `updateMarkers()` based on a bulk reference
 dataset. The simulated pseudo-bulk data can be used for this purpose, but real
 bulk RNA-Seq would be better (more realistic and better for tuning).
@@ -285,10 +284,3 @@ Also, 2 scRNA-Seq datasets can be merged using the function `mergeMarkers()`.
 This merges the `cellMarkers` objects derived from each single cell dataset. One
 dataset is defined as reference, and the 2nd dataset is merged into it after
 adjustment for its overall distribution based on quantile mapping.
-
-# Citation
-
-If you use this package please cite as: 
-
-Lau, R., Çubuk, C., Spiliopoulou, A., Martínez-Paz, P., Surace, A.E.A., Fossati-Jimack, L., Raychaudhuri, S., Pitzalis, C., Lewis, M.J. cellGeometry: ultra-fast single-cell deconvolution of bulk RNA-Seq using a geometric solution. Nat Commun 17, 8995 (2026). [doi:10.1038/s41467-026-75762-7](https://doi.org/10.1038/s41467-026-75762-7)
-
