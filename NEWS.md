@@ -1,10 +1,12 @@
 News
 =====
 
+# cellGeometry 0.6.4
 ###### 07/09/2026
 * Updated description, vignette and readme with DOI for Nature communications 
 paper.
 
+# cellGeometry 0.6.3
 ###### 14/04/2026
 * Add S3 method for `confint()` with `deconv` objects to allow calculation of
 confidence intervals.
