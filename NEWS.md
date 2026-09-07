@@ -1,6 +1,10 @@
 News
 =====
 
+###### 07/09/2026
+* Updated description, vignette and readme with DOI for Nature communications 
+paper.
+
 ###### 14/04/2026
 * Add S3 method for `confint()` with `deconv` objects to allow calculation of
 confidence intervals.
